@@ -47,10 +47,22 @@ pnpm-debug.log*
 
 ### Frontend / Next.js ###
 frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.*
+frontend/.yarn/*
+!frontend/.yarn/patches
+!frontend/.yarn/plugins
+!frontend/.yarn/releases
+!frontend/.yarn/versions
 frontend/.next/
 frontend/out/
+frontend/build/
 frontend/coverage/
+frontend/.vercel/
 frontend/.eslintcache
+frontend/*.pem
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
 
 ### Frontend env ###
 frontend/.env
@@ -58,6 +70,7 @@ frontend/.env.local
 frontend/.env.development.local
 frontend/.env.production.local
 frontend/.env.test.local
+frontend/.env*
 
 ### Spring local properties ###
 src/main/resources/application-*.properties

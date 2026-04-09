@@ -132,6 +132,12 @@ If any future design note below conflicts with the current implementation direct
 - Frontend map search UX
   - current area search button is locale-aware
   - result count cards are shown in the bottom panel, not duplicated on the map header
+  - brand area click and sidebar `Home` reset the screen to the initial home state without a full reload
+  - sidebar includes a `Kakao Map` link:
+    - default state opens `https://map.kakao.com/`
+    - active search/map/selection state opens Kakao Map using the current map center
+  - sidebar policy copy explicitly states that the service does not store user movement paths, search history, searched areas, or user coordinates on the server
+  - sidebar policy copy also states that guest-created information may be reset by browser conditions or operating policy
   - over-limit toast is split by source:
     - keyword search: suggest adding a region
     - current-area search: suggest adjusting the map or using keyword search
@@ -139,6 +145,10 @@ If any future design note below conflicts with the current implementation direct
   - current toast architecture uses a `toast catalog + explicit event trigger` pattern
   - UI copy for toast messages is defined centrally, and each feature triggers only the toast key it needs
   - asynchronous flows should queue a toast by action source and display it once after the request finishes
+  - `page.js` responsibility split has started:
+    - header UI moved to `frontend/app/components/home/HeaderBar.js`
+    - toast UI moved to `frontend/app/components/home/SearchResultNotice.js`
+    - search loading overlay moved to `frontend/app/components/home/SearchLoadingOverlay.js`
 - Preferred cafe save
   - current entry point: `POST /api/cafes`
   - current behavior: upsert selected cafe, then collect nearby cafes and upsert them into `cafe`

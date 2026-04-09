@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 import coffeebaraLogo from "../../coffeebara-logo.png";
@@ -27,6 +28,7 @@ export default function HeaderBar({
   searchInput,
   onSearchInputChange,
   onSearchSubmit,
+  onHomeClick,
   isSidebarOpen,
   onToggleSidebar,
   locale,
@@ -47,25 +49,31 @@ export default function HeaderBar({
         <div className="flex min-w-0 items-center gap-3">
           <HamburgerButton isOpen={isSidebarOpen} onClick={onToggleSidebar} messages={messages} />
 
-          <div className="relative h-11 w-11 overflow-hidden rounded-2xl border border-[#dbcab8] bg-white shadow-[0_10px_24px_rgba(84,52,27,0.08)]">
-            <Image
-              src={coffeebaraLogo}
-              alt={messages.logoAlt}
-              fill
-              sizes="44px"
-              className="object-cover"
-              priority
-            />
-          </div>
+          <Link
+            href="/"
+            onClick={onHomeClick}
+            className="flex min-w-0 items-center gap-3 rounded-2xl outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#cdb8a6] focus-visible:ring-offset-2"
+          >
+            <div className="relative h-11 w-11 overflow-hidden rounded-2xl border border-[#dbcab8] bg-white shadow-[0_10px_24px_rgba(84,52,27,0.08)]">
+              <Image
+                src={coffeebaraLogo}
+                alt={messages.logoAlt}
+                fill
+                sizes="44px"
+                className="object-cover"
+                priority
+              />
+            </div>
 
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8f725d]">
-              Coffeebara
-            </p>
-            <h1 className="truncate text-lg font-semibold text-[#241813]">
-              {messages.headerTitle}
-            </h1>
-          </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8f725d]">
+                Coffeebara
+              </p>
+              <h1 className="truncate text-lg font-semibold text-[#241813]">
+                {messages.headerTitle}
+              </h1>
+            </div>
+          </Link>
         </div>
 
         <div className="ml-auto hidden items-center gap-3 md:flex">

@@ -374,6 +374,15 @@ function getMapBoundsParams(map) {
   });
 }
 
+function getMapCenter(map) {
+  const center = map.getCenter();
+
+  return {
+    lat: Number(center.getLat()),
+    lng: Number(center.getLng()),
+  };
+}
+
 async function fetchCafeDocuments(pathname, params) {
   const response = await fetch(`${API_BASE_URL}${pathname}?${params.toString()}`, {
     method: "GET",
@@ -589,9 +598,11 @@ export default function KakaoMap({
   onToggleFavorite,
   searchQuery,
   searchRequestVersion,
+  resetViewVersion,
   onSelectPlace,
   activePlaceId,
   onSearchResultsChange,
+  onViewportChange,
   isSidebarOpen,
   onStartCurrentAreaSearch,
   messages,
@@ -699,6 +710,14 @@ export default function KakaoMap({
   }, [favoriteCafeIds, onToggleFavorite, onSelectPlace]);
 
   useEffect(() => {
+    if (!mapInstanceRef.current) {
+      return;
+    }
+
+    onViewportChange?.(getMapCenter(mapInstanceRef.current));
+  }, [onViewportChange, status, normalizedSearchQuery, selectedPlaceId]);
+
+  useEffect(() => {
     onSearchResultsChange?.({
       results: (normalizedSearchQuery ? sortedSearchPlaces : sortedMapPlaces).map(toFavoriteCafe),
       visibleCount: displayedPlaces.length,
@@ -779,6 +798,10 @@ export default function KakaoMap({
           center,
           level: DEFAULT_LEVEL,
         });
+        onViewportChange?.({
+          lat: DEFAULT_CENTER.lat,
+          lng: DEFAULT_CENTER.lng,
+        });
         map.setMaxLevel(MAX_ZOOM_OUT_LEVEL);
 
         const infoWindow = new kakao.maps.InfoWindow({
@@ -799,6 +822,7 @@ export default function KakaoMap({
 
         const searchVisibleCafes = async () => {
           if (normalizedSearchQueryRef.current || isCurrentAreaModeRef.current) {
+            onViewportChange?.(getMapCenter(map));
             return;
           }
 
@@ -808,6 +832,7 @@ export default function KakaoMap({
 
           setMapPlaces([]);
           setStatus("ready");
+          onViewportChange?.(getMapCenter(map));
         };
 
         const clearSelectionFromMap = () => {
@@ -880,7 +905,39 @@ export default function KakaoMap({
       dragStartListenerRef.current = null;
       selectedPlaceRef.current = null;
     };
-  }, [appKey]);
+  }, [appKey, onViewportChange]);
+
+  useEffect(() => {
+    if (!window.kakao?.maps || !mapInstanceRef.current || resetViewVersion <= 0) {
+      return;
+    }
+
+    const kakao = window.kakao;
+    const map = mapInstanceRef.current;
+    const resetTimerId = window.setTimeout(() => {
+      setSearchPlaces([]);
+      setMapPlaces([]);
+      setStatus("ready");
+      setErrorMessage("");
+      clearSelection();
+    }, 0);
+
+    searchRequestIdRef.current += 1;
+    shouldFocusSearchResultsRef.current = true;
+    normalizedSearchQueryRef.current = "";
+    isCurrentAreaModeRef.current = false;
+    currentViewModeRef.current = "idle";
+    map.setLevel(DEFAULT_LEVEL);
+    map.panTo(new kakao.maps.LatLng(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng));
+    onViewportChange?.({
+      lat: DEFAULT_CENTER.lat,
+      lng: DEFAULT_CENTER.lng,
+    });
+
+    return () => {
+      window.clearTimeout(resetTimerId);
+    };
+  }, [onViewportChange, resetViewVersion]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !window.kakao?.maps) {
@@ -1057,6 +1114,10 @@ export default function KakaoMap({
     );
 
     mapInstanceRef.current.panTo(targetEntry.marker.getPosition());
+    onViewportChange?.({
+      lat: Number(targetEntry.place.y),
+      lng: Number(targetEntry.place.x),
+    });
     infoWindowRef.current?.setContent(content);
     infoWindowRef.current?.open(mapInstanceRef.current, targetEntry.marker);
   };
@@ -1093,9 +1154,13 @@ export default function KakaoMap({
     );
 
     mapInstanceRef.current.panTo(targetEntry.marker.getPosition());
+    onViewportChange?.({
+      lat: Number(targetEntry.place.y),
+      lng: Number(targetEntry.place.x),
+    });
     infoWindowRef.current?.setContent(content);
     infoWindowRef.current?.open(mapInstanceRef.current, targetEntry.marker);
-  }, [activePlaceId, displayedPlaces, normalizedSearchQuery]);
+  }, [activePlaceId, displayedPlaces, normalizedSearchQuery, onViewportChange]);
 
   return (
     <div className="relative h-full min-h-[420px] w-full sm:min-h-[520px]">

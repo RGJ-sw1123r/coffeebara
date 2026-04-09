@@ -13,6 +13,7 @@ const MIN_RECOMMENDATION_READY_COUNT = 3;
 const SEARCH_RESULT_PANEL_LIMIT = 10;
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
+const DEFAULT_MAP_VIEW = { lat: 37.566826, lng: 126.9786567 };
 
 function buildFriendlyBackendErrorMessage(errorCode, fallbackMessage, cafeName, messages) {
   const cafeLabel = cafeName ? `"${cafeName}"` : messages.selectedCafeLabel;
@@ -193,6 +194,56 @@ function SimilarTasteSection({ favoriteCount, messages }) {
   );
 }
 
+function SidebarPolicySection({ messages }) {
+  const privacyNoticeTitle = messages.privacyNoticeTitle ?? "개인정보 처리 안내";
+  const privacyNoticeBody =
+    messages.privacyNoticeBody ??
+    "커피바라는 사용자를 직접 식별할 수 있는 정보와 사용자 동선, 검색 내역, 검색 지역, 사용자 좌표를 서버에 저장하지 않습니다.";
+  const guestNoticeTitle = messages.guestNoticeTitle ?? "게스트 이용 안내";
+  const guestNoticeBody =
+    messages.guestNoticeBody ??
+    "게스트로 이용하는 동안 생성된 정보는 브라우저 환경이나 운영 정책에 따라 초기화될 수 있습니다.";
+  const dataPolicyTitle = messages.dataPolicyTitle ?? "데이터 수집 안내";
+  const dataPolicyBody =
+    messages.dataPolicyBody ??
+    "카페 정보는 공식 API를 우선 사용하고, 추가 수집이 필요한 경우 공개 범위와 이용 정책, robots 설정을 확인한 뒤 필요한 최소 정보만 처리합니다.";
+
+  return (
+    <div className="mt-4 border-t border-white/10 pt-4">
+      <div className="space-y-3 text-xs leading-5 text-[#d9c3b4]">
+        <div>
+          <p className="font-semibold text-[#fff3e8]">{privacyNoticeTitle}</p>
+          <p className="mt-1">{privacyNoticeBody}</p>
+        </div>
+        <div>
+          <p className="font-semibold text-[#fff3e8]">{guestNoticeTitle}</p>
+          <p className="mt-1">{guestNoticeBody}</p>
+        </div>
+        <div>
+          <p className="font-semibold text-[#fff3e8]">{dataPolicyTitle}</p>
+          <p className="mt-1">{dataPolicyBody}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SidebarMapLink({ kakaoMapUrl }) {
+  return (
+    <div className="mt-4 border-t border-white/10 pt-4">
+      <a
+        href={kakaoMapUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="flex w-full items-center justify-between rounded-2xl bg-white/8 px-3 py-3 text-sm font-semibold text-[#fff7f0] transition hover:bg-white/12"
+      >
+        <span>Kakao Map</span>
+        <span className="text-[#d8b89f]">↗</span>
+      </a>
+    </div>
+  );
+}
+
 function BackendSyncSection({ status, fetchedCount, totalCount, errorMessage, isVisible, messages }) {
   if (!isVisible) {
     return null;
@@ -245,7 +296,9 @@ function BackendSyncBanner({ status, errorMessage, messages }) {
 function SidebarContent({
   favoriteCafes,
   onClose,
+  onHomeClick,
   onRemoveFavorite,
+  kakaoMapUrl,
   isDesktop = false,
   messages,
 }) {
@@ -256,6 +309,19 @@ function SidebarContent({
   return (
     <div className={wrapperClassName}>
       <section className="rounded-[24px] bg-[#2f221b] p-4 text-white shadow-[0_16px_40px_rgba(47,34,27,0.24)]">
+        <button
+          type="button"
+          onClick={onHomeClick}
+          className="flex w-full items-center gap-3 rounded-2xl bg-white/8 px-3 py-3 text-left text-sm font-semibold text-[#fff7f0] transition hover:bg-white/12"
+        >
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(255,248,241,0.12)] text-base leading-none text-[#f3d2b4]">
+            ⌂
+          </span>
+          <span>{messages.homeLabel ?? "Home"}</span>
+        </button>
+
+        <div className="my-4 border-b border-white/10" />
+
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d8b89f]">
           {messages.favoriteSectionTitle}
         </p>
@@ -301,6 +367,8 @@ function SidebarContent({
         </div>
 
         <SimilarTasteSection favoriteCount={favoriteCafes.length} messages={messages} />
+        <SidebarMapLink kakaoMapUrl={kakaoMapUrl} />
+        <SidebarPolicySection messages={messages} />
       </section>
     </div>
   );
@@ -310,7 +378,9 @@ function Sidebar({
   favoriteCafes,
   isOpen,
   onClose,
+  onHomeClick,
   onRemoveFavorite,
+  kakaoMapUrl,
   messages,
 }) {
   if (!isOpen) {
@@ -329,7 +399,9 @@ function Sidebar({
         <SidebarContent
           favoriteCafes={favoriteCafes}
           onClose={onClose}
+          onHomeClick={onHomeClick}
           onRemoveFavorite={onRemoveFavorite}
+          kakaoMapUrl={kakaoMapUrl}
           messages={messages}
         />
       </aside>
@@ -340,7 +412,9 @@ function Sidebar({
 function DesktopSidebar({
   favoriteCafes,
   isOpen,
+  onHomeClick,
   onRemoveFavorite,
+  kakaoMapUrl,
   messages,
 }) {
   if (!isOpen) {
@@ -352,7 +426,9 @@ function DesktopSidebar({
       <div className="pointer-events-auto sticky top-[104px] h-[calc(100vh-128px)] overflow-y-auto pr-2 -mr-2 [scrollbar-gutter:stable]">
         <SidebarContent
           favoriteCafes={favoriteCafes}
+          onHomeClick={onHomeClick}
           onRemoveFavorite={onRemoveFavorite}
+          kakaoMapUrl={kakaoMapUrl}
           isDesktop
           messages={messages}
         />
@@ -386,9 +462,11 @@ function MapPanelV2({
   onToggleFavorite,
   searchQuery,
   searchRequestVersion,
+  resetViewVersion,
   onSelectPlace,
   activePlaceId,
   onSearchResultsChange,
+  onViewportChange,
   isSidebarOpen,
   noticeState,
   onCloseNotice,
@@ -429,9 +507,11 @@ function MapPanelV2({
           onToggleFavorite={onToggleFavorite}
           searchQuery={searchQuery}
           searchRequestVersion={searchRequestVersion}
+          resetViewVersion={resetViewVersion}
           onSelectPlace={onSelectPlace}
           activePlaceId={activePlaceId}
           onSearchResultsChange={onSearchResultsChange}
+          onViewportChange={onViewportChange}
           isSidebarOpen={isSidebarOpen}
           onStartCurrentAreaSearch={onStartCurrentAreaSearch}
           messages={messages}
@@ -624,6 +704,8 @@ export default function Home() {
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchRequestVersion, setSearchRequestVersion] = useState(0);
+  const [resetViewVersion, setResetViewVersion] = useState(0);
+  const [mapViewport, setMapViewport] = useState(DEFAULT_MAP_VIEW);
   const [selectedCafe, setSelectedCafe] = useState(null);
   const [activePlaceId, setActivePlaceId] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -980,12 +1062,61 @@ export default function Home() {
     setActivePlaceId("");
   };
 
+  const handleResetHomeView = (event) => {
+    event?.preventDefault?.();
+    setSearchInput("");
+    setSearchQuery("");
+    setSelectedCafe(null);
+    setActivePlaceId("");
+    setIsSidebarOpen(false);
+    setNoticeState(null);
+    setPendingToastSource("idle");
+    setPendingToastKey("");
+    setPendingToastToken(0);
+    setMapViewport(DEFAULT_MAP_VIEW);
+    setSearchState({
+      results: [],
+      visibleCount: 0,
+      totalCount: 0,
+      hiddenCount: 0,
+      isSearching: false,
+      source: "idle",
+      status: "idle",
+      errorMessage: "",
+    });
+    setResetViewVersion((current) => current + 1);
+  };
+
+  const kakaoMapUrl = useMemo(() => {
+    const hasActiveMapContext =
+      Boolean(searchQuery.trim()) ||
+      searchState.source === "map" ||
+      Boolean(selectedCafe) ||
+      Boolean(activePlaceId);
+
+    if (!hasActiveMapContext) {
+      return "https://map.kakao.com/";
+    }
+
+    if (
+      typeof mapViewport?.lat !== "number" ||
+      Number.isNaN(mapViewport.lat) ||
+      typeof mapViewport?.lng !== "number" ||
+      Number.isNaN(mapViewport.lng)
+    ) {
+      return "https://map.kakao.com/";
+    }
+
+    return `https://map.kakao.com/link/map/${mapViewport.lat},${mapViewport.lng}`;
+  }, [activePlaceId, mapViewport, searchQuery, searchState.source, selectedCafe]);
+
   return (
     <div className="min-h-screen bg-[#fffaf5] text-[#241813]">
       <HeaderBar
         searchInput={searchInput}
         onSearchInputChange={setSearchInput}
         onSearchSubmit={handleSearchSubmit}
+        onHomeClick={handleResetHomeView}
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen((current) => !current)}
         locale={locale}
@@ -1003,7 +1134,9 @@ export default function Home() {
         favoriteCafes={favoriteCafes}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        onHomeClick={handleResetHomeView}
         onRemoveFavorite={handleRemoveFavorite}
+        kakaoMapUrl={kakaoMapUrl}
         messages={messages}
       />
 
@@ -1012,7 +1145,9 @@ export default function Home() {
             <DesktopSidebar
               favoriteCafes={favoriteCafes}
               isOpen={isSidebarOpen}
+              onHomeClick={handleResetHomeView}
               onRemoveFavorite={handleRemoveFavorite}
+              kakaoMapUrl={kakaoMapUrl}
               messages={messages}
             />
 
@@ -1029,9 +1164,11 @@ export default function Home() {
               onToggleFavorite={handleToggleFavorite}
               searchQuery={searchQuery}
               searchRequestVersion={searchRequestVersion}
+              resetViewVersion={resetViewVersion}
               onSelectPlace={handleSelectCafe}
               activePlaceId={activePlaceId}
               onSearchResultsChange={setSearchState}
+              onViewportChange={setMapViewport}
               isSidebarOpen={isSidebarOpen}
               noticeState={noticeState}
               onCloseNotice={() => setNoticeState(null)}

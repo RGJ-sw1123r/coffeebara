@@ -50,9 +50,19 @@ const messages = {
     similarTasteNeedMore: (count) =>
       `최소 ${count}곳 이상 고르면 취향 추천을 시작할 수 있습니다.`,
     favoriteSectionTitle: "내 취향 카페",
+    homeLabel: "Home",
     closeButton: "닫기",
     removeFavoriteAriaLabel: (name) => `${name} 즐겨찾기 해제`,
     noFavoriteCafes: "아직 고른 카페가 없습니다.",
+    privacyNoticeTitle: "개인정보 처리 안내",
+    privacyNoticeBody:
+      "커피바라는 사용자를 직접 식별할 수 있는 정보와 사용자 동선, 검색 내역, 검색 지역, 사용자 좌표를 서버에 저장하지 않습니다.",
+    guestNoticeTitle: "게스트 이용 안내",
+    guestNoticeBody:
+      "게스트로 이용하는 동안 생성된 정보는 브라우저 환경이나 운영 정책에 따라 초기화될 수 있습니다.",
+    dataPolicyTitle: "데이터 수집 안내",
+    dataPolicyBody:
+      "카페 정보는 공식 API를 우선 사용하고, 추가 수집이 필요한 경우 공개 범위와 이용 정책, robots 설정을 확인한 뒤 필요한 최소 정보만 처리합니다.",
     backendSyncTitle: "백엔드 조회",
     backendSyncDescription:
       "로컬 스토리지에 저장한 카페를 기준으로 백엔드에서 최신 카페 정보를 다시 불러옵니다.",
@@ -130,9 +140,19 @@ const messages = {
     similarTasteNeedMore: (count) =>
       `Select at least ${count} cafes to start taste recommendations.`,
     favoriteSectionTitle: "Preferred Cafes",
+    homeLabel: "Home",
     closeButton: "Close",
     removeFavoriteAriaLabel: (name) => `Remove ${name} from favorites`,
     noFavoriteCafes: "No cafes selected yet.",
+    privacyNoticeTitle: "Privacy Notice",
+    privacyNoticeBody:
+      "Coffeebara does not store directly identifiable personal information, user movement paths, search history, searched areas, or user coordinates on the server.",
+    guestNoticeTitle: "Guest Mode Notice",
+    guestNoticeBody:
+      "Information created during guest use may be reset depending on browser conditions or operating policy changes.",
+    dataPolicyTitle: "Data Collection Notice",
+    dataPolicyBody:
+      "Cafe data is collected from official APIs first. If additional collection is needed, only the minimum necessary public information is handled after checking scope, usage policy, and robots settings.",
     backendSyncTitle: "Backend Sync",
     backendSyncDescription:
       "Reload the latest cafe data from the backend based on cafes saved in local storage.",
@@ -237,6 +257,16 @@ const messages = {
       "カフェ情報の読み込み中に予期しない問題が発生しました。",
     saveUnexpectedError:
       "選択したカフェの保存中に予期しない問題が発生しました。",
+    homeLabel: "Home",
+    privacyNoticeTitle: "個人情報のご案内",
+    privacyNoticeBody:
+      "コーヒーバラは、個人を直接識別できる情報、ユーザーの移動経路、検索履歴、検索した地域、ユーザー座標をサーバーに保存しません。",
+    guestNoticeTitle: "ゲスト利用のご案内",
+    guestNoticeBody:
+      "ゲスト利用中に作成された情報は、ブラウザ環境や運用ポリシーにより初期化されることがあります。",
+    dataPolicyTitle: "データ収集のご案内",
+    dataPolicyBody:
+      "カフェ情報は公式 API を優先して利用し、追加収集が必要な場合は公開範囲、利用ポリシー、robots 設定を確認したうえで必要最小限の情報のみを扱います。",
   },
 };
 

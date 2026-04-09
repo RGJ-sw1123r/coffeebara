@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const DEFAULT_CENTER = { lat: 37.566826, lng: 126.9786567 };
 const DEFAULT_LEVEL = 7;
-const CAFE_CATEGORY_CODE = "CE7";
-const SEARCH_PREVIEW_LIMIT = 8;
+const MAX_ZOOM_OUT_LEVEL = 8;
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
 let kakaoMapSdkPromise = null;
 const DEFAULT_MARKER_Z_INDEX = 1;
 const ACTIVE_MARKER_Z_INDEX = 1000;
@@ -34,7 +35,7 @@ function getSearchTokens(value) {
 }
 
 function buildKakaoSdkUrl(appKey) {
-  return `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false&libraries=services`;
+  return `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false`;
 }
 
 function applyMarkerPriority(markerEntries, selectedPlaceId) {
@@ -54,14 +55,6 @@ function resolveKakaoWhenReady(resolve, reject) {
   }
 
   window.kakao.maps.load(() => {
-    if (!window.kakao?.maps?.services) {
-      kakaoMapSdkPromise = null;
-      reject(
-        new Error("Kakao Map SDK loaded, but map services are unavailable."),
-      );
-      return;
-    }
-
     resolve(window.kakao);
   });
 }
@@ -77,7 +70,7 @@ function loadKakaoMapSdk(appKey) {
     return Promise.reject(new Error("Kakao Map key is missing."));
   }
 
-  if (window.kakao?.maps?.load && window.kakao?.maps?.services) {
+  if (window.kakao?.maps?.load) {
     return Promise.resolve(window.kakao);
   }
 
@@ -369,116 +362,50 @@ function createInfoContent(place, isFavorite, onToggleFavorite) {
   return wrap;
 }
 
-function fetchCategoryPage(places, options) {
-  return new Promise((resolve) => {
-    places.categorySearch(
-      CAFE_CATEGORY_CODE,
-      (data, status, pagination) => {
-        resolve({ data, status, pagination });
-      },
-      options,
-    );
+function getMapBoundsParams(map) {
+  const bounds = map.getBounds();
+  const southWest = bounds.getSouthWest();
+  const northEast = bounds.getNorthEast();
+
+  return new URLSearchParams({
+    swLat: String(southWest.getLat()),
+    swLng: String(southWest.getLng()),
+    neLat: String(northEast.getLat()),
+    neLng: String(northEast.getLng()),
   });
 }
 
-function fetchKeywordPage(places, query, options) {
-  return new Promise((resolve) => {
-    places.keywordSearch(
-      query,
-      (data, status, pagination) => {
-        resolve({ data, status, pagination });
-      },
-      options,
-    );
+async function fetchCafeDocuments(pathname, params) {
+  const response = await fetch(`${API_BASE_URL}${pathname}?${params.toString()}`, {
+    method: "GET",
+    credentials: "same-origin",
   });
-}
 
-async function fetchAllVisibleCafes(places, kakao) {
-  const collected = [];
-  const seenIds = new Set();
-  let page = 1;
-
-  while (true) {
-    const { data, status, pagination } = await fetchCategoryPage(places, {
-      useMapBounds: true,
-      page,
-      size: 15,
-    });
-
-    if (status === kakao.maps.services.Status.ZERO_RESULT) {
-      return [];
-    }
-
-    if (status !== kakao.maps.services.Status.OK) {
-      throw new Error("Failed to load places from Kakao.");
-    }
-
-    data.forEach((place) => {
-      const placeId = String(place.id);
-
-      if (seenIds.has(placeId)) {
-        return;
-      }
-
-      seenIds.add(placeId);
-      collected.push(place);
-    });
-
-    if (!pagination?.hasNextPage) {
-      return collected;
-    }
-
-    page += 1;
+  if (!response.ok) {
+    throw new Error("카페 데이터를 불러오지 못했습니다.");
   }
+
+  const payload = await response.json();
+  return Array.isArray(payload?.documents) ? payload.documents : [];
 }
 
-async function fetchKeywordResults(places, kakao, query) {
+async function fetchAllVisibleCafes(map) {
+  return fetchCafeDocuments("/api/cafes/map", getMapBoundsParams(map));
+}
+
+function buildKeywordSearchCacheKey(query) {
+  return `keyword-search|${normalizeSearchQuery(query)}`;
+}
+
+async function fetchKeywordResults(query) {
   const normalizedQuery = normalizeSearchQuery(query);
 
   if (!normalizedQuery) {
     return [];
   }
 
-  const collected = [];
-  const seenIds = new Set();
-  let page = 1;
-
-  while (true) {
-    const { data, status, pagination } = await fetchKeywordPage(
-      places,
-      normalizedQuery,
-      {
-        page,
-        size: 15,
-        category_group_code: CAFE_CATEGORY_CODE,
-      },
-    );
-
-    if (status === kakao.maps.services.Status.ZERO_RESULT) {
-      return [];
-    }
-
-    if (status !== kakao.maps.services.Status.OK) {
-      throw new Error("Failed to search places from Kakao.");
-    }
-
-    data.forEach((place) => {
-      const placeId = String(place.id);
-
-      if (seenIds.has(placeId)) {
-        return;
-      }
-
-      seenIds.add(placeId);
-      collected.push(place);
-    });
-
-    if (!pagination?.hasNextPage) {
-      return collected;
-    }
-
-    page += 1;
-  }
+  const params = new URLSearchParams({ query: normalizedQuery });
+  return fetchCafeDocuments("/api/cafes/search", params);
 }
 
 function rankKeywordResults(places, query) {
@@ -514,42 +441,6 @@ function rankKeywordResults(places, query) {
   return relevantPlaces.length > 0 ? relevantPlaces : rankedPlaces;
 }
 
-function buildSearchPreviewPlaces(places) {
-  if (places.length <= SEARCH_PREVIEW_LIMIT) {
-    return places;
-  }
-
-  const selected = [];
-  const areaKeys = new Set();
-
-  for (const place of places) {
-    const areaKey = getPlaceArea(place);
-
-    if (!areaKeys.has(areaKey)) {
-      selected.push(place);
-      areaKeys.add(areaKey);
-    }
-
-    if (selected.length === SEARCH_PREVIEW_LIMIT) {
-      return selected;
-    }
-  }
-
-  for (const place of places) {
-    if (selected.some((entry) => String(entry.id) === String(place.id))) {
-      continue;
-    }
-
-    selected.push(place);
-
-    if (selected.length === SEARCH_PREVIEW_LIMIT) {
-      return selected;
-    }
-  }
-
-  return selected;
-}
-
 function fitMapToPlaces(kakao, map, places) {
   if (!places.length) {
     return;
@@ -570,6 +461,33 @@ function fitMapToPlaces(kakao, map, places) {
   });
 
   map.setBounds(bounds);
+}
+
+function focusMapToPrimaryPlace(kakao, map, places) {
+  if (!places.length) {
+    return;
+  }
+
+  map.setLevel(4);
+  map.panTo(new kakao.maps.LatLng(Number(places[0].y), Number(places[0].x)));
+}
+
+function roundBoundValue(value) {
+  return Number(value).toFixed(4);
+}
+
+function buildBoundsCacheKey(map, query = "") {
+  const bounds = map.getBounds();
+  const southWest = bounds.getSouthWest();
+  const northEast = bounds.getNorthEast();
+
+  return [
+    normalizeSearchQuery(query),
+    roundBoundValue(southWest.getLat()),
+    roundBoundValue(southWest.getLng()),
+    roundBoundValue(northEast.getLat()),
+    roundBoundValue(northEast.getLng()),
+  ].join("|");
 }
 
 function MarkerList({
@@ -671,6 +589,7 @@ export default function KakaoMap({
   favoriteCafes,
   onToggleFavorite,
   searchQuery,
+  searchRequestVersion,
   onSelectPlace,
   activePlaceId,
   onSearchResultsChange,
@@ -684,12 +603,12 @@ export default function KakaoMap({
   const mapClickListenerRef = useRef(null);
   const dragStartListenerRef = useRef(null);
   const selectedPlaceRef = useRef(null);
-  const placesServiceRef = useRef(null);
   const favoriteCafeIdsRef = useRef(new Set());
   const onToggleFavoriteRef = useRef(onToggleFavorite);
   const onSelectPlaceRef = useRef(onSelectPlace);
   const normalizedSearchQueryRef = useRef("");
   const searchRequestIdRef = useRef(0);
+  const responseCacheRef = useRef(new Map());
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [mapPlaces, setMapPlaces] = useState([]);
@@ -712,15 +631,11 @@ export default function KakaoMap({
     () => rankKeywordResults(searchPlaces, normalizedSearchQuery),
     [normalizedSearchQuery, searchPlaces],
   );
-  const previewSearchPlaces = useMemo(
-    () => buildSearchPreviewPlaces(sortedSearchPlaces),
-    [sortedSearchPlaces],
-  );
   const displayedPlaces = normalizedSearchQuery
-    ? previewSearchPlaces
+    ? sortedSearchPlaces
     : sortedMapPlaces;
   const hiddenSearchResultCount = normalizedSearchQuery
-    ? Math.max(sortedSearchPlaces.length - previewSearchPlaces.length, 0)
+    ? 0
     : 0;
 
   const clearSelection = () => {
@@ -818,47 +733,35 @@ export default function KakaoMap({
           center,
           level: DEFAULT_LEVEL,
         });
+        map.setMaxLevel(MAX_ZOOM_OUT_LEVEL);
 
         const infoWindow = new kakao.maps.InfoWindow({
           removable: true,
           zIndex: INFO_WINDOW_Z_INDEX,
         });
         const zoomControl = new kakao.maps.ZoomControl();
-        const places = new kakao.maps.services.Places(map);
 
         map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+        kakao.maps.event.addListener(map, "zoom_changed", () => {
+          if (map.getLevel() > MAX_ZOOM_OUT_LEVEL) {
+            map.setLevel(MAX_ZOOM_OUT_LEVEL);
+          }
+        });
 
         mapInstanceRef.current = map;
         infoWindowRef.current = infoWindow;
-        placesServiceRef.current = places;
 
         const searchVisibleCafes = async () => {
           if (normalizedSearchQueryRef.current) {
             return;
           }
 
-          setStatus("loading");
-
-          try {
-            const results = await fetchAllVisibleCafes(places, kakao);
-
-            if (cancelled) {
-              return;
-            }
-
-            setMapPlaces(results);
-            setStatus("ready");
-          } catch (error) {
-            if (cancelled) {
-              return;
-            }
-
-            setErrorMessage(
-              error instanceof Error ? error.message : "Unknown error",
-            );
-            setMapPlaces([]);
-            setStatus("error");
+          if (cancelled) {
+            return;
           }
+
+          setMapPlaces([]);
+          setStatus("ready");
         };
 
         const clearSelectionFromMap = () => {
@@ -930,12 +833,11 @@ export default function KakaoMap({
       mapClickListenerRef.current = null;
       dragStartListenerRef.current = null;
       selectedPlaceRef.current = null;
-      placesServiceRef.current = null;
     };
   }, [appKey]);
 
   useEffect(() => {
-    if (!placesServiceRef.current || !window.kakao?.maps) {
+    if (!mapInstanceRef.current || !window.kakao?.maps) {
       return;
     }
 
@@ -954,11 +856,9 @@ export default function KakaoMap({
       setErrorMessage("");
 
       try {
-        const results = await fetchKeywordResults(
-          placesServiceRef.current,
-          window.kakao,
-          normalizedSearchQuery,
-        );
+        const cacheKey = buildKeywordSearchCacheKey(normalizedSearchQuery);
+        const results = await fetchKeywordResults(normalizedSearchQuery);
+        responseCacheRef.current.set(cacheKey, results);
 
         if (cancelled || requestId !== searchRequestIdRef.current) {
           return;
@@ -984,48 +884,20 @@ export default function KakaoMap({
     return () => {
       cancelled = true;
     };
-  }, [normalizedSearchQuery]);
+  }, [normalizedSearchQuery, searchRequestVersion]);
 
   useEffect(() => {
-    if (normalizedSearchQuery || !placesServiceRef.current || !window.kakao?.maps) {
+    if (normalizedSearchQuery || !mapInstanceRef.current || !window.kakao?.maps) {
       return;
     }
 
-    let cancelled = false;
-
-    async function refreshVisibleCafes() {
-      setStatus("loading");
-      setErrorMessage("");
-
-      try {
-        const results = await fetchAllVisibleCafes(
-          placesServiceRef.current,
-          window.kakao,
-        );
-
-        if (cancelled) {
-          return;
-        }
-
-        setMapPlaces(results);
-        setStatus("ready");
-      } catch (error) {
-        if (cancelled) {
-          return;
-        }
-
-        setErrorMessage(
-          error instanceof Error ? error.message : "Unknown error",
-        );
-        setMapPlaces([]);
-        setStatus("error");
-      }
-    }
-
-    refreshVisibleCafes();
+    const timerId = window.setTimeout(() => {
+      setMapPlaces([]);
+      setStatus("ready");
+    }, 0);
 
     return () => {
-      cancelled = true;
+      window.clearTimeout(timerId);
     };
   }, [normalizedSearchQuery]);
 
@@ -1075,8 +947,8 @@ export default function KakaoMap({
 
     applyMarkerPriority(markerEntriesRef.current, selectedPlaceId);
 
-    if (normalizedSearchQuery) {
-      fitMapToPlaces(kakao, map, displayedPlaces);
+    if (normalizedSearchQuery && !selectedPlaceId) {
+      focusMapToPrimaryPlace(kakao, map, displayedPlaces);
     }
 
     const selectedEntry = markerEntriesRef.current.find(

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.coffeebara.cafe.mapper.CafeMapper">
+
+  <select id="findByKakaoPlaceId" parameterType="string" resultType="map">
+    SELECT
+      kakao_place_id AS kakaoPlaceId,
+      place_name AS placeName,
+      category_name AS categoryName,
+      phone,
+      address_name AS addressName,
+      road_address_name AS roadAddressName,
+      longitude,
+      latitude,
+      place_url AS placeUrl,
+      last_fetched_at AS lastFetchedAt,
+      next_refresh_at AS nextRefreshAt
+    FROM cafe
+    WHERE kakao_place_id = #{kakaoPlaceId}
+  </select>
+
+  <insert id="upsert" parameterType="map">
+    INSERT INTO cafe (
+      kakao_place_id,
+      place_name,
+      category_name,
+      phone,
+      address_name,
+      road_address_name,
+      longitude,
+      latitude,
+      place_url,
+      last_fetched_at,
+      next_refresh_at
+    ) VALUES (
+      #{kakaoPlaceId},
+      #{placeName},
+      #{categoryName},
+      #{phone},
+      #{addressName},
+      #{roadAddressName},
+      #{longitude},
+      #{latitude},
+      #{placeUrl},
+      #{lastFetchedAt},
+      #{nextRefreshAt}
+    )
+    ON DUPLICATE KEY UPDATE
+      place_name = VALUES(place_name),
+      category_name = VALUES(category_name),
+      phone = VALUES(phone),
+      address_name = VALUES(address_name),
+      road_address_name = VALUES(road_address_name),
+      longitude = VALUES(longitude),
+      latitude = VALUES(latitude),
+      place_url = VALUES(place_url),
+      last_fetched_at = VALUES(last_fetched_at),
+      next_refresh_at = VALUES(next_refresh_at)
+  </insert>
+
+  <insert id="upsertBatch" parameterType="list">
+    INSERT INTO cafe (
+      kakao_place_id,
+      place_name,
+      category_name,
+      phone,
+      address_name,
+      road_address_name,
+      longitude,
+      latitude,
+      place_url,
+      last_fetched_at,
+      next_refresh_at
+    ) VALUES
+    <foreach collection="list" item="cafe" separator=",">
+      (
+        #{cafe.kakaoPlaceId},
+        #{cafe.placeName},
+        #{cafe.categoryName},
+        #{cafe.phone},
+        #{cafe.addressName},
+        #{cafe.roadAddressName},
+        #{cafe.longitude},
+        #{cafe.latitude},
+        #{cafe.placeUrl},
+        #{cafe.lastFetchedAt},
+        #{cafe.nextRefreshAt}
+      )
+    </foreach>
+    ON DUPLICATE KEY UPDATE
+      place_name = VALUES(place_name),
+      category_name = VALUES(category_name),
+      phone = VALUES(phone),
+      address_name = VALUES(address_name),
+      road_address_name = VALUES(road_address_name),
+      longitude = VALUES(longitude),
+      latitude = VALUES(latitude),
+      place_url = VALUES(place_url),
+      last_fetched_at = VALUES(last_fetched_at),
+      next_refresh_at = VALUES(next_refresh_at)
+  </insert>
+
+</mapper>

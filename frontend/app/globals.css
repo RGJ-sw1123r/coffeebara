@@ -49,3 +49,21 @@ input {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+.search-progress-bar {
+  animation: search-progress-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes search-progress-slide {
+  0% {
+    transform: translateX(-130%);
+  }
+
+  50% {
+    transform: translateX(120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}

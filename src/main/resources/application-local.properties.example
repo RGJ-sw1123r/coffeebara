@@ -1,0 +1,17 @@
+kakao.local.rest-api-key=YOUR_KAKAO_REST_API_KEY
+app.search-cache.ttl-seconds=10
+spring.datasource.url=jdbc:p6spy:mariadb://localhost:3306/coffeebara?sslMode=trust
+spring.datasource.username=YOUR_DB_USERNAME
+spring.datasource.password=YOUR_DB_PASSWORD
+spring.datasource.driver-class-name=com.p6spy.engine.spy.P6SpyDriver
+spring.sql.init.mode=never
+spring.datasource.hikari.pool-name=CoffeebaraHikariPool
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.maximum-pool-size=20
+spring.datasource.hikari.connection-timeout=30000
+spring.datasource.hikari.validation-timeout=5000
+spring.datasource.hikari.idle-timeout=600000
+spring.datasource.hikari.max-lifetime=1800000
+spring.datasource.hikari.keepalive-time=300000
+spring.datasource.hikari.leak-detection-threshold=60000
+spring.datasource.hikari.connection-test-query=SELECT 1

@@ -8,7 +8,8 @@ import SearchLoadingOverlay from "./components/home/SearchLoadingOverlay";
 import SearchResultNotice from "./components/home/SearchResultNotice";
 import { getMessages } from "./messages";
 
-const STORAGE_KEY = "coffeebara.preferred-cafes";
+const STORAGE_KEY = "coffeebara.guestFavorites.v1";
+const LEGACY_STORAGE_KEY = "coffeebara.preferred-cafes";
 const MIN_RECOMMENDATION_READY_COUNT = 3;
 const SEARCH_RESULT_PANEL_LIMIT = 10;
 const API_BASE_URL =
@@ -753,19 +754,27 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
+      const stored =
+        window.localStorage.getItem(STORAGE_KEY) ??
+        window.localStorage.getItem(LEGACY_STORAGE_KEY);
 
       if (!stored) {
         return;
       }
 
       const parsed = JSON.parse(stored);
+      const normalizedFavorites = Array.isArray(parsed)
+        ? normalizeFavoriteCafes(parsed)
+        : [];
 
-      if (Array.isArray(parsed)) {
-        setFavoriteCafes(normalizeFavoriteCafes(parsed));
+      if (normalizedFavorites.length > 0 || Array.isArray(parsed)) {
+        setFavoriteCafes(normalizedFavorites);
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedFavorites));
+        window.localStorage.removeItem(LEGACY_STORAGE_KEY);
       }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
     } finally {
       setIsStorageReady(true);
     }

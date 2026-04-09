@@ -216,8 +216,8 @@ CREATE DATABASE coffeebara CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 스키마는 아래 둘 중 하나로 준비할 수 있습니다.
 
-- 수동 실행: [db/schema.sql](/E:/DevTeam/workspace/coffeebara/db/schema.sql)
-- 백엔드 초기화용: [src/main/resources/schema.sql](/E:/DevTeam/workspace/coffeebara/src/main/resources/schema.sql)
+- 수동 실행: `db/schema.sql`
+- 백엔드 초기화용: `src/main/resources/schema.sql`
 
 ### 2. 백엔드 설정
 

@@ -266,7 +266,7 @@ function isRelevantSearchResult(place, query) {
   return false;
 }
 
-function createInfoContent(place, isFavorite, onToggleFavorite) {
+function createInfoContent(place, isFavorite, onToggleFavorite, messages) {
   const wrap = document.createElement("div");
   wrap.style.width = "296px";
   wrap.style.overflow = "hidden";
@@ -294,7 +294,7 @@ function createInfoContent(place, isFavorite, onToggleFavorite) {
   title.style.color = "#241813";
 
   const category = document.createElement("div");
-  category.textContent = place.category_name || "카페";
+  category.textContent = place.category_name || messages?.cafeCategoryFallback || "카페";
   category.style.marginTop = "4px";
   category.style.fontSize = "12px";
   category.style.color = "#8f725d";
@@ -305,7 +305,10 @@ function createInfoContent(place, isFavorite, onToggleFavorite) {
   const favoriteButton = document.createElement("button");
   favoriteButton.type = "button";
   favoriteButton.textContent = isFavorite ? "★" : "+";
-  favoriteButton.setAttribute("aria-label", "내 취향 카페에 추가");
+  favoriteButton.setAttribute(
+    "aria-label",
+    messages?.favoriteAriaLabel || "내 취향 카페에 추가",
+  );
   favoriteButton.style.width = "34px";
   favoriteButton.style.height = "34px";
   favoriteButton.style.border = "none";
@@ -342,7 +345,7 @@ function createInfoContent(place, isFavorite, onToggleFavorite) {
     link.href = place.place_url;
     link.target = "_blank";
     link.rel = "noreferrer";
-    link.textContent = "카카오 상세 보기";
+    link.textContent = messages?.kakaoDetailLink || "카카오 상세 보기";
     link.style.display = "inline-block";
     link.style.marginTop = "10px";
     link.style.fontSize = "12px";
@@ -390,7 +393,7 @@ async function fetchCafeDocuments(pathname, params) {
   });
 
   if (!response.ok) {
-    throw new Error("移댄럹 ?곗씠?곕? 遺덈윭?ㅼ? 紐삵뻽?듬땲??");
+    throw new Error("카페 데이터를 불러오지 못했습니다.");
   }
 
   const payload = await response.json();
@@ -506,6 +509,7 @@ function MarkerList({
   onToggleFavorite,
   searchQuery,
   hiddenResultCount,
+  messages,
 }) {
   const title = searchQuery ? "검색 결과" : "현재 지도 카페";
   const description = searchQuery
@@ -568,7 +572,7 @@ function MarkerList({
                   </div>
                   <button
                     type="button"
-                    aria-label="??痍⑦뼢 移댄럹 ?좉?"
+                    aria-label={messages?.favoriteAriaLabel || "내 취향 카페에 추가"}
                     onClick={(event) => {
                       event.stopPropagation();
                       onToggleFavorite(place);
@@ -969,8 +973,13 @@ export default function KakaoMap({
 
       try {
         const cacheKey = buildKeywordSearchCacheKey(normalizedSearchQuery);
-        const results = await fetchKeywordResults(normalizedSearchQuery);
-        responseCacheRef.current.set(cacheKey, results);
+        const cachedResults = responseCacheRef.current.get(cacheKey);
+        const results =
+          cachedResults ?? await fetchKeywordResults(normalizedSearchQuery);
+
+        if (!cachedResults) {
+          responseCacheRef.current.set(cacheKey, results);
+        }
 
         if (cancelled || requestId !== searchRequestIdRef.current) {
           return;
@@ -1033,6 +1042,7 @@ export default function KakaoMap({
           () => {
             onToggleFavoriteRef.current(toFavoriteCafe(place));
           },
+          messages,
         );
 
         infoWindow?.setContent(content);
@@ -1074,12 +1084,13 @@ export default function KakaoMap({
       () => {
         onToggleFavoriteRef.current(toFavoriteCafe(selectedEntry.place));
       },
+      messages,
     );
 
     infoWindow?.setContent(content);
     infoWindow?.open(map, selectedEntry.marker);
     applyMarkerPriority(markerEntriesRef.current, selectedEntry.place.id);
-  }, [displayedPlaces, favoriteCafeIds, normalizedSearchQuery, selectedPlaceId]);
+  }, [displayedPlaces, favoriteCafeIds, messages, normalizedSearchQuery, selectedPlaceId]);
 
   const handleSelectPlace = (place) => {
     if (!window.kakao?.maps || !mapInstanceRef.current) {
@@ -1111,6 +1122,7 @@ export default function KakaoMap({
       () => {
         onToggleFavoriteRef.current(toFavoriteCafe(targetEntry.place));
       },
+      messages,
     );
 
     mapInstanceRef.current.panTo(targetEntry.marker.getPosition());
@@ -1151,6 +1163,7 @@ export default function KakaoMap({
       () => {
         onToggleFavoriteRef.current(toFavoriteCafe(targetEntry.place));
       },
+      messages,
     );
 
     mapInstanceRef.current.panTo(targetEntry.marker.getPosition());
@@ -1160,7 +1173,7 @@ export default function KakaoMap({
     });
     infoWindowRef.current?.setContent(content);
     infoWindowRef.current?.open(mapInstanceRef.current, targetEntry.marker);
-  }, [activePlaceId, displayedPlaces, normalizedSearchQuery, onViewportChange]);
+  }, [activePlaceId, displayedPlaces, messages, normalizedSearchQuery, onViewportChange]);
 
   return (
     <div className="relative h-full min-h-[420px] w-full sm:min-h-[520px]">

@@ -10,7 +10,6 @@
 
 ## Working style
 - This project is developed through vibe coding.
-- Generate a usable draft first, then I review and refine it manually.
 - Prefer minimal changes over large refactors.
 - Do not rewrite working code without a clear reason.
 - Keep the existing code flow when possible.

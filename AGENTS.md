@@ -136,6 +136,9 @@ If any future design note below conflicts with the current implementation direct
     - keyword search: suggest adding a region
     - current-area search: suggest adjusting the map or using keyword search
   - empty keyword submit shows an input guidance toast instead of sending a request
+  - current toast architecture uses a `toast catalog + explicit event trigger` pattern
+  - UI copy for toast messages is defined centrally, and each feature triggers only the toast key it needs
+  - asynchronous flows should queue a toast by action source and display it once after the request finishes
 - Preferred cafe save
   - current entry point: `POST /api/cafes`
   - current behavior: upsert selected cafe, then collect nearby cafes and upsert them into `cafe`

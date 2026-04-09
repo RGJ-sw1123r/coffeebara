@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import coffeebaraLogo from "./coffeebara-logo.png";
 import KakaoMap from "./components/KakaoMap";
@@ -609,8 +609,8 @@ function MapPanelV2({
   activePlaceId,
   onSearchResultsChange,
   isSidebarOpen,
-  searchNoticeMessage,
-  onCloseSearchNotice,
+  noticeState,
+  onCloseNotice,
   onStartCurrentAreaSearch,
   messages,
 }) {
@@ -619,8 +619,8 @@ function MapPanelV2({
       <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-4">
         <div className="pointer-events-auto w-full max-w-[380px]">
           <SearchResultNoticeV2
-            notice={searchNoticeMessage}
-            onClose={onCloseSearchNotice}
+            notice={noticeState}
+            onClose={onCloseNotice}
             messages={messages}
           />
         </div>
@@ -863,30 +863,30 @@ export default function Home() {
     errorMessage: "",
   });
   const [hasHydratedFavoriteCafes, setHasHydratedFavoriteCafes] = useState(false);
-  const [searchNoticeMessage, setSearchNoticeMessage] = useState(null);
-  const [searchNoticeShownKey, setSearchNoticeShownKey] = useState("");
+  const [noticeState, setNoticeState] = useState(null);
+  const [pendingToastKey, setPendingToastKey] = useState("");
+  const [pendingToastSource, setPendingToastSource] = useState("idle");
+  const [pendingToastToken, setPendingToastToken] = useState(0);
+  const toastTokenRef = useRef(0);
+  const noticeTokenRef = useRef(0);
   const messages = useMemo(() => getMessages(locale), [locale]);
-  const searchTooManyNotice = useMemo(
-    () => ({
+  const toastCatalog = useMemo(() => ({
+    searchTooMany: {
+      type: "search-too-many",
       title: messages.searchTooManyTitle,
       message: messages.searchTooManyNotice,
-    }),
-    [messages],
-  );
-  const searchEmptyInputNotice = useMemo(
-    () => ({
+    },
+    searchEmptyInput: {
+      type: "search-empty-input",
       title: messages.searchEmptyInputTitle,
       message: messages.searchEmptyInputNotice,
-    }),
-    [messages],
-  );
-  const mapTooManyNotice = useMemo(
-    () => ({
+    },
+    mapTooMany: {
+      type: "map-too-many",
       title: messages.searchTooManyTitle,
       message: messages.mapTooManyNotice,
-    }),
-    [messages],
-  );
+    },
+  }), [messages]);
 
   useEffect(() => {
     try {
@@ -1029,90 +1029,90 @@ export default function Home() {
     };
   }, [isSidebarOpen]);
 
-  useEffect(() => {
-    const normalizedQuery = searchQuery.trim();
-    const noticeKey = `search-too-many:${normalizedQuery}`;
+  const showToast = useCallback((toastKey) => {
+    const toastDefinition = toastCatalog[toastKey];
 
-    if (!normalizedQuery) {
+    if (!toastDefinition) {
+      setNoticeState(null);
       return;
     }
 
-    if (searchState.status !== "ready") {
-      return;
-    }
+    noticeTokenRef.current += 1;
+    setNoticeState({
+      ...toastDefinition,
+      key: `${toastDefinition.type}:${noticeTokenRef.current}`,
+    });
+  }, [toastCatalog]);
 
-    if (searchState.totalCount < 45) {
-      return;
-    }
-
-    if (searchNoticeShownKey === noticeKey) {
-      return;
-    }
-
-    setSearchNoticeShownKey(noticeKey);
-    setSearchNoticeMessage(searchTooManyNotice);
-  }, [searchNoticeShownKey, searchQuery, searchState.status, searchState.totalCount, searchTooManyNotice]);
+  const queueToast = useCallback((source, toastKey) => {
+    toastTokenRef.current += 1;
+    setPendingToastSource(source);
+    setPendingToastKey(toastKey);
+    setPendingToastToken(toastTokenRef.current);
+  }, []);
 
   useEffect(() => {
-    const noticeKey = `map-too-many:${searchState.totalCount}:${searchState.visibleCount}`;
-
-    if (searchState.source !== "map") {
-      return;
-    }
-
-    if (searchState.status !== "ready") {
-      return;
-    }
-
-    if (searchState.totalCount < 45) {
-      return;
-    }
-
-    if (searchNoticeShownKey === "search-empty-input") {
-      return;
-    }
-
-    if (searchNoticeShownKey === noticeKey) {
-      return;
-    }
-
-    setSearchNoticeShownKey(noticeKey);
-    setSearchNoticeMessage(mapTooManyNotice);
-  }, [mapTooManyNotice, searchNoticeShownKey, searchState.source, searchState.status, searchState.totalCount, searchState.visibleCount]);
-
-  useEffect(() => {
-    if (!searchNoticeMessage) {
+    if (!noticeState?.key) {
       return;
     }
 
     const timerId = window.setTimeout(() => {
-      setSearchNoticeMessage(null);
+      setNoticeState((current) =>
+        current?.key === noticeState.key ? null : current,
+      );
     }, 2500);
 
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [searchNoticeMessage]);
+  }, [noticeState]);
 
   useEffect(() => {
-    if (!searchNoticeMessage) {
+    if (
+      pendingToastSource === "keyword-search-submit" &&
+      searchState.source !== "map"
+    ) {
+      if (searchState.status === "ready") {
+        if (searchState.totalCount >= 45) {
+          showToast(pendingToastKey);
+        }
+        setPendingToastSource("idle");
+        setPendingToastKey("");
+        setPendingToastToken(0);
+      } else if (searchState.status === "error") {
+        setPendingToastSource("idle");
+        setPendingToastKey("");
+        setPendingToastToken(0);
+      }
       return;
     }
 
-    if (searchState.totalCount < 45) {
-      return;
+    if (
+      pendingToastSource === "map-search-submit" &&
+      searchState.source === "map"
+    ) {
+      if (searchState.status === "ready") {
+        if (searchState.totalCount >= 45) {
+          showToast(pendingToastKey);
+        }
+        setPendingToastSource("idle");
+        setPendingToastKey("");
+        setPendingToastToken(0);
+      } else if (searchState.status === "error") {
+        setPendingToastSource("idle");
+        setPendingToastKey("");
+        setPendingToastToken(0);
+      }
     }
-
-    if (searchState.source === "map") {
-      return;
-    }
-
-    if (searchNoticeMessage?.message === searchTooManyNotice.message) {
-      return;
-    }
-
-    setSearchNoticeMessage(searchTooManyNotice);
-  }, [searchNoticeMessage, searchState.source, searchState.totalCount, searchTooManyNotice]);
+  }, [
+    pendingToastKey,
+    pendingToastSource,
+    pendingToastToken,
+    searchState.source,
+    searchState.status,
+    searchState.totalCount,
+    showToast,
+  ]);
 
   const favoriteCafeIds = useMemo(
     () => new Set(favoriteCafes.map((cafe) => cafe.id)),
@@ -1170,13 +1170,17 @@ export default function Home() {
 
     if (!nextQuery) {
       setSearchQuery("");
-      setSearchNoticeShownKey("search-empty-input");
-      setSearchNoticeMessage(searchEmptyInputNotice);
+      showToast("searchEmptyInput");
+      setPendingToastSource("idle");
+      setPendingToastKey("");
+      setPendingToastToken(0);
       setSelectedCafe(null);
       setActivePlaceId("");
       return;
     }
 
+    setNoticeState(null);
+    queueToast("keyword-search-submit", "searchTooMany");
     setSearchQuery(nextQuery);
     setSearchRequestVersion((current) => current + 1);
   };
@@ -1189,8 +1193,8 @@ export default function Home() {
   const handleStartCurrentAreaSearch = () => {
     setSearchInput("");
     setSearchQuery("");
-    setSearchNoticeMessage(null);
-    setSearchNoticeShownKey("");
+    setNoticeState(null);
+    queueToast("map-search-submit", "mapTooMany");
     setSelectedCafe(null);
     setActivePlaceId("");
   };
@@ -1248,8 +1252,8 @@ export default function Home() {
               activePlaceId={activePlaceId}
               onSearchResultsChange={setSearchState}
               isSidebarOpen={isSidebarOpen}
-              searchNoticeMessage={searchNoticeMessage}
-              onCloseSearchNotice={() => setSearchNoticeMessage("")}
+              noticeState={noticeState}
+              onCloseNotice={() => setNoticeState(null)}
               onStartCurrentAreaSearch={handleStartCurrentAreaSearch}
               messages={messages}
             />

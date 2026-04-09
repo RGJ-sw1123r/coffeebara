@@ -478,6 +478,7 @@ function BottomPanel({
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex rounded-full bg-[#2f221b] px-4 py-2 text-sm font-medium text-white visited:text-white hover:text-white"
+                  style={{ color: "#ffffff", WebkitTextFillColor: "#ffffff" }}
                 >
                   카카오맵 상세 보기
                 </a>

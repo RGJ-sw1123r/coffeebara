@@ -357,9 +357,10 @@ function createInfoContent(place, isFavorite, onToggleFavorite) {
     link.style.fontWeight = "600";
     link.style.padding = "9px 14px";
     link.style.borderRadius = "999px";
-    link.style.background = "#2f221b";
-    link.style.color = "#ffffff";
     link.style.textDecoration = "none";
+    link.style.setProperty("background", "#2f221b", "important");
+    link.style.setProperty("color", "#ffffff", "important");
+    link.style.setProperty("-webkit-text-fill-color", "#ffffff", "important");
     body.appendChild(link);
   }
 

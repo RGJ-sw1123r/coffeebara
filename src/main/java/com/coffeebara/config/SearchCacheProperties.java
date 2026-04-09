@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "app.search-cache")
 public record SearchCacheProperties(
-	long ttlSeconds
+	long ttlSeconds,
+	int maxEntries
 ) {
 }

@@ -8,7 +8,11 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
 @Configuration
-@EnableConfigurationProperties({ KakaoLocalProperties.class, SearchCacheProperties.class })
+@EnableConfigurationProperties({
+	KakaoLocalProperties.class,
+	SearchCacheProperties.class,
+	RateLimitProperties.class
+})
 public class KakaoLocalConfig {
 
 	private static final String PLACEHOLDER_API_KEY = "YOUR_KAKAO_REST_API_KEY";

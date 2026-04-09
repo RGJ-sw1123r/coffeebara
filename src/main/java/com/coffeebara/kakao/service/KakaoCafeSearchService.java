@@ -3,6 +3,9 @@ package com.coffeebara.kakao.service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -24,6 +27,8 @@ import com.coffeebara.cafe.domain.CafeCategoryConstants;
 import com.coffeebara.cafe.mapper.CafeMapper;
 import com.coffeebara.cafe.vo.CafeUpsertRequest;
 import com.coffeebara.common.error.ApiException;
+import com.coffeebara.common.web.RequestRateLimiter;
+import com.coffeebara.config.RateLimitProperties;
 import com.coffeebara.config.SearchCacheProperties;
 import com.coffeebara.kakao.client.KakaoLocalClient;
 import com.coffeebara.kakao.vo.KakaoPlaceDocumentsResponseVo;
@@ -40,7 +45,9 @@ public class KakaoCafeSearchService {
 	private static final int CAFE_DATA_FRESHNESS_DAYS = 30;
 	private static final int KAKAO_PAGE_SIZE = 15;
 	private static final int MAX_SEARCH_FETCH_PAGE_COUNT = 3;
+	private static final int MAX_MAP_FETCH_PAGE_COUNT = 3;
 	private static final int MAX_NEARBY_FETCH_PAGE_COUNT = 3;
+	private static final int MAX_FIND_BY_ID_FETCH_PAGE_COUNT = 3;
 	private static final int CAFE_BATCH_UPSERT_CHUNK_SIZE = 20;
 	private static final int MAX_SEARCH_SAVE_COUNT = KAKAO_PAGE_SIZE * MAX_SEARCH_FETCH_PAGE_COUNT;
 	private static final double NEARBY_RECT_LAT_DELTA = 0.01d;
@@ -50,72 +57,68 @@ public class KakaoCafeSearchService {
 	private final KakaoLocalClient kakaoLocalClient;
 	private final CafeMapper cafeMapper;
 	private final SearchCacheProperties searchCacheProperties;
+	private final RateLimitProperties rateLimitProperties;
+	private final RequestRateLimiter requestRateLimiter;
 	private final Map<String, CachedSearchResponse> searchResponseCache = new ConcurrentHashMap<>();
+	private final Map<String, CompletableFuture<KakaoKeywordSearchResponseVo>> inFlightSearchResponses = new ConcurrentHashMap<>();
 
 	public KakaoCafeSearchService(
 		KakaoLocalClient kakaoLocalClient,
 		CafeMapper cafeMapper,
-		SearchCacheProperties searchCacheProperties
+		SearchCacheProperties searchCacheProperties,
+		RateLimitProperties rateLimitProperties,
+		RequestRateLimiter requestRateLimiter
 	) {
 		this.kakaoLocalClient = kakaoLocalClient;
 		this.cafeMapper = cafeMapper;
 		this.searchCacheProperties = searchCacheProperties;
+		this.rateLimitProperties = rateLimitProperties;
+		this.requestRateLimiter = requestRateLimiter;
 	}
 
 	public KakaoKeywordSearchResponseVo searchCafes(String query, Integer page, Integer size) {
-		String cacheKey = buildSearchCacheKey(query, page, size);
+		requestRateLimiter.checkLimit(
+			"cafes-search",
+			rateLimitProperties.searchMaxRequests(),
+			"검색 요청이 많습니다. 잠시 후 다시 시도해 주세요."
+		);
+
+		Integer sanitizedPage = sanitizePage(page);
+		Integer sanitizedSize = sanitizeSize(size);
+		if (sanitizedPage == null && sanitizedSize != null) {
+			sanitizedPage = 1;
+		}
+
+		if (sanitizedSize == null && sanitizedPage != null) {
+			sanitizedSize = KAKAO_PAGE_SIZE;
+		}
+
+		final Integer resolvedPage = sanitizedPage;
+		final Integer resolvedSize = sanitizedSize;
+		String cacheKey = buildSearchCacheKey(query, resolvedPage, resolvedSize);
 		KakaoKeywordSearchResponseVo cachedResponse = getCachedSearchResponse(cacheKey);
 		if (cachedResponse != null) {
 			log.info("searchCafes cache hit query='{}' page={} size={}", query, page, size);
 			return cachedResponse;
 		}
 
-		if (page != null || size != null) {
-			KakaoKeywordSearchResponseVo response = kakaoLocalClient.searchByKeyword(query, page, size);
-			List<KakaoPlaceDocumentVo> cafeDocuments = response.documents()
-				.stream()
-				.filter(document -> CAFE_CATEGORY_GROUP_CODE.equals(document.categoryGroupCode()))
-				.filter(document -> isRelevantSearchResult(document, query))
-				.toList();
-			log.info("searchCafes paged query='{}' page={} size={} filteredCount={}", query, page, size, cafeDocuments.size());
-			saveCafeBatch(cafeDocuments);
-			KakaoKeywordSearchResponseVo result = new KakaoKeywordSearchResponseVo(cafeDocuments, response.meta());
-			cacheSearchResponse(cacheKey, result);
-			return result;
-		}
+		CompletableFuture<KakaoKeywordSearchResponseVo> inFlightRequest = inFlightSearchResponses.computeIfAbsent(
+			cacheKey,
+			ignored -> createSearchFuture(query, resolvedPage, resolvedSize)
+		);
 
-		Map<String, KakaoPlaceDocumentVo> deduplicated = new LinkedHashMap<>();
-		int currentPage = 1;
-		KakaoKeywordSearchResponseVo lastResponse;
-
-		while (true) {
-			lastResponse = kakaoLocalClient.searchByKeyword(query, currentPage, KAKAO_PAGE_SIZE);
-			int beforeCount = deduplicated.size();
-			lastResponse.documents().stream()
-				.filter(document -> CAFE_CATEGORY_GROUP_CODE.equals(document.categoryGroupCode()))
-				.forEach(document -> deduplicated.putIfAbsent(document.id(), document));
-			int addedCount = deduplicated.size() - beforeCount;
-			log.info(
-				"searchCafes query='{}' fetchedPage={} addedCount={} accumulatedCount={} isEnd={}",
-				query,
-				currentPage,
-				addedCount,
-				deduplicated.size(),
-				lastResponse.meta().isEnd()
-			);
-
-			if (lastResponse.meta().isEnd() || currentPage >= MAX_SEARCH_FETCH_PAGE_COUNT) {
-				List<KakaoPlaceDocumentVo> cafes = filterSearchResultsByPriority(
-					List.copyOf(deduplicated.values()),
-					query
-				);
-				saveCafeBatch(cafes);
-				KakaoKeywordSearchResponseVo result = new KakaoKeywordSearchResponseVo(cafes, lastResponse.meta());
-				cacheSearchResponse(cacheKey, result);
-				return result;
+		try {
+			KakaoKeywordSearchResponseVo response = inFlightRequest.join();
+			cacheSearchResponse(cacheKey, response);
+			return response;
+		} catch (CompletionException exception) {
+			Throwable cause = exception.getCause();
+			if (cause instanceof RuntimeException runtimeException) {
+				throw runtimeException;
 			}
-
-			currentPage += 1;
+			throw exception;
+		} finally {
+			inFlightSearchResponses.remove(cacheKey, inFlightRequest);
 		}
 	}
 
@@ -125,6 +128,12 @@ public class KakaoCafeSearchService {
 		double neLat,
 		double neLng
 	) {
+		requestRateLimiter.checkLimit(
+			"cafes-map",
+			rateLimitProperties.mapMaxRequests(),
+			"지도 검색 요청이 많습니다. 잠시 후 다시 시도해 주세요."
+		);
+
 		String rect = toRect(swLat, swLng, neLat, neLng);
 		Map<String, KakaoPlaceDocumentVo> deduplicated = new LinkedHashMap<>();
 		int page = 1;
@@ -139,7 +148,7 @@ public class KakaoCafeSearchService {
 
 			response.documents().forEach(document -> deduplicated.putIfAbsent(document.id(), document));
 
-			if (response.meta().isEnd()) {
+			if (response.meta().isEnd() || page >= MAX_MAP_FETCH_PAGE_COUNT) {
 				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
 				saveCafeBatch(cafes);
 				return new KakaoPlaceDocumentsResponseVo(cafes);
@@ -160,6 +169,12 @@ public class KakaoCafeSearchService {
 			throw new IllegalArgumentException("query must not be blank");
 		}
 
+		requestRateLimiter.checkLimit(
+			"cafes-map-search",
+			rateLimitProperties.mapMaxRequests(),
+			"지도 검색 요청이 많습니다. 잠시 후 다시 시도해 주세요."
+		);
+
 		String rect = toRect(swLat, swLng, neLat, neLng);
 		Map<String, KakaoPlaceDocumentVo> deduplicated = new LinkedHashMap<>();
 		int page = 1;
@@ -179,7 +194,7 @@ public class KakaoCafeSearchService {
 				}
 			});
 
-			if (response.meta().isEnd()) {
+			if (response.meta().isEnd() || page >= MAX_MAP_FETCH_PAGE_COUNT) {
 				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
 				saveCafeBatch(cafes);
 				return new KakaoPlaceDocumentsResponseVo(cafes);
@@ -197,6 +212,12 @@ public class KakaoCafeSearchService {
 		if (!StringUtils.hasText(query)) {
 			throw new IllegalArgumentException("query must not be blank");
 		}
+
+		requestRateLimiter.checkLimit(
+			"cafes-detail",
+			rateLimitProperties.detailMaxRequests(),
+			"카페 조회 요청이 많습니다. 잠시 후 다시 시도해 주세요."
+		);
 
 		Map<String, Object> persistedCafe = findPersistedCafe(placeId);
 		if (persistedCafe != null && !isStale(persistedCafe)) {
@@ -218,7 +239,7 @@ public class KakaoCafeSearchService {
 				return matchedCafe;
 			}
 
-			if (response.meta().isEnd()) {
+			if (response.meta().isEnd() || page >= MAX_FIND_BY_ID_FETCH_PAGE_COUNT) {
 				return Optional.ofNullable(persistedCafe)
 					.map(this::toKakaoPlaceDocument);
 			}
@@ -228,6 +249,11 @@ public class KakaoCafeSearchService {
 	}
 
 	public void saveCafe(CafeUpsertRequest request) {
+		requestRateLimiter.checkLimit(
+			"cafes-save",
+			rateLimitProperties.saveMaxRequests(),
+			"카페 저장 요청이 많습니다. 잠시 후 다시 시도해 주세요."
+		);
 		validateCafeUpsertRequest(request);
 		upsertCafe(toCafeMap(request));
 		collectNearbyCandidates(request);
@@ -288,6 +314,66 @@ public class KakaoCafeSearchService {
 
 		log.info("filterSearchResultsByPriority query='{}' mode=fallback resultCount={}", query, cafes.size());
 		return cafes;
+	}
+
+	private CompletableFuture<KakaoKeywordSearchResponseVo> createSearchFuture(
+		String query,
+		Integer page,
+		Integer size
+	) {
+		try {
+			return CompletableFuture.completedFuture(executeSearchCafes(query, page, size));
+		} catch (RuntimeException exception) {
+			CompletableFuture<KakaoKeywordSearchResponseVo> failedFuture = new CompletableFuture<>();
+			failedFuture.completeExceptionally(exception);
+			return failedFuture;
+		}
+	}
+
+	private KakaoKeywordSearchResponseVo executeSearchCafes(String query, Integer page, Integer size) {
+		if (page != null || size != null) {
+			KakaoKeywordSearchResponseVo response = kakaoLocalClient.searchByKeyword(query, page, size);
+			List<KakaoPlaceDocumentVo> cafeDocuments = response.documents()
+				.stream()
+				.filter(document -> CAFE_CATEGORY_GROUP_CODE.equals(document.categoryGroupCode()))
+				.filter(document -> isRelevantSearchResult(document, query))
+				.toList();
+			log.info("searchCafes paged query='{}' page={} size={} filteredCount={}", query, page, size, cafeDocuments.size());
+			saveCafeBatch(cafeDocuments);
+			return new KakaoKeywordSearchResponseVo(cafeDocuments, response.meta());
+		}
+
+		Map<String, KakaoPlaceDocumentVo> deduplicated = new LinkedHashMap<>();
+		int currentPage = 1;
+		KakaoKeywordSearchResponseVo lastResponse;
+
+		while (true) {
+			lastResponse = kakaoLocalClient.searchByKeyword(query, currentPage, KAKAO_PAGE_SIZE);
+			int beforeCount = deduplicated.size();
+			lastResponse.documents().stream()
+				.filter(document -> CAFE_CATEGORY_GROUP_CODE.equals(document.categoryGroupCode()))
+				.forEach(document -> deduplicated.putIfAbsent(document.id(), document));
+			int addedCount = deduplicated.size() - beforeCount;
+			log.info(
+				"searchCafes query='{}' fetchedPage={} addedCount={} accumulatedCount={} isEnd={}",
+				query,
+				currentPage,
+				addedCount,
+				deduplicated.size(),
+				lastResponse.meta().isEnd()
+			);
+
+			if (lastResponse.meta().isEnd() || currentPage >= MAX_SEARCH_FETCH_PAGE_COUNT) {
+				List<KakaoPlaceDocumentVo> cafes = filterSearchResultsByPriority(
+					List.copyOf(deduplicated.values()),
+					query
+				);
+				saveCafeBatch(cafes);
+				return new KakaoKeywordSearchResponseVo(cafes, lastResponse.meta());
+			}
+
+			currentPage += 1;
+		}
 	}
 
 	private void saveCafeBatch(List<KakaoPlaceDocumentVo> cafes) {
@@ -356,7 +442,47 @@ public class KakaoCafeSearchService {
 			return;
 		}
 
+		evictSearchCacheEntriesIfNeeded();
 		searchResponseCache.put(cacheKey, new CachedSearchResponse(response, System.currentTimeMillis()));
+	}
+
+	private void evictSearchCacheEntriesIfNeeded() {
+		int maxEntries = searchCacheProperties.maxEntries();
+		if (maxEntries <= 0 || searchResponseCache.size() < maxEntries) {
+			return;
+		}
+
+		long now = System.currentTimeMillis();
+		long ttlMillis = Math.max(searchCacheProperties.ttlSeconds(), 0L) * 1000L;
+		searchResponseCache.entrySet().removeIf(entry -> {
+			CachedSearchResponse cached = entry.getValue();
+			return ttlMillis == 0L || now - cached.cachedAtMillis() >= ttlMillis;
+		});
+
+		if (searchResponseCache.size() < maxEntries) {
+			return;
+		}
+
+		searchResponseCache.entrySet().stream()
+			.min(Comparator.comparingLong(entry -> entry.getValue().cachedAtMillis()))
+			.map(Map.Entry::getKey)
+			.ifPresent(searchResponseCache::remove);
+	}
+
+	private Integer sanitizePage(Integer page) {
+		if (page == null) {
+			return null;
+		}
+
+		return Math.min(Math.max(page, 1), MAX_SEARCH_FETCH_PAGE_COUNT);
+	}
+
+	private Integer sanitizeSize(Integer size) {
+		if (size == null) {
+			return null;
+		}
+
+		return Math.min(Math.max(size, 1), KAKAO_PAGE_SIZE);
 	}
 
 	private void collectNearbyCandidates(CafeUpsertRequest request) {

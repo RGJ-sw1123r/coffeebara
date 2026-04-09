@@ -278,6 +278,9 @@ These notes are meant to guide future design discussions, not current execution.
 - Add a composite bounding-box-friendly index such as `(lat, lng)`.
 - Add DB-backed map bounds query support.
 - Cafe coordinate columns are now numeric, but DB-backed map bounds query support is still pending.
+- DB-first map query with Kakao fallback is intentionally deferred for now.
+- Reason: without separate map-bounds collection freshness/history metadata, the service may keep trusting incomplete DB data and stop recollecting needed areas.
+- Treat this as a later cost/performance optimization phase after collection completeness criteria are designed.
 - Treat this as a high-priority improvement because it improves recommendation quality, cost, and map performance.
 
 ### 5. Remove runtime ALTER behavior

@@ -15,20 +15,20 @@ const API_BASE_URL =
 const messages = getMessages();
 
 function buildFriendlyBackendErrorMessage(errorCode, fallbackMessage, cafeName) {
-  const cafeLabel = cafeName ? `"${cafeName}"` : "?좏깮??移댄럹";
+  const cafeLabel = cafeName ? `"${cafeName}"` : "선택한 카페";
 
   switch (errorCode) {
     case "DB_CONNECTION_FAILED":
-      return `${cafeLabel} ?뺣낫瑜?遺덈윭?ㅻ뒗 以??쒕쾭 ?곌껐???좎떆 遺덉븞?뺥빀?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄??二쇱꽭??`;
+      return `${cafeLabel} 정보를 불러오는 중 서버 연결이 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요.`;
     case "CAFE_UPSERT_FAILED":
-      return `${cafeLabel} ?뺣낫瑜?理쒖떊 ?곹깭濡?留욎텛??以?臾몄젣媛 諛쒖깮?덉뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄??二쇱꽭??`;
+      return `${cafeLabel} 정보를 최신 상태로 맞추는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.`;
     case "CAFE_LOOKUP_FAILED":
     case "DATA_ACCESS_ERROR":
-      return `${cafeLabel} ?뺣낫瑜??뺤씤?섎뒗 以?臾몄젣媛 諛쒖깮?덉뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄??二쇱꽭??`;
+      return `${cafeLabel} 정보를 확인하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.`;
     default:
       return (
         fallbackMessage ||
-        `${cafeLabel} ?뺣낫瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲?? ?좎떆 ???ㅼ떆 ?쒕룄??二쇱꽭??`
+        `${cafeLabel} 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.`
       );
   }
 }
@@ -162,7 +162,7 @@ function HamburgerButton({ isOpen, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      aria-label={isOpen ? "?ъ씠??硫붾돱 ?リ린" : "?ъ씠??硫붾돱 ?닿린"}
+      aria-label={isOpen ? "사이드 메뉴 닫기" : "사이드 메뉴 열기"}
       aria-expanded={isOpen}
       className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#cdb8a6] bg-white text-[#2f221b] shadow-[0_10px_24px_rgba(84,52,27,0.08)] transition hover:bg-[#f6efe7]"
     >
@@ -196,17 +196,17 @@ function SearchResultNoticeV2({ message, onClose }) {
             Search Tip
           </p>
           <p className="mt-2 text-sm font-semibold text-[#f7e3d0]">
-            寃??踰붿쐞媛 ?볦뒿?덈떎
+            검색 범위가 넓습니다
           </p>
           <p className="mt-2 text-sm leading-6 text-[#f2e5da]">{message}</p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          aria-label="?뚮┝ ?リ린"
+          aria-label="알림 닫기"
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#8a6b56] bg-[rgba(255,248,241,0.1)] text-[#fff7f0] transition hover:bg-[rgba(255,248,241,0.18)]"
         >
-          횞
+          ×
         </button>
       </div>
       <div className="relative mt-4 h-[3px] overflow-hidden rounded-full bg-[rgba(255,244,235,0.12)]">
@@ -229,10 +229,10 @@ function SearchLoadingOverlayV2({ isVisible, searchQuery }) {
         <div className="flex items-center justify-between gap-3 text-sm font-medium text-[#5f4b3f]">
           <span>
             {queryLabel
-              ? `"${queryLabel}" 寃??寃곌낵瑜?遺덈윭?ㅺ퀬 ??ν븯??以묒엯?덈떎.`
-              : "寃??寃곌낵瑜?遺덈윭?ㅺ퀬 ??ν븯??以묒엯?덈떎."}
+              ? `"${queryLabel}" 검색 결과를 불러오고 저장하는 중입니다.`
+              : "검색 결과를 불러오고 저장하는 중입니다."}
           </span>
-          <span className="shrink-0 text-[#8f725d]">?좎떆留?湲곕떎?ㅼ＜?몄슂</span>
+          <span className="shrink-0 text-[#8f725d]">잠시만 기다려주세요</span>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#e8d9ca]">
           <div className="search-progress-bar h-full w-1/3 rounded-full bg-[#2f221b]" />
@@ -291,23 +291,22 @@ function BackendSyncSection({ status, fetchedCount, totalCount, errorMessage, is
   return (
     <section className="mt-4 rounded-[24px] border border-white/10 bg-[rgba(255,255,255,0.08)] p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d8b89f]">
-        諛깆뿏??議고쉶
+        백엔드 조회
       </p>
       <p className="mt-2 text-sm text-[#f7ede4]">
-        濡쒖뺄 ?ㅽ넗由ъ?????λ맂 移댄럹瑜?湲곗??쇰줈 諛깆뿏?쒖뿉??理쒖떊 移댄럹 ?뺣낫瑜??ㅼ떆
-        諛쏆븘?듬땲??
+        로컬 스토리지에 저장한 카페를 기준으로 백엔드에서 최신 카페 정보를 다시 불러옵니다.
       </p>
 
       <div className="mt-4 rounded-2xl bg-white/8 px-3 py-3 text-sm text-[#f7ede4]">
         {isLoading
-          ? `諛깆뿏?쒖뿉??移댄럹 ?뺣낫瑜?議고쉶?섎뒗 以묒엯?덈떎. (${fetchedCount}/${totalCount})`
+          ? `백엔드에서 카페 정보를 조회하는 중입니다. (${fetchedCount}/${totalCount})`
           : null}
         {isSuccess
-          ? `諛깆뿏??議고쉶 ?꾨즺. ${fetchedCount}媛쒖쓽 移댄럹 ?뺣낫瑜?諛쏆븘?붿뒿?덈떎.`
+          ? `백엔드 조회 완료. ${fetchedCount}개의 카페 정보를 불러왔습니다.`
           : null}
-        {isError ? errorMessage || "諛깆뿏??議고쉶???ㅽ뙣?덉뒿?덈떎." : null}
+        {isError ? errorMessage || "백엔드 조회에 실패했습니다." : null}
         {!isLoading && !isSuccess && !isError
-          ? "??λ맂 移댄럹媛 ?덉쑝硫?諛깆뿏??議고쉶媛 ?먮룞?쇰줈 ?쒖옉?⑸땲??"
+          ? "저장한 카페가 있으면 백엔드 조회가 자동으로 시작됩니다."
           : null}
       </div>
     </section>
@@ -321,9 +320,9 @@ function BackendSyncBanner({ status, errorMessage }) {
 
   return (
     <section className="rounded-[24px] border border-[#e7c9c2] bg-[#fff1ed] px-5 py-4 text-[#6f3126] shadow-[0_12px_30px_rgba(111,49,38,0.08)]">
-      <p className="text-sm font-semibold">移댄럹 ?숆린??以?臾몄젣媛 諛쒖깮?덉뒿?덈떎.</p>
+      <p className="text-sm font-semibold">카페 불러오기 중 문제가 발생했습니다.</p>
       <p className="mt-1 text-sm leading-6">
-        {errorMessage || "諛깆뿏?쒖뿉??移댄럹 ?뺣낫瑜?議고쉶?섍굅??理쒖떊 ?곹깭濡?留욎텛??以?臾몄젣媛 諛쒖깮?덉뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄??二쇱꽭??"}
+        {errorMessage || "백엔드에서 카페 정보를 조회하거나 최신 상태로 맞추는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."}
       </p>
     </section>
   );
@@ -487,7 +486,7 @@ function HeaderV2({
           <div className="relative h-11 w-11 overflow-hidden rounded-2xl border border-[#dbcab8] bg-white shadow-[0_10px_24px_rgba(84,52,27,0.08)]">
             <Image
               src={coffeebaraLogo}
-              alt="Coffeebara 濡쒓퀬"
+              alt="Coffeebara 로고"
               fill
               sizes="44px"
               className="object-cover"
@@ -958,7 +957,7 @@ export default function Home() {
           errorMessage:
             error instanceof Error
               ? error.message
-              : "移댄럹 ?뺣낫瑜?遺덈윭?ㅻ뒗 以??덉긽?섏? 紐삵븳 臾몄젣媛 諛쒖깮?덉뒿?덈떎.",
+              : "카페 정보를 불러오는 중 예상하지 못한 문제가 발생했습니다.",
         });
         setHasHydratedFavoriteCafes(true);
       }
@@ -1008,7 +1007,7 @@ export default function Home() {
     }
 
     setSearchNoticeQuery(normalizedQuery);
-    setSearchNoticeMessage("寃??寃곌낵媛 留롮뒿?덈떎. 吏??챸???④퍡 ?낅젰?섎㈃ ???뺥솗?섍쾶 李얠쓣 ???덉뒿?덈떎.");
+    setSearchNoticeMessage(messages.searchTooManyNotice);
   }, [searchNoticeQuery, searchQuery, searchState.status, searchState.totalCount]);
 
   useEffect(() => {
@@ -1083,7 +1082,7 @@ export default function Home() {
           errorMessage:
             error instanceof Error
               ? error.message
-              : "燁삳똾???類ｋ궖?????館釉??餓??얜챷?ｅ첎? 獄쏆뮇源??됰뮸??덈뼄.",
+              : "선택한 카페를 저장하는 중 예상하지 못한 문제가 발생했습니다.",
         }));
       });
   };

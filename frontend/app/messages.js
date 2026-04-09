@@ -27,6 +27,7 @@ const messages = {
     searchNoticeLabel: "Search Tip",
     searchTooManyTitle: "검색 범위가 넓습니다",
     searchEmptyInputTitle: "검색어를 입력해 주세요",
+    requestRateLimitedTitle: "요청이 많습니다",
     searchNoticeClose: "알림 닫기",
     searchTooManyNotice:
       "검색 결과가 많습니다. 지역명을 함께 입력하면 더 정확하게 찾을 수 있습니다.",
@@ -34,6 +35,8 @@ const messages = {
       "검색 결과가 많습니다. 지도를 조정하거나 검색 기능을 이용해 범위를 좁혀 주세요.",
     searchEmptyInputNotice:
       "카페명이나 지역명을 함께 입력한 뒤 검색해 주세요.",
+    requestRateLimitedNotice:
+      "요청이 잠시 몰렸습니다. 잠시 후 다시 시도해 주세요.",
     cafeInfoTitle: "카페 정보",
     cafeCategoryFallback: "카페",
     noAddress: "주소 정보 없음",
@@ -117,6 +120,7 @@ const messages = {
     searchNoticeLabel: "Search Tip",
     searchTooManyTitle: "Search area is broad",
     searchEmptyInputTitle: "Enter a search term",
+    requestRateLimitedTitle: "Too many requests",
     searchNoticeClose: "Close notice",
     searchTooManyNotice:
       "There are many results. Add a region to search more precisely.",
@@ -124,6 +128,8 @@ const messages = {
       "There are many results. Adjust the map or use search to narrow the area.",
     searchEmptyInputNotice:
       "Enter a cafe name or region, then try searching again.",
+    requestRateLimitedNotice:
+      "Requests are arriving too quickly. Please try again shortly.",
     cafeInfoTitle: "Cafe Info",
     cafeCategoryFallback: "Cafe",
     noAddress: "No address available",
@@ -205,6 +211,7 @@ const messages = {
     searchNoticeLabel: "Search Tip",
     searchTooManyTitle: "検索範囲が広いです",
     searchEmptyInputTitle: "検索語を入力してください",
+    requestRateLimitedTitle: "リクエストが多すぎます",
     searchNoticeClose: "通知を閉じる",
     searchTooManyNotice:
       "検索結果が多すぎます。地域名を一緒に入力すると、より正確に探せます。",
@@ -212,6 +219,8 @@ const messages = {
       "結果が多すぎます。地図を調整するか検索機能で範囲を絞ってください。",
     searchEmptyInputNotice:
       "カフェ名や地域名を入力してから検索してください。",
+    requestRateLimitedNotice:
+      "リクエストが集中しています。しばらくしてからもう一度お試しください。",
     cafeInfoTitle: "カフェ情報",
     cafeCategoryFallback: "カフェ",
     noAddress: "住所情報なし",

@@ -393,7 +393,23 @@ async function fetchCafeDocuments(pathname, params) {
   });
 
   if (!response.ok) {
-    throw new Error("카페 데이터를 불러오지 못했습니다.");
+    let errorCode = "";
+    let errorMessage = "카페 데이터를 불러오지 못했습니다.";
+
+    try {
+      const payload = await response.json();
+      errorCode = typeof payload?.code === "string" ? payload.code : "";
+      errorMessage =
+        typeof payload?.message === "string" && payload.message
+          ? payload.message
+          : errorMessage;
+    } catch {
+      // Keep fallback values.
+    }
+
+    const error = new Error(errorMessage);
+    error.code = errorCode;
+    throw error;
   }
 
   const payload = await response.json();
@@ -638,6 +654,7 @@ export default function KakaoMap({
   const shouldFocusSearchResultsRef = useRef(true);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [errorCode, setErrorCode] = useState("");
   const [mapPlaces, setMapPlaces] = useState([]);
   const [searchPlaces, setSearchPlaces] = useState([]);
   const [selectedPlaceId, setSelectedPlaceId] = useState("");
@@ -695,6 +712,7 @@ export default function KakaoMap({
     onStartCurrentAreaSearch?.();
     setStatus("loading");
     setErrorMessage("");
+    setErrorCode("");
 
     try {
       const cachedResults = responseCacheRef.current.get(cacheKey);
@@ -711,6 +729,7 @@ export default function KakaoMap({
       setErrorMessage(
         error instanceof Error ? error.message : "Unknown error",
       );
+      setErrorCode(error instanceof Error ? (error.code ?? "") : "");
       setStatus("error");
     }
   };
@@ -744,9 +763,11 @@ export default function KakaoMap({
             : "idle",
       status,
       errorMessage,
+      errorCode,
     });
   }, [
     displayedPlaces.length,
+    errorCode,
     errorMessage,
     hiddenSearchResultCount,
     normalizedSearchQuery,
@@ -861,6 +882,7 @@ export default function KakaoMap({
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(error instanceof Error ? error.message : "Unknown error");
+          setErrorCode(error instanceof Error ? (error.code ?? "") : "");
           setStatus("error");
         }
       }
@@ -931,6 +953,7 @@ export default function KakaoMap({
       setMapPlaces([]);
       setStatus("ready");
       setErrorMessage("");
+      setErrorCode("");
       clearSelection();
     }, 0);
 
@@ -979,6 +1002,8 @@ export default function KakaoMap({
       currentViewModeRef.current = "search";
       setStatus("loading");
       setErrorMessage("");
+      setErrorCode("");
+      setErrorCode("");
 
       try {
         const cacheKey = buildKeywordSearchCacheKey(normalizedSearchQuery);
@@ -1004,6 +1029,7 @@ export default function KakaoMap({
         setErrorMessage(
           error instanceof Error ? error.message : "Unknown error",
         );
+        setErrorCode(error instanceof Error ? (error.code ?? "") : "");
         setSearchPlaces([]);
         setStatus("error");
       }
@@ -1220,20 +1246,6 @@ export default function KakaoMap({
           </button>
         )}
 
-        {status === "ready" ? (
-          <>
-            {normalizedSearchQuery ? (
-              <>
-                <div className="rounded-full bg-[#2f221b]/90 px-3 py-2 text-xs font-medium text-white shadow-[0_16px_30px_rgba(47,34,27,0.24)]">
-                  검색 결과 {sortedSearchPlaces.length}곳
-                </div>
-                <div className="rounded-full bg-white/92 px-3 py-2 text-xs font-medium text-[#5e493d] shadow-[0_10px_25px_rgba(84,52,27,0.08)]">
-                  지도 표시 {displayedPlaces.length}곳
-                </div>
-              </>
-            ) : null}
-          </>
-        ) : null}
       </div>
 
       {status === "error" ? (

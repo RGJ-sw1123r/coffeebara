@@ -719,6 +719,7 @@ export default function Home() {
     source: "idle",
     status: "idle",
     errorMessage: "",
+    errorCode: "",
   });
   const [backendFavoriteFetch, setBackendFavoriteFetch] = useState({
     status: "idle",
@@ -749,6 +750,11 @@ export default function Home() {
       type: "map-too-many",
       title: messages.searchTooManyTitle,
       message: messages.mapTooManyNotice,
+    },
+    requestRateLimited: {
+      type: "request-rate-limited",
+      title: messages.requestRateLimitedTitle,
+      message: messages.requestRateLimitedNotice,
     },
   }), [messages]);
 
@@ -952,6 +958,9 @@ export default function Home() {
         setPendingToastKey("");
         setPendingToastToken(0);
       } else if (searchState.status === "error") {
+        if (searchState.errorCode === "RATE_LIMIT_EXCEEDED") {
+          showToast("requestRateLimited");
+        }
         setPendingToastSource("idle");
         setPendingToastKey("");
         setPendingToastToken(0);
@@ -971,6 +980,9 @@ export default function Home() {
         setPendingToastKey("");
         setPendingToastToken(0);
       } else if (searchState.status === "error") {
+        if (searchState.errorCode === "RATE_LIMIT_EXCEEDED") {
+          showToast("requestRateLimited");
+        }
         setPendingToastSource("idle");
         setPendingToastKey("");
         setPendingToastToken(0);
@@ -981,6 +993,7 @@ export default function Home() {
     pendingToastSource,
     pendingToastToken,
     searchState.source,
+    searchState.errorCode,
     searchState.status,
     searchState.totalCount,
     showToast,
@@ -1092,6 +1105,7 @@ export default function Home() {
       source: "idle",
       status: "idle",
       errorMessage: "",
+      errorCode: "",
     });
     setResetViewVersion((current) => current + 1);
   };

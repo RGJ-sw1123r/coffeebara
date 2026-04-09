@@ -117,6 +117,9 @@ If any future design note below conflicts with the current implementation direct
 - Search cache
   - property-based TTL
   - current default is 10 seconds
+- CORS
+  - current behavior: allowed origins are property-based, not hardcoded
+  - current property: `app.cors.allowed-origins`
 - Frontend locale
   - current locale selector: `KO / EN / JA`
   - current behavior: UI copy is connected through `frontend/app/messages.js`

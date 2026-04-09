@@ -26,6 +26,7 @@ Coffeebara는 사용자가 좋아하는 카페를 저장하고, 지도 기반으
 - 검색 결과를 `kakao_place_id` 기준으로 중복 제거 후 `cafe` 테이블에 upsert
 - 카카오 키워드 검색 상한에 맞춰 최대 3페이지, 최대 45건까지 수집 및 적재
 - 검색 API에 10초 TTL 메모리 캐시 적용
+- CORS 허용 origin을 `app.cors.allowed-origins` 프로퍼티로 외부화
 - 내 취향 카페 저장 시 해당 카페 주변 카페도 추가 수집 후 `cafe` 테이블에 upsert
 - 30일이 지난 카페 데이터는 상세 조회 시 Kakao Local API 기준으로 refresh
 
@@ -184,6 +185,7 @@ spring.datasource.password=YOUR_DB_PASSWORD
 spring.datasource.driver-class-name=com.p6spy.engine.spy.P6SpyDriver
 spring.sql.init.mode=never
 app.search-cache.ttl-seconds=10
+app.cors.allowed-origins=http://localhost:3000,http://127.0.0.1:3000
 ```
 
 ### 3. 프런트 환경 변수

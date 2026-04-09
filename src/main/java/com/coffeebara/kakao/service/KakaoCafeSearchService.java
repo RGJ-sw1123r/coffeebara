@@ -140,7 +140,9 @@ public class KakaoCafeSearchService {
 			response.documents().forEach(document -> deduplicated.putIfAbsent(document.id(), document));
 
 			if (response.meta().isEnd()) {
-				return new KakaoPlaceDocumentsResponseVo(List.copyOf(deduplicated.values()));
+				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
+				saveCafeBatch(cafes);
+				return new KakaoPlaceDocumentsResponseVo(cafes);
 			}
 
 			page += 1;
@@ -178,7 +180,9 @@ public class KakaoCafeSearchService {
 			});
 
 			if (response.meta().isEnd()) {
-				return new KakaoPlaceDocumentsResponseVo(List.copyOf(deduplicated.values()));
+				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
+				saveCafeBatch(cafes);
+				return new KakaoPlaceDocumentsResponseVo(cafes);
 			}
 
 			page += 1;

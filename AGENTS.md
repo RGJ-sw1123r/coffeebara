@@ -114,6 +114,10 @@ If any future design note below conflicts with the current implementation direct
   - current fetch cap: up to 3 pages / up to 45 results
   - current behavior: search results are upserted into `cafe` before response returns
   - current cache: in-memory TTL cache for repeated search parameters
+- `GET /api/cafes/map` / `GET /api/cafes/map/search`
+  - current behavior: current map bounds queries also upsert collected cafes into `cafe`
+  - frontend exposes a current-area search action on top of the map
+  - current-area search clears the keyword input/query and keeps map focus in the current bounds
 - Search cache
   - property-based TTL
   - current default is 10 seconds
@@ -125,6 +129,13 @@ If any future design note below conflicts with the current implementation direct
   - current behavior: UI copy is connected through `frontend/app/messages.js`
   - current scope: header, sidebar, map section, bottom panels, toast, loading, and error copy
   - current limitation: cafe names, addresses, and provider detail data still come from Kakao source data and are not translated
+- Frontend map search UX
+  - current area search button is locale-aware
+  - result count cards are shown in the bottom panel, not duplicated on the map header
+  - over-limit toast is split by source:
+    - keyword search: suggest adding a region
+    - current-area search: suggest adjusting the map or using keyword search
+  - empty keyword submit shows an input guidance toast instead of sending a request
 - Preferred cafe save
   - current entry point: `POST /api/cafes`
   - current behavior: upsert selected cafe, then collect nearby cafes and upsert them into `cafe`

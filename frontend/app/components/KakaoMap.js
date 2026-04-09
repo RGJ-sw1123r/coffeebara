@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -304,8 +304,8 @@ function createInfoContent(place, isFavorite, onToggleFavorite) {
 
   const favoriteButton = document.createElement("button");
   favoriteButton.type = "button";
-  favoriteButton.textContent = isFavorite ? "★" : "☆";
-  favoriteButton.setAttribute("aria-label", "내 취향 카페 토글");
+  favoriteButton.textContent = isFavorite ? "★" : "+";
+  favoriteButton.setAttribute("aria-label", "내 취향 카페에 추가");
   favoriteButton.style.width = "34px";
   favoriteButton.style.height = "34px";
   favoriteButton.style.border = "none";
@@ -327,7 +327,6 @@ function createInfoContent(place, isFavorite, onToggleFavorite) {
   address.style.color = "#5f4b3f";
 
   body.appendChild(header);
-  body.appendChild(address);
 
   if (place.phone) {
     const phone = document.createElement("div");
@@ -343,7 +342,7 @@ function createInfoContent(place, isFavorite, onToggleFavorite) {
     link.href = place.place_url;
     link.target = "_blank";
     link.rel = "noreferrer";
-    link.textContent = "카카오맵 상세 보기";
+    link.textContent = "카카오 상세 보기";
     link.style.display = "inline-block";
     link.style.marginTop = "10px";
     link.style.fontSize = "12px";
@@ -382,7 +381,7 @@ async function fetchCafeDocuments(pathname, params) {
   });
 
   if (!response.ok) {
-    throw new Error("카페 데이터를 불러오지 못했습니다.");
+    throw new Error("移댄럹 ?곗씠?곕? 遺덈윭?ㅼ? 紐삵뻽?듬땲??");
   }
 
   const payload = await response.json();
@@ -501,8 +500,8 @@ function MarkerList({
 }) {
   const title = searchQuery ? "검색 결과" : "현재 지도 카페";
   const description = searchQuery
-    ? "검색 결과가 많으면 지역이 겹치지 않도록 대표 카페만 먼저 보여줍니다."
-    : "아래 목록은 현재 지도 범위 안에서 찾은 카페입니다.";
+    ? "검색 결과를 지도 위에서 바로 비교하며 둘러볼 수 있습니다."
+    : "현재 보고 있는 지도 범위 안의 카페를 확인할 수 있습니다.";
 
   return (
     <div className="absolute inset-x-4 bottom-4 rounded-[24px] border border-[#eadfd3] bg-white/95 p-4 shadow-[0_18px_36px_rgba(84,52,27,0.12)] backdrop-blur">
@@ -519,7 +518,7 @@ function MarkerList({
           </span>
           {hiddenResultCount > 0 ? (
             <span className="rounded-full bg-[#efe3d5] px-3 py-1 text-xs font-medium text-[#6c5547]">
-              숨김 {hiddenResultCount}곳
+              추가 {hiddenResultCount}곳
             </span>
           ) : null}
         </div>
@@ -560,7 +559,7 @@ function MarkerList({
                   </div>
                   <button
                     type="button"
-                    aria-label="내 취향 카페 토글"
+                    aria-label="??痍⑦뼢 移댄럹 ?좉?"
                     onClick={(event) => {
                       event.stopPropagation();
                       onToggleFavorite(place);
@@ -571,7 +570,7 @@ function MarkerList({
                         : "bg-[#efe3d5] text-[#5d473b]"
                     }`}
                   >
-                    {isFavorite ? "★" : "☆"}
+                    {isFavorite ? "★" : "+"}
                   </button>
                 </div>
                 <p className="mt-2 text-xs text-[#8f725d]">{getPlaceAddress(place)}</p>
@@ -594,6 +593,8 @@ export default function KakaoMap({
   activePlaceId,
   onSearchResultsChange,
   isSidebarOpen,
+  onStartCurrentAreaSearch,
+  messages,
 }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -607,8 +608,11 @@ export default function KakaoMap({
   const onToggleFavoriteRef = useRef(onToggleFavorite);
   const onSelectPlaceRef = useRef(onSelectPlace);
   const normalizedSearchQueryRef = useRef("");
+  const isCurrentAreaModeRef = useRef(false);
+  const currentViewModeRef = useRef("idle");
   const searchRequestIdRef = useRef(0);
   const responseCacheRef = useRef(new Map());
+  const shouldFocusSearchResultsRef = useRef(true);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [mapPlaces, setMapPlaces] = useState([]);
@@ -653,6 +657,41 @@ export default function KakaoMap({
     infoWindowRef.current?.close();
   };
 
+  const handleSearchCurrentView = async () => {
+    if (!mapInstanceRef.current) {
+      return;
+    }
+
+    const map = mapInstanceRef.current;
+    const cacheKey = `bounds-search|${buildBoundsCacheKey(map)}`;
+
+    clearSelection();
+    shouldFocusSearchResultsRef.current = false;
+    isCurrentAreaModeRef.current = true;
+    currentViewModeRef.current = "map";
+    onStartCurrentAreaSearch?.();
+    setStatus("loading");
+    setErrorMessage("");
+
+    try {
+      const cachedResults = responseCacheRef.current.get(cacheKey);
+      const results = cachedResults ?? await fetchAllVisibleCafes(map);
+
+      if (!cachedResults) {
+        responseCacheRef.current.set(cacheKey, results);
+      }
+
+      setSearchPlaces([]);
+      setMapPlaces(results);
+      setStatus("ready");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unknown error",
+      );
+      setStatus("error");
+    }
+  };
+
   useEffect(() => {
     favoriteCafeIdsRef.current = favoriteCafeIds;
     onToggleFavoriteRef.current = onToggleFavorite;
@@ -661,11 +700,17 @@ export default function KakaoMap({
 
   useEffect(() => {
     onSearchResultsChange?.({
-      results: sortedSearchPlaces.map(toFavoriteCafe),
+      results: (normalizedSearchQuery ? sortedSearchPlaces : sortedMapPlaces).map(toFavoriteCafe),
       visibleCount: displayedPlaces.length,
-      totalCount: sortedSearchPlaces.length,
+      totalCount: normalizedSearchQuery ? sortedSearchPlaces.length : sortedMapPlaces.length,
       hiddenCount: hiddenSearchResultCount,
       isSearching: Boolean(normalizedSearchQuery),
+      source:
+        currentViewModeRef.current === "map"
+          ? "map"
+          : normalizedSearchQuery
+            ? "search"
+            : "idle",
       status,
       errorMessage,
     });
@@ -675,6 +720,7 @@ export default function KakaoMap({
     hiddenSearchResultCount,
     normalizedSearchQuery,
     onSearchResultsChange,
+    sortedMapPlaces,
     sortedSearchPlaces,
     status,
   ]);
@@ -752,7 +798,7 @@ export default function KakaoMap({
         infoWindowRef.current = infoWindow;
 
         const searchVisibleCafes = async () => {
-          if (normalizedSearchQueryRef.current) {
+          if (normalizedSearchQueryRef.current || isCurrentAreaModeRef.current) {
             return;
           }
 
@@ -848,10 +894,19 @@ export default function KakaoMap({
     async function runSearch() {
       if (!normalizedSearchQuery) {
         setSearchPlaces([]);
+
+        if (!isCurrentAreaModeRef.current) {
+          currentViewModeRef.current = "idle";
+          setMapPlaces([]);
+        }
+
         setStatus("ready");
         return;
       }
 
+      shouldFocusSearchResultsRef.current = true;
+      isCurrentAreaModeRef.current = false;
+      currentViewModeRef.current = "search";
       setStatus("loading");
       setErrorMessage("");
 
@@ -885,21 +940,6 @@ export default function KakaoMap({
       cancelled = true;
     };
   }, [normalizedSearchQuery, searchRequestVersion]);
-
-  useEffect(() => {
-    if (normalizedSearchQuery || !mapInstanceRef.current || !window.kakao?.maps) {
-      return;
-    }
-
-    const timerId = window.setTimeout(() => {
-      setMapPlaces([]);
-      setStatus("ready");
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
-  }, [normalizedSearchQuery]);
 
   useEffect(() => {
     if (!window.kakao?.maps || !mapInstanceRef.current) {
@@ -947,7 +987,11 @@ export default function KakaoMap({
 
     applyMarkerPriority(markerEntriesRef.current, selectedPlaceId);
 
-    if (normalizedSearchQuery && !selectedPlaceId) {
+    if (
+      normalizedSearchQuery &&
+      !selectedPlaceId &&
+      shouldFocusSearchResultsRef.current
+    ) {
       focusMapToPrimaryPlace(kakao, map, displayedPlaces);
     }
 
@@ -998,6 +1042,7 @@ export default function KakaoMap({
       return;
     }
 
+    currentViewModeRef.current = normalizedSearchQuery ? "search" : "map";
     selectedPlaceRef.current = targetEntry.place;
     setSelectedPlaceId(String(targetEntry.place.id));
     onSelectPlaceRef.current?.(toFavoriteCafe(targetEntry.place));
@@ -1033,6 +1078,7 @@ export default function KakaoMap({
       return;
     }
 
+    currentViewModeRef.current = normalizedSearchQuery ? "search" : "map";
     selectedPlaceRef.current = targetEntry.place;
     setSelectedPlaceId(String(targetEntry.place.id));
     onSelectPlaceRef.current?.(toFavoriteCafe(targetEntry.place));
@@ -1049,7 +1095,7 @@ export default function KakaoMap({
     mapInstanceRef.current.panTo(targetEntry.marker.getPosition());
     infoWindowRef.current?.setContent(content);
     infoWindowRef.current?.open(mapInstanceRef.current, targetEntry.marker);
-  }, [activePlaceId, displayedPlaces]);
+  }, [activePlaceId, displayedPlaces, normalizedSearchQuery]);
 
   return (
     <div className="relative h-full min-h-[420px] w-full sm:min-h-[520px]">
@@ -1070,35 +1116,49 @@ export default function KakaoMap({
         </div>
       ) : null}
 
-      {status === "ready" ? (
-        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-          {!normalizedSearchQuery ? (
-            <div className="rounded-full bg-[#2f221b]/90 px-3 py-2 text-xs font-medium text-white shadow-[0_16px_30px_rgba(47,34,27,0.24)]">
-              현재 지도 범위 카페 {sortedMapPlaces.length}곳
-            </div>
-          ) : (
-            <>
-              <div className="rounded-full bg-[#2f221b]/90 px-3 py-2 text-xs font-medium text-white shadow-[0_16px_30px_rgba(47,34,27,0.24)]">
-                검색 결과 {sortedSearchPlaces.length}곳
-              </div>
-              <div className="rounded-full bg-white/92 px-3 py-2 text-xs font-medium text-[#5e493d] shadow-[0_10px_25px_rgba(84,52,27,0.08)]">
-                지도 표시 {displayedPlaces.length}곳
-              </div>
-            </>
-          )}
-        </div>
-      ) : null}
+      <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-32px)] flex-col items-start gap-2">
+        {!normalizeAppKey(appKey) ||
+        normalizeAppKey(appKey) === "MOCK_KAKAO_MAP_KEY" ? null : (
+          <button
+            type="button"
+            onClick={handleSearchCurrentView}
+            disabled={status === "loading"}
+            className={`rounded-full border border-[#5d4334] bg-[linear-gradient(160deg,rgba(56,39,30,0.96)_0%,rgba(38,26,21,0.94)_100%)] px-4 py-2 text-xs font-semibold text-[#fff7f0] shadow-[0_16px_32px_rgba(47,34,27,0.24)] backdrop-blur transition ${
+              status === "loading"
+                ? "cursor-not-allowed opacity-60"
+                : "hover:border-[#7b5a46] hover:brightness-110"
+            }`}
+          >
+            {messages.searchCurrentAreaButton}
+          </button>
+        )}
+
+        {status === "ready" ? (
+          <>
+            {normalizedSearchQuery ? (
+              <>
+                <div className="rounded-full bg-[#2f221b]/90 px-3 py-2 text-xs font-medium text-white shadow-[0_16px_30px_rgba(47,34,27,0.24)]">
+                  검색 결과 {sortedSearchPlaces.length}곳
+                </div>
+                <div className="rounded-full bg-white/92 px-3 py-2 text-xs font-medium text-[#5e493d] shadow-[0_10px_25px_rgba(84,52,27,0.08)]">
+                  지도 표시 {displayedPlaces.length}곳
+                </div>
+              </>
+            ) : null}
+          </>
+        ) : null}
+      </div>
 
       {status === "error" ? (
         <div className="absolute inset-x-4 bottom-[260px] rounded-2xl border border-[#eadfd3] bg-white/95 px-4 py-3 text-sm text-[#5f4b3f] shadow-[0_14px_30px_rgba(84,52,27,0.1)]">
-          <p>카카오맵 데이터를 불러오지 못했습니다.</p>
+          <p>카카오 지도 데이터를 불러오지 못했습니다.</p>
           <p className="mt-1 text-xs text-[#8b7162]">
             {errorMessage ||
               "`frontend/.env.local`의 `NEXT_PUBLIC_KAKAO_MAP_KEY` 값을 확인한 뒤 개발 서버를 다시 실행해 주세요."}
           </p>
           <p className="mt-2 text-xs text-[#8b7162]">
-            카카오 개발자 콘솔에 `http://localhost:3000`이 허용 도메인으로 등록되어
-            있어야 합니다.
+            카카오 개발자 콘솔에 `http://localhost:3000` 이 허용 도메인으로 등록되어
+            있는지도 확인해 주세요.
           </p>
         </div>
       ) : null}

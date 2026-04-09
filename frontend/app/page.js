@@ -172,8 +172,8 @@ function HamburgerButton({ isOpen, onClick, messages }) {
   );
 }
 
-function SearchResultNoticeV2({ message, onClose, messages }) {
-  if (!message) {
+function SearchResultNoticeV2({ notice, onClose, messages }) {
+  if (!notice?.message) {
     return null;
   }
 
@@ -193,9 +193,9 @@ function SearchResultNoticeV2({ message, onClose, messages }) {
             {messages.searchNoticeLabel}
           </p>
           <p className="mt-2 text-sm font-semibold text-[#f7e3d0]">
-            {messages.searchNoticeTitle}
+            {notice.title}
           </p>
-          <p className="mt-2 text-sm leading-6 text-[#f2e5da]">{message}</p>
+          <p className="mt-2 text-sm leading-6 text-[#f2e5da]">{notice.message}</p>
         </div>
         <button
           type="button"
@@ -611,6 +611,7 @@ function MapPanelV2({
   isSidebarOpen,
   searchNoticeMessage,
   onCloseSearchNotice,
+  onStartCurrentAreaSearch,
   messages,
 }) {
   return (
@@ -618,7 +619,7 @@ function MapPanelV2({
       <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-4">
         <div className="pointer-events-auto w-full max-w-[380px]">
           <SearchResultNoticeV2
-            message={searchNoticeMessage}
+            notice={searchNoticeMessage}
             onClose={onCloseSearchNotice}
             messages={messages}
           />
@@ -651,6 +652,8 @@ function MapPanelV2({
           activePlaceId={activePlaceId}
           onSearchResultsChange={onSearchResultsChange}
           isSidebarOpen={isSidebarOpen}
+          onStartCurrentAreaSearch={onStartCurrentAreaSearch}
+          messages={messages}
         />
       </div>
     </section>
@@ -667,11 +670,18 @@ function BottomPanelV2({
   messages,
 }) {
   const isSearching = Boolean(searchQuery.trim());
+  const isResultPanelVisible = isSearching || searchState.source === "map";
   const visibleSearchResults = searchState.results.slice(0, SEARCH_RESULT_PANEL_LIMIT);
 
-  if (isSearching) {
+  if (isResultPanelVisible) {
     return (
-      <SectionCard title={messages.searchResultsTitle}>
+      <SectionCard
+        title={
+          searchState.source === "map"
+            ? messages.mapResultsTitle
+            : messages.searchResultsTitle
+        }
+      >
         {searchState.status === "error" ? (
           <div className="rounded-[24px] border border-[#eadfd3] bg-[#fcfaf7] px-4 py-4 text-sm text-[#5f4b3f]">
             {searchState.errorMessage || messages.searchError}
@@ -680,10 +690,12 @@ function BottomPanelV2({
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-[#f5ecdf] px-3 py-2 text-xs font-medium text-[#6c5547]">
-                {messages.totalSearchResults(
-                  searchState.totalCount,
-                  searchState.totalCount >= 45,
-                )}
+                {searchState.source === "map"
+                  ? messages.totalMapResults(searchState.totalCount)
+                  : messages.totalSearchResults(
+                      searchState.totalCount,
+                      searchState.totalCount >= 45,
+                    )}
               </span>
             </div>
 
@@ -840,6 +852,7 @@ export default function Home() {
     totalCount: 0,
     hiddenCount: 0,
     isSearching: false,
+    source: "idle",
     status: "idle",
     errorMessage: "",
   });
@@ -850,10 +863,30 @@ export default function Home() {
     errorMessage: "",
   });
   const [hasHydratedFavoriteCafes, setHasHydratedFavoriteCafes] = useState(false);
-  const [searchNoticeMessage, setSearchNoticeMessage] = useState("");
-  const [searchNoticeQuery, setSearchNoticeQuery] = useState("");
+  const [searchNoticeMessage, setSearchNoticeMessage] = useState(null);
+  const [searchNoticeShownKey, setSearchNoticeShownKey] = useState("");
   const messages = useMemo(() => getMessages(locale), [locale]);
-  const searchTooManyNotice = messages.searchTooManyNotice;
+  const searchTooManyNotice = useMemo(
+    () => ({
+      title: messages.searchTooManyTitle,
+      message: messages.searchTooManyNotice,
+    }),
+    [messages],
+  );
+  const searchEmptyInputNotice = useMemo(
+    () => ({
+      title: messages.searchEmptyInputTitle,
+      message: messages.searchEmptyInputNotice,
+    }),
+    [messages],
+  );
+  const mapTooManyNotice = useMemo(
+    () => ({
+      title: messages.searchTooManyTitle,
+      message: messages.mapTooManyNotice,
+    }),
+    [messages],
+  );
 
   useEffect(() => {
     try {
@@ -998,6 +1031,7 @@ export default function Home() {
 
   useEffect(() => {
     const normalizedQuery = searchQuery.trim();
+    const noticeKey = `search-too-many:${normalizedQuery}`;
 
     if (!normalizedQuery) {
       return;
@@ -1011,13 +1045,40 @@ export default function Home() {
       return;
     }
 
-    if (searchNoticeQuery === normalizedQuery) {
+    if (searchNoticeShownKey === noticeKey) {
       return;
     }
 
-    setSearchNoticeQuery(normalizedQuery);
+    setSearchNoticeShownKey(noticeKey);
     setSearchNoticeMessage(searchTooManyNotice);
-  }, [searchNoticeQuery, searchQuery, searchState.status, searchState.totalCount, searchTooManyNotice]);
+  }, [searchNoticeShownKey, searchQuery, searchState.status, searchState.totalCount, searchTooManyNotice]);
+
+  useEffect(() => {
+    const noticeKey = `map-too-many:${searchState.totalCount}:${searchState.visibleCount}`;
+
+    if (searchState.source !== "map") {
+      return;
+    }
+
+    if (searchState.status !== "ready") {
+      return;
+    }
+
+    if (searchState.totalCount < 45) {
+      return;
+    }
+
+    if (searchNoticeShownKey === "search-empty-input") {
+      return;
+    }
+
+    if (searchNoticeShownKey === noticeKey) {
+      return;
+    }
+
+    setSearchNoticeShownKey(noticeKey);
+    setSearchNoticeMessage(mapTooManyNotice);
+  }, [mapTooManyNotice, searchNoticeShownKey, searchState.source, searchState.status, searchState.totalCount, searchState.visibleCount]);
 
   useEffect(() => {
     if (!searchNoticeMessage) {
@@ -1025,7 +1086,7 @@ export default function Home() {
     }
 
     const timerId = window.setTimeout(() => {
-      setSearchNoticeMessage("");
+      setSearchNoticeMessage(null);
     }, 2500);
 
     return () => {
@@ -1042,12 +1103,16 @@ export default function Home() {
       return;
     }
 
-    if (searchNoticeMessage === searchTooManyNotice) {
+    if (searchState.source === "map") {
+      return;
+    }
+
+    if (searchNoticeMessage?.message === searchTooManyNotice.message) {
       return;
     }
 
     setSearchNoticeMessage(searchTooManyNotice);
-  }, [searchNoticeMessage, searchState.totalCount, searchTooManyNotice]);
+  }, [searchNoticeMessage, searchState.source, searchState.totalCount, searchTooManyNotice]);
 
   const favoriteCafeIds = useMemo(
     () => new Set(favoriteCafes.map((cafe) => cafe.id)),
@@ -1102,18 +1167,32 @@ export default function Home() {
 
   const handleSearchSubmit = () => {
     const nextQuery = searchInput.trim();
-    setSearchQuery(nextQuery);
-    setSearchRequestVersion((current) => current + 1);
 
     if (!nextQuery) {
+      setSearchQuery("");
+      setSearchNoticeShownKey("search-empty-input");
+      setSearchNoticeMessage(searchEmptyInputNotice);
       setSelectedCafe(null);
       setActivePlaceId("");
+      return;
     }
+
+    setSearchQuery(nextQuery);
+    setSearchRequestVersion((current) => current + 1);
   };
 
   const handleSelectCafe = (cafe) => {
     setSelectedCafe(cafe);
     setActivePlaceId(cafe?.id ?? "");
+  };
+
+  const handleStartCurrentAreaSearch = () => {
+    setSearchInput("");
+    setSearchQuery("");
+    setSearchNoticeMessage(null);
+    setSearchNoticeShownKey("");
+    setSelectedCafe(null);
+    setActivePlaceId("");
   };
 
   return (
@@ -1171,6 +1250,7 @@ export default function Home() {
               isSidebarOpen={isSidebarOpen}
               searchNoticeMessage={searchNoticeMessage}
               onCloseSearchNotice={() => setSearchNoticeMessage("")}
+              onStartCurrentAreaSearch={handleStartCurrentAreaSearch}
               messages={messages}
             />
 

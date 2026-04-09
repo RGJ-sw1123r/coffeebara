@@ -12,9 +12,12 @@ const messages = {
     mapSectionLabel: "카페 지도",
     mapSectionTitle: "카페를 찾아보세요. 마음에 드는 곳을 내 취향 카페로 지정하세요.",
     mapSectionDescription: "비슷한 카페를 추천 받을 수 있습니다.",
+    searchCurrentAreaButton: "현재 위치에서 검색",
     searchResultsTitle: "검색 결과",
+    mapResultsTitle: "현재 위치 카페",
     totalSearchResults: (count, hasMore = false) =>
       `총 검색 결과 ${count}곳${hasMore ? " 이상" : ""}`,
+    totalMapResults: (count) => `현재 지도 카페 ${count}곳`,
     searchLoading: "검색 결과를 불러오고 있습니다.",
     searchLoadingWithQuery: (query) => `"${query}" 검색 결과를 불러오고 저장하는 중입니다.`,
     searchLoadingWithoutQuery: "검색 결과를 불러오고 저장하는 중입니다.",
@@ -22,10 +25,15 @@ const messages = {
     searchEmpty: "검색 결과가 없습니다.",
     searchError: "검색 결과를 불러오지 못했습니다.",
     searchNoticeLabel: "Search Tip",
-    searchNoticeTitle: "검색 범위가 넓습니다",
+    searchTooManyTitle: "검색 범위가 넓습니다",
+    searchEmptyInputTitle: "검색어를 입력해 주세요",
     searchNoticeClose: "알림 닫기",
     searchTooManyNotice:
       "검색 결과가 많습니다. 지역명을 함께 입력하면 더 정확하게 찾을 수 있습니다.",
+    mapTooManyNotice:
+      "검색 결과가 많습니다. 지도를 조정하거나 검색 기능을 이용해 범위를 좁혀 주세요.",
+    searchEmptyInputNotice:
+      "카페명이나 지역명을 함께 입력한 뒤 검색해 주세요.",
     cafeInfoTitle: "카페 정보",
     cafeCategoryFallback: "카페",
     noAddress: "주소 정보 없음",
@@ -84,9 +92,12 @@ const messages = {
     mapSectionLabel: "Cafe Map",
     mapSectionTitle: "Search for cafes. Save places you like as preferred cafes.",
     mapSectionDescription: "You can receive recommendations for similar cafes.",
+    searchCurrentAreaButton: "Search This Area",
     searchResultsTitle: "Search Results",
+    mapResultsTitle: "Cafes In View",
     totalSearchResults: (count, hasMore = false) =>
       `Total search results ${count}${hasMore ? "+" : ""}`,
+    totalMapResults: (count) => `Cafes in current map ${count}`,
     searchLoading: "Loading search results.",
     searchLoadingWithQuery: (query) => `Loading and saving results for "${query}".`,
     searchLoadingWithoutQuery: "Loading and saving search results.",
@@ -94,10 +105,15 @@ const messages = {
     searchEmpty: "No search results found.",
     searchError: "Failed to load search results.",
     searchNoticeLabel: "Search Tip",
-    searchNoticeTitle: "Search area is broad",
+    searchTooManyTitle: "Search area is broad",
+    searchEmptyInputTitle: "Enter a search term",
     searchNoticeClose: "Close notice",
     searchTooManyNotice:
       "There are many results. Add a region to search more precisely.",
+    mapTooManyNotice:
+      "There are many results. Adjust the map or use search to narrow the area.",
+    searchEmptyInputNotice:
+      "Enter a cafe name or region, then try searching again.",
     cafeInfoTitle: "Cafe Info",
     cafeCategoryFallback: "Cafe",
     noAddress: "No address available",
@@ -154,9 +170,12 @@ const messages = {
     mapSectionLabel: "カフェマップ",
     mapSectionTitle: "カフェを探してみましょう。気に入った場所を好みのカフェに追加してください。",
     mapSectionDescription: "似ているカフェのおすすめを受け取れます。",
+    searchCurrentAreaButton: "この場所で検索",
     searchResultsTitle: "検索結果",
+    mapResultsTitle: "現在位置のカフェ",
     totalSearchResults: (count, hasMore = false) =>
       `検索結果 ${count}件${hasMore ? "以上" : ""}`,
+    totalMapResults: (count) => `現在の地図内カフェ ${count}件`,
     searchLoading: "検索結果を読み込んでいます。",
     searchLoadingWithQuery: (query) => `「${query}」の検索結果を読み込み、保存しています。`,
     searchLoadingWithoutQuery: "検索結果を読み込み、保存しています。",
@@ -164,10 +183,15 @@ const messages = {
     searchEmpty: "検索結果がありません。",
     searchError: "検索結果を読み込めませんでした。",
     searchNoticeLabel: "Search Tip",
-    searchNoticeTitle: "検索範囲が広いです",
+    searchTooManyTitle: "検索範囲が広いです",
+    searchEmptyInputTitle: "検索語を入力してください",
     searchNoticeClose: "通知を閉じる",
     searchTooManyNotice:
       "検索結果が多すぎます。地域名を一緒に入力すると、より正確に探せます。",
+    mapTooManyNotice:
+      "結果が多すぎます。地図を調整するか検索機能で範囲を絞ってください。",
+    searchEmptyInputNotice:
+      "カフェ名や地域名を入力してから検索してください。",
     cafeInfoTitle: "カフェ情報",
     cafeCategoryFallback: "カフェ",
     noAddress: "住所情報なし",

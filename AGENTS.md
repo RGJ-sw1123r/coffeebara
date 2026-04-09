@@ -108,6 +108,15 @@ If any future design note below conflicts with the current implementation direct
 - Social login: not started
 
 ## Current implementation snapshot
+- Auth / entry
+  - frontend has a dedicated `/login` page
+  - current working entry path: guest access only
+  - Kakao social login button is visible in the UI but not implemented yet
+  - backend uses Spring Security to protect `/api/cafes/**`
+  - current auth endpoints:
+    - `POST /api/auth/guest`
+    - `POST /api/auth/logout`
+    - `GET /api/auth/status`
 - `GET /api/cafes/search`
   - Kakao keyword search based
   - current fetch cap: up to 3 pages / up to 45 results
@@ -156,9 +165,10 @@ If any future design note below conflicts with the current implementation direct
   - current cap: up to 3 pages / up to 45 nearby cafes
   - current storage: `cafe` table only
 - Cafe schema
-  - unique key: `kakao_place_id`
+  - primary key: `kakao_place_id`
   - freshness fields exist
   - coordinate columns use numeric types
+  - `updated_at` is removed
 
 ## Guest-first policy
 - The current product should behave as a guest-first service.

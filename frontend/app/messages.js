@@ -1,6 +1,26 @@
 const messages = {
   ko: {
     headerTitle: "취향 카페 탐색",
+    loginPageEyebrow: "Coffeebara",
+    loginPageTitle: "LOGIN",
+    loginPageDescription:
+      "Kakao 소셜 로그인 또는 게스트 이용 중 하나를 선택해 계속 진행할 수 있습니다.",
+    loginPageKakaoButton: "Kakao 소셜 로그인",
+    loginPageGuestButton: "게스트로 사용",
+    loginPageLoginHint: "Kakao 로그인 연동은 준비 중입니다.",
+    loginPageGuestHint:
+      "게스트로 저장한 정보는 이 브라우저에만 유지되며 환경에 따라 초기화될 수 있습니다.",
+    loginPagePending: (providerLabel) =>
+      `${providerLabel} 기능은 아직 준비 중입니다. 우선 게스트로 이용할 수 있습니다.`,
+    loginPageGuestFailed:
+      "게스트 진입을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    loginPageStatusFailed:
+      "로그인 상태를 확인하지 못했습니다. 백엔드가 실행 중인지 확인해 주세요.",
+    accountMenuLabel: "계정 메뉴 열기",
+    logoutButton: "로그아웃",
+    guestModeBannerTitle: "현재 게스트로 이용 중입니다.",
+    guestModeBannerBody:
+      "게스트로 저장한 정보는 이 브라우저에만 유지되며, 로그인 페이지로 돌아가면 초기화됩니다.",
     logoAlt: "Coffeebara 로고",
     menuOpen: "사이드 메뉴 열기",
     menuClose: "사이드 메뉴 닫기",
@@ -94,6 +114,26 @@ const messages = {
   },
   en: {
     headerTitle: "Cafe Preference Explorer",
+    loginPageEyebrow: "Coffeebara",
+    loginPageTitle: "LOGIN",
+    loginPageDescription:
+      "Choose Kakao social login or continue as a guest to proceed.",
+    loginPageKakaoButton: "Kakao Social Login",
+    loginPageGuestButton: "Continue as Guest",
+    loginPageLoginHint: "Kakao login integration is coming soon.",
+    loginPageGuestHint:
+      "Guest data stays only in this browser and may be reset depending on browser conditions.",
+    loginPagePending: (providerLabel) =>
+      `${providerLabel} is not ready yet. You can continue as a guest for now.`,
+    loginPageGuestFailed:
+      "Could not start guest access. Please try again shortly.",
+    loginPageStatusFailed:
+      "Could not verify login status. Check whether the backend is running.",
+    accountMenuLabel: "Open account menu",
+    logoutButton: "Log out",
+    guestModeBannerTitle: "You are currently using guest mode.",
+    guestModeBannerBody:
+      "Guest data stays only in this browser and will be cleared when you return to the login page.",
     logoAlt: "Coffeebara logo",
     menuOpen: "Open side menu",
     menuClose: "Close side menu",
@@ -185,6 +225,26 @@ const messages = {
   },
   ja: {
     headerTitle: "好みのカフェ探し",
+    loginPageEyebrow: "Coffeebara",
+    loginPageTitle: "LOGIN",
+    loginPageDescription:
+      "Kakao ソーシャルログインまたはゲスト利用のどちらかを選んで続行できます。",
+    loginPageKakaoButton: "Kakao ソーシャルログイン",
+    loginPageGuestButton: "ゲストで利用する",
+    loginPageLoginHint: "Kakao ログイン連携は準備中です。",
+    loginPageGuestHint:
+      "ゲストとして保存した情報はこのブラウザにのみ保持され、環境により初期化されることがあります。",
+    loginPagePending: (providerLabel) =>
+      `${providerLabel} はまだ準備中です。今はゲスト利用のみ可能です。`,
+    loginPageGuestFailed:
+      "ゲスト利用を開始できませんでした。しばらくしてからもう一度お試しください。",
+    loginPageStatusFailed:
+      "ログイン状態を確認できませんでした。バックエンドが起動しているか確認してください。",
+    accountMenuLabel: "アカウントメニューを開く",
+    logoutButton: "ログアウト",
+    guestModeBannerTitle: "現在ゲストモードで利用中です。",
+    guestModeBannerBody:
+      "ゲストとして保存した情報はこのブラウザにのみ保持され、ログインページに戻ると初期化されます。",
     logoAlt: "Coffeebara ロゴ",
     menuOpen: "サイドメニューを開く",
     menuClose: "サイドメニューを閉じる",

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import HeaderBar from "./components/home/HeaderBar";
 import KakaoMap from "./components/KakaoMap";
@@ -10,11 +11,30 @@ import { getMessages } from "./messages";
 
 const STORAGE_KEY = "coffeebara.guestFavorites.v1";
 const LEGACY_STORAGE_KEY = "coffeebara.preferred-cafes";
+const LOCALE_STORAGE_KEY = "coffeebara.locale.v1";
 const MIN_RECOMMENDATION_READY_COUNT = 3;
 const SEARCH_RESULT_PANEL_LIMIT = 10;
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
 const DEFAULT_MAP_VIEW = { lat: 37.566826, lng: 126.9786567 };
+
+function getInitialLocale() {
+  if (typeof window === "undefined") {
+    return "ko";
+  }
+
+  try {
+    const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+
+    if (storedLocale === "ko" || storedLocale === "en" || storedLocale === "ja") {
+      return storedLocale;
+    }
+  } catch {
+    // Ignore storage access failures and keep the default locale.
+  }
+
+  return "ko";
+}
 
 function buildFriendlyBackendErrorMessage(errorCode, fallbackMessage, cafeName, messages) {
   const cafeLabel = cafeName ? `"${cafeName}"` : messages.selectedCafeLabel;
@@ -136,6 +156,7 @@ function areFavoriteCafesEqual(left, right) {
 async function syncFavoriteCafeToBackend(cafe, messages) {
   const response = await fetch(`${API_BASE_URL}/api/cafes`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -291,6 +312,35 @@ function BackendSyncBanner({ status, errorMessage, messages }) {
         {errorMessage || messages.backendBannerFallback}
       </p>
     </section>
+  );
+}
+
+function GuestModeToast({ isVisible, messages }) {
+  if (!isVisible) {
+    return null;
+  }
+
+  const bodyText = String(messages.guestModeBannerBody);
+  const commaIndex = bodyText.indexOf(",");
+  const bodyLines =
+    commaIndex >= 0
+      ? [
+          bodyText.slice(0, commaIndex + 1).trim(),
+          bodyText.slice(commaIndex + 1).trim(),
+        ].filter(Boolean)
+      : [bodyText];
+
+  return (
+    <div className="pointer-events-none fixed bottom-5 right-5 z-50 w-[min(384px,calc(100vw-2rem))] rounded-[24px] border border-[#3d8f58] bg-[#2f9e55] px-5 py-[18px] text-white shadow-[0_18px_36px_rgba(29,92,50,0.22)]">
+      <p className="text-sm font-semibold">{messages.guestModeBannerTitle}</p>
+      <p className="mt-1 text-sm leading-6 text-white/92">
+        {bodyLines.map((line, index) => (
+          <span key={`${line}-${index}`} className="block">
+            {line}
+          </span>
+        ))}
+      </p>
+    </div>
   );
 }
 
@@ -694,6 +744,7 @@ function BottomPanelV2({
 }
 
 export default function Home() {
+  const router = useRouter();
   const kakaoMapKey =
     process.env.NEXT_PUBLIC_KAKAO_MAP_KEY?.trim() ??
     process.env.KAKAO_MAP_KEY?.trim() ??
@@ -701,7 +752,7 @@ export default function Home() {
 
   const [favoriteCafes, setFavoriteCafes] = useState([]);
   const [isStorageReady, setIsStorageReady] = useState(false);
-  const [locale, setLocale] = useState("ko");
+  const [locale, setLocale] = useState(getInitialLocale);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchRequestVersion, setSearchRequestVersion] = useState(0);
@@ -727,6 +778,8 @@ export default function Home() {
     totalCount: 0,
     errorMessage: "",
   });
+  const [authStatus, setAuthStatus] = useState("checking");
+  const [isGuestModeToastVisible, setIsGuestModeToastVisible] = useState(false);
   const [hasHydratedFavoriteCafes, setHasHydratedFavoriteCafes] = useState(false);
   const [noticeState, setNoticeState] = useState(null);
   const [pendingToastKey, setPendingToastKey] = useState("");
@@ -760,6 +813,77 @@ export default function Home() {
 
   useEffect(() => {
     try {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    } catch {
+      // Ignore storage access failures and keep the in-memory locale.
+    }
+  }, [locale]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchAuthStatus() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/status`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to verify auth status.");
+        }
+
+        const payload = await response.json();
+
+        if (cancelled) {
+          return;
+        }
+
+        if (payload?.authenticated) {
+          setAuthStatus("authenticated");
+          return;
+        }
+
+        setAuthStatus("redirecting");
+        router.replace("/login");
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        setAuthStatus("redirecting");
+        router.replace("/login");
+      }
+    }
+
+    fetchAuthStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  useEffect(() => {
+    if (authStatus !== "authenticated") {
+      return;
+    }
+
+    setIsGuestModeToastVisible(true);
+    const timerId = window.setTimeout(() => {
+      setIsGuestModeToastVisible(false);
+    }, 4000);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [authStatus]);
+
+  useEffect(() => {
+    if (authStatus !== "authenticated") {
+      return;
+    }
+
+    try {
       const stored =
         window.localStorage.getItem(STORAGE_KEY) ??
         window.localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -784,18 +908,18 @@ export default function Home() {
     } finally {
       setIsStorageReady(true);
     }
-  }, []);
+  }, [authStatus]);
 
   useEffect(() => {
-    if (!isStorageReady) {
+    if (authStatus !== "authenticated" || !isStorageReady) {
       return;
     }
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(favoriteCafes));
-  }, [favoriteCafes, isStorageReady]);
+  }, [authStatus, favoriteCafes, isStorageReady]);
 
   useEffect(() => {
-    if (!isStorageReady) {
+    if (authStatus !== "authenticated" || !isStorageReady) {
       return;
     }
 
@@ -830,6 +954,9 @@ export default function Home() {
         for (const cafe of favoriteCafes) {
           const response = await fetch(
             `${API_BASE_URL}/api/cafes/${encodeURIComponent(cafe.id)}?query=${encodeURIComponent(cafe.name)}`,
+            {
+              credentials: "include",
+            },
           );
 
           if (!response.ok) {
@@ -890,7 +1017,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [favoriteCafes, hasHydratedFavoriteCafes, isStorageReady, messages]);
+  }, [authStatus, favoriteCafes, hasHydratedFavoriteCafes, isStorageReady, messages]);
 
   useEffect(() => {
     if (!isSidebarOpen) {
@@ -1112,6 +1239,25 @@ export default function Home() {
     setResetViewVersion((current) => current + 1);
   };
 
+  const handleLogout = useCallback(async () => {
+    try {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // Ignore logout transport failures and continue local cleanup.
+    }
+
+    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    setFavoriteCafes([]);
+    setHasHydratedFavoriteCafes(false);
+    setIsGuestModeToastVisible(false);
+    setAuthStatus("redirecting");
+    router.replace("/login");
+  }, [router]);
+
   const kakaoMapUrl = useMemo(() => {
     const hasActiveMapContext =
       Boolean(searchQuery.trim()) ||
@@ -1135,8 +1281,17 @@ export default function Home() {
     return `https://map.kakao.com/link/map/${mapViewport.lat},${mapViewport.lng}`;
   }, [activePlaceId, mapViewport, searchQuery, searchState.source, selectedCafe]);
 
+  if (authStatus !== "authenticated") {
+    return <div className="min-h-screen bg-[#fffaf5]" />;
+  }
+
   return (
     <div className="min-h-screen bg-[#fffaf5] text-[#241813]">
+      <GuestModeToast
+        isVisible={isGuestModeToastVisible}
+        messages={messages}
+      />
+
       <HeaderBar
         searchInput={searchInput}
         onSearchInputChange={setSearchInput}
@@ -1146,6 +1301,7 @@ export default function Home() {
         onToggleSidebar={() => setIsSidebarOpen((current) => !current)}
         locale={locale}
         onLocaleChange={setLocale}
+        onLogout={handleLogout}
         messages={messages}
       />
 

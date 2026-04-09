@@ -1,3 +1,17 @@
+## Current Notes
+
+- The frontend now uses a dedicated `/login` page.
+- Guest access is the only working entry path for now.
+- The Kakao social login button is visible, but it is not connected yet.
+- The backend protects `/api/cafes/**` with Spring Security.
+- Available auth endpoints:
+  - `POST /api/auth/guest`
+  - `POST /api/auth/logout`
+  - `GET /api/auth/status`
+- The `cafe` table now uses `kakao_place_id` as the primary key.
+- `updated_at` has been removed from the `cafe` schema.
+- Cafe persistence now follows `UPDATE -> INSERT` instead of `ON DUPLICATE KEY UPDATE`.
+
 # Coffeebara
 
 Coffeebara는 사용자가 좋아하는 카페를 저장하고, 지도 기반으로 카페를 탐색하며, Kakao Local API를 기준으로 카페 데이터를 수집하고 적재하는 프로젝트입니다.

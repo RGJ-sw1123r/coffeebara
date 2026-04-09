@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import coffeebaraLogo from "../../coffeebara-logo.png";
 
@@ -24,6 +24,58 @@ function HamburgerButton({ isOpen, onClick, messages }) {
   );
 }
 
+function AccountMenu({ onLogout, messages }) {
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!isAccountMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event) => {
+      if (!menuRef.current?.contains(event.target)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, [isAccountMenuOpen]);
+
+  return (
+    <div ref={menuRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsAccountMenuOpen((current) => !current)}
+        aria-label={messages.accountMenuLabel}
+        className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#2f221b] bg-[#2f221b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(84,52,27,0.12)] transition hover:bg-[#241813]"
+      >
+        G
+      </button>
+
+      {isAccountMenuOpen ? (
+        <div className="absolute right-0 top-[calc(100%+8px)] z-40 min-w-[132px] overflow-hidden rounded-2xl border border-[#dccfbe] bg-white shadow-[0_18px_40px_rgba(84,52,27,0.12)]">
+          <button
+            type="button"
+            onClick={() => {
+              setIsAccountMenuOpen(false);
+              onLogout();
+            }}
+            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-[#5f4b3f] transition hover:bg-[#fcf7f2]"
+          >
+            <span>{messages.logoutButton}</span>
+            <span>↗</span>
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function HeaderBar({
   searchInput,
   onSearchInputChange,
@@ -33,15 +85,35 @@ export default function HeaderBar({
   onToggleSidebar,
   locale,
   onLocaleChange,
+  onLogout,
   messages,
 }) {
   const [isLocaleMenuOpen, setIsLocaleMenuOpen] = useState(false);
+  const localeMenuRef = useRef(null);
   const localeOptions = ["ko", "en", "ja"];
 
   const handleSubmit = (event) => {
     event.preventDefault();
     onSearchSubmit();
   };
+
+  useEffect(() => {
+    if (!isLocaleMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event) => {
+      if (!localeMenuRef.current?.contains(event.target)) {
+        setIsLocaleMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, [isLocaleMenuOpen]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#e7ddd2] bg-[rgba(255,251,246,0.96)] backdrop-blur">
@@ -77,7 +149,7 @@ export default function HeaderBar({
         </div>
 
         <div className="ml-auto hidden items-center gap-3 md:flex">
-          <div className="relative">
+          <div ref={localeMenuRef} className="relative">
             <button
               type="button"
               onClick={() => setIsLocaleMenuOpen((current) => !current)}
@@ -137,6 +209,7 @@ export default function HeaderBar({
             >
               {messages.searchButton}
             </button>
+            <AccountMenu onLogout={onLogout} messages={messages} />
           </form>
         </div>
       </div>
@@ -162,6 +235,7 @@ export default function HeaderBar({
           >
             {messages.searchButtonCompact}
           </button>
+          <AccountMenu onLogout={onLogout} messages={messages} />
         </form>
       </div>
     </header>

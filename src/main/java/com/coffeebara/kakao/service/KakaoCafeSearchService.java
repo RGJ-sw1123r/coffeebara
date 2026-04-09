@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,6 @@ public class KakaoCafeSearchService {
 	private static final int MAX_MAP_FETCH_PAGE_COUNT = 3;
 	private static final int MAX_NEARBY_FETCH_PAGE_COUNT = 3;
 	private static final int MAX_FIND_BY_ID_FETCH_PAGE_COUNT = 3;
-	private static final int CAFE_BATCH_UPSERT_CHUNK_SIZE = 20;
 	private static final int MAX_SEARCH_SAVE_COUNT = KAKAO_PAGE_SIZE * MAX_SEARCH_FETCH_PAGE_COUNT;
 	private static final double NEARBY_RECT_LAT_DELTA = 0.01d;
 	private static final double NEARBY_RECT_LNG_DELTA = 0.01d;
@@ -694,7 +694,16 @@ public class KakaoCafeSearchService {
 
 	private void upsertCafe(Map<String, Object> cafe) {
 		try {
-			cafeMapper.upsert(cafe);
+			int updatedRows = cafeMapper.updateByKakaoPlaceId(cafe);
+			if (updatedRows > 0) {
+				return;
+			}
+
+			try {
+				cafeMapper.insert(cafe);
+			} catch (DuplicateKeyException exception) {
+				cafeMapper.updateByKakaoPlaceId(cafe);
+			}
 		} catch (CannotGetJdbcConnectionException exception) {
 			throw new ApiException(
 				HttpStatus.SERVICE_UNAVAILABLE,
@@ -711,33 +720,13 @@ public class KakaoCafeSearchService {
 	}
 
 	private void processCafeBatchUpsert(List<Map<String, Object>> cafes) {
-		for (int start = 0; start < cafes.size(); start += CAFE_BATCH_UPSERT_CHUNK_SIZE) {
-			int end = Math.min(start + CAFE_BATCH_UPSERT_CHUNK_SIZE, cafes.size());
-			List<Map<String, Object>> chunk = cafes.subList(start, end);
-
+		for (Map<String, Object> cafe : cafes) {
 			try {
-				cafeMapper.upsertBatch(chunk);
-			} catch (CannotGetJdbcConnectionException exception) {
-				log.warn("Cafe batch upsert skipped because DB connection is unavailable. chunkSize={}", chunk.size());
-				return;
-			} catch (DataAccessException exception) {
-				log.error(
-					"Cafe batch upsert failed. Falling back to single-row upserts. chunkStart={}, chunkEnd={}",
-					start,
-					end,
-					exception
-				);
-				processCafeChunkFallbackUpsert(chunk);
-			}
-		}
-	}
-
-	private void processCafeChunkFallbackUpsert(List<Map<String, Object>> chunk) {
-		for (Map<String, Object> cafe : chunk) {
-			try {
-				cafeMapper.upsert(cafe);
-			} catch (DataAccessException exception) {
-				log.error("Cafe single-row fallback upsert failed. kakaoPlaceId={}", cafe.get("kakaoPlaceId"), exception);
+				upsertCafe(cafe);
+			} catch (ApiException exception) {
+				throw exception;
+			} catch (RuntimeException exception) {
+				log.error("Cafe single-row upsert failed. kakaoPlaceId={}", cafe.get("kakaoPlaceId"), exception);
 			}
 		}
 	}

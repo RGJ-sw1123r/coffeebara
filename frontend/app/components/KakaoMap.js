@@ -389,7 +389,7 @@ function getMapCenter(map) {
 async function fetchCafeDocuments(pathname, params) {
   const response = await fetch(`${API_BASE_URL}${pathname}?${params.toString()}`, {
     method: "GET",
-    credentials: "same-origin",
+    credentials: "include",
   });
 
   if (!response.ok) {

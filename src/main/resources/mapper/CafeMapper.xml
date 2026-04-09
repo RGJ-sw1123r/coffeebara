@@ -21,7 +21,7 @@
     WHERE kakao_place_id = #{kakaoPlaceId}
   </select>
 
-  <insert id="upsert" parameterType="map">
+  <insert id="insert" parameterType="map">
     INSERT INTO cafe (
       kakao_place_id,
       place_name,
@@ -47,59 +47,22 @@
       #{lastFetchedAt},
       #{nextRefreshAt}
     )
-    ON DUPLICATE KEY UPDATE
-      place_name = VALUES(place_name),
-      category_name = VALUES(category_name),
-      phone = VALUES(phone),
-      address_name = VALUES(address_name),
-      road_address_name = VALUES(road_address_name),
-      longitude = VALUES(longitude),
-      latitude = VALUES(latitude),
-      place_url = VALUES(place_url),
-      last_fetched_at = VALUES(last_fetched_at),
-      next_refresh_at = VALUES(next_refresh_at)
   </insert>
 
-  <insert id="upsertBatch" parameterType="list">
-    INSERT INTO cafe (
-      kakao_place_id,
-      place_name,
-      category_name,
-      phone,
-      address_name,
-      road_address_name,
-      longitude,
-      latitude,
-      place_url,
-      last_fetched_at,
-      next_refresh_at
-    ) VALUES
-    <foreach collection="list" item="cafe" separator=",">
-      (
-        #{cafe.kakaoPlaceId},
-        #{cafe.placeName},
-        #{cafe.categoryName},
-        #{cafe.phone},
-        #{cafe.addressName},
-        #{cafe.roadAddressName},
-        #{cafe.longitude},
-        #{cafe.latitude},
-        #{cafe.placeUrl},
-        #{cafe.lastFetchedAt},
-        #{cafe.nextRefreshAt}
-      )
-    </foreach>
-    ON DUPLICATE KEY UPDATE
-      place_name = VALUES(place_name),
-      category_name = VALUES(category_name),
-      phone = VALUES(phone),
-      address_name = VALUES(address_name),
-      road_address_name = VALUES(road_address_name),
-      longitude = VALUES(longitude),
-      latitude = VALUES(latitude),
-      place_url = VALUES(place_url),
-      last_fetched_at = VALUES(last_fetched_at),
-      next_refresh_at = VALUES(next_refresh_at)
-  </insert>
+  <update id="updateByKakaoPlaceId" parameterType="map">
+    UPDATE cafe
+    SET
+      place_name = #{placeName},
+      category_name = #{categoryName},
+      phone = #{phone},
+      address_name = #{addressName},
+      road_address_name = #{roadAddressName},
+      longitude = #{longitude},
+      latitude = #{latitude},
+      place_url = #{placeUrl},
+      last_fetched_at = #{lastFetchedAt},
+      next_refresh_at = #{nextRefreshAt}
+    WHERE kakao_place_id = #{kakaoPlaceId}
+  </update>
 
 </mapper>

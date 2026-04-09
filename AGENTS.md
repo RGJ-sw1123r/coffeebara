@@ -117,6 +117,11 @@ If any future design note below conflicts with the current implementation direct
 - Search cache
   - property-based TTL
   - current default is 10 seconds
+- Frontend locale
+  - current locale selector: `KO / EN / JA`
+  - current behavior: UI copy is connected through `frontend/app/messages.js`
+  - current scope: header, sidebar, map section, bottom panels, toast, loading, and error copy
+  - current limitation: cafe names, addresses, and provider detail data still come from Kakao source data and are not translated
 - Preferred cafe save
   - current entry point: `POST /api/cafes`
   - current behavior: upsert selected cafe, then collect nearby cafes and upsert them into `cafe`
@@ -210,7 +215,7 @@ Do not implement the following yet:
 - recommendation ranking logic
 - LLM processing
 - public popularity aggregation
-- multilingual production rollout
+- provider-level multilingual place data rollout
 
 ## Future design reference only
 The sections below are architecture notes for future phases.
@@ -237,6 +242,7 @@ These notes are meant to guide future design discussions, not current execution.
 - Do not backfill guest data to DB automatically unless explicitly implemented.
 - If migration is added, treat it as a one-time import from localStorage to the user favorites table.
 - Guest mode may continue to exist even after login support is added, but it should remain localStorage-based unless explicitly redesigned.
+- When guest mode is visible in the UI later, clearly state that personal information and user coordinates are not stored in DB.
 
 ### 3. CORS externalization
 - Current localhost-specific CORS configuration should be moved to application properties.
@@ -260,6 +266,14 @@ These notes are meant to guide future design discussions, not current execution.
   - `/api/recommendations`
 - Do not introduce `/api/guest/favorites` backed by DB unless explicitly requested later.
 - Guest-mode requests may continue to send favorite references directly from localStorage-backed client state.
+
+### 6-1. Map / provider abstraction direction
+- Current implementation is Kakao-specific in both map rendering and place data collection.
+- If provider switching is needed later, prefer introducing:
+  - a `PlaceProvider` abstraction on the backend
+  - a `MapAdapter` abstraction on the frontend
+- Do not assume OpenLayers alone solves provider switching.
+- Keep this as a future refactor only; do not implement provider abstraction unless explicitly requested.
 
 ### 7. Crawling / scraping and enrichment strategy
 - Keep Kakao Local API as the primary source of truth for cafe collection.

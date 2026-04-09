@@ -12,28 +12,24 @@ const MIN_RECOMMENDATION_READY_COUNT = 3;
 const SEARCH_RESULT_PANEL_LIMIT = 10;
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
-const messages = getMessages();
 
-function buildFriendlyBackendErrorMessage(errorCode, fallbackMessage, cafeName) {
-  const cafeLabel = cafeName ? `"${cafeName}"` : "선택한 카페";
+function buildFriendlyBackendErrorMessage(errorCode, fallbackMessage, cafeName, messages) {
+  const cafeLabel = cafeName ? `"${cafeName}"` : messages.selectedCafeLabel;
 
   switch (errorCode) {
     case "DB_CONNECTION_FAILED":
-      return `${cafeLabel} 정보를 불러오는 중 서버 연결이 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요.`;
+      return messages.fetchTemporaryConnectionError(cafeLabel);
     case "CAFE_UPSERT_FAILED":
-      return `${cafeLabel} 정보를 최신 상태로 맞추는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.`;
+      return messages.fetchUpsertError(cafeLabel);
     case "CAFE_LOOKUP_FAILED":
     case "DATA_ACCESS_ERROR":
-      return `${cafeLabel} 정보를 확인하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.`;
+      return messages.fetchLookupError(cafeLabel);
     default:
-      return (
-        fallbackMessage ||
-        `${cafeLabel} 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.`
-      );
+      return fallbackMessage || messages.fetchGenericError(cafeLabel);
   }
 }
 
-async function parseBackendError(response, cafeName) {
+async function parseBackendError(response, cafeName, messages) {
   try {
     const payload = await response.json();
 
@@ -41,9 +37,10 @@ async function parseBackendError(response, cafeName) {
       typeof payload?.code === "string" ? payload.code : "",
       typeof payload?.message === "string" ? payload.message : "",
       cafeName,
+      messages,
     );
   } catch {
-    return buildFriendlyBackendErrorMessage("", "", cafeName);
+    return buildFriendlyBackendErrorMessage("", "", cafeName, messages);
   }
 }
 
@@ -133,7 +130,7 @@ function areFavoriteCafesEqual(left, right) {
   });
 }
 
-async function syncFavoriteCafeToBackend(cafe) {
+async function syncFavoriteCafeToBackend(cafe, messages) {
   const response = await fetch(`${API_BASE_URL}/api/cafes`, {
     method: "POST",
     headers: {
@@ -153,16 +150,16 @@ async function syncFavoriteCafeToBackend(cafe) {
   });
 
   if (!response.ok) {
-    throw new Error(await parseBackendError(response, cafe.name));
+    throw new Error(await parseBackendError(response, cafe.name, messages));
   }
 }
 
-function HamburgerButton({ isOpen, onClick }) {
+function HamburgerButton({ isOpen, onClick, messages }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={isOpen ? "사이드 메뉴 닫기" : "사이드 메뉴 열기"}
+      aria-label={isOpen ? messages.menuClose : messages.menuOpen}
       aria-expanded={isOpen}
       className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#cdb8a6] bg-white text-[#2f221b] shadow-[0_10px_24px_rgba(84,52,27,0.08)] transition hover:bg-[#f6efe7]"
     >
@@ -175,7 +172,7 @@ function HamburgerButton({ isOpen, onClick }) {
   );
 }
 
-function SearchResultNoticeV2({ message, onClose }) {
+function SearchResultNoticeV2({ message, onClose, messages }) {
   if (!message) {
     return null;
   }
@@ -193,17 +190,17 @@ function SearchResultNoticeV2({ message, onClose }) {
       <div className="relative flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#d9b99d]">
-            Search Tip
+            {messages.searchNoticeLabel}
           </p>
           <p className="mt-2 text-sm font-semibold text-[#f7e3d0]">
-            검색 범위가 넓습니다
+            {messages.searchNoticeTitle}
           </p>
           <p className="mt-2 text-sm leading-6 text-[#f2e5da]">{message}</p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          aria-label="알림 닫기"
+          aria-label={messages.searchNoticeClose}
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#8a6b56] bg-[rgba(255,248,241,0.1)] text-[#fff7f0] transition hover:bg-[rgba(255,248,241,0.18)]"
         >
           ×
@@ -216,7 +213,7 @@ function SearchResultNoticeV2({ message, onClose }) {
   );
 }
 
-function SearchLoadingOverlayV2({ isVisible, searchQuery }) {
+function SearchLoadingOverlayV2({ isVisible, searchQuery, messages }) {
   if (!isVisible) {
     return null;
   }
@@ -229,10 +226,10 @@ function SearchLoadingOverlayV2({ isVisible, searchQuery }) {
         <div className="flex items-center justify-between gap-3 text-sm font-medium text-[#5f4b3f]">
           <span>
             {queryLabel
-              ? `"${queryLabel}" 검색 결과를 불러오고 저장하는 중입니다.`
-              : "검색 결과를 불러오고 저장하는 중입니다."}
+              ? messages.searchLoadingWithQuery(queryLabel)
+              : messages.searchLoadingWithoutQuery}
           </span>
-          <span className="shrink-0 text-[#8f725d]">잠시만 기다려주세요</span>
+          <span className="shrink-0 text-[#8f725d]">{messages.searchLoadingWait}</span>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#e8d9ca]">
           <div className="search-progress-bar h-full w-1/3 rounded-full bg-[#2f221b]" />
@@ -242,7 +239,7 @@ function SearchLoadingOverlayV2({ isVisible, searchQuery }) {
   );
 }
 
-function SimilarTasteSection({ favoriteCount }) {
+function SimilarTasteSection({ favoriteCount, messages }) {
   const isReady = favoriteCount >= MIN_RECOMMENDATION_READY_COUNT;
 
   return (
@@ -250,10 +247,10 @@ function SimilarTasteSection({ favoriteCount }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d8b89f]">
-            취향 추천
+            {messages.similarTasteLabel}
           </p>
           <p className="mt-2 text-sm text-[#f7ede4]">
-            내 취향 카페를 바탕으로 비슷한 분위기의 카페를 추천받는 영역입니다.
+            {messages.similarTasteDescription}
           </p>
         </div>
       </div>
@@ -267,19 +264,19 @@ function SimilarTasteSection({ favoriteCount }) {
             : "cursor-not-allowed bg-[#675249] text-[#d9c3b4]"
         }`}
       >
-        비슷한 취향 추천 받기
+        {messages.similarTasteButton}
       </button>
 
       <p className="mt-3 text-xs leading-5 text-[#d9c3b4]">
         {isReady
-          ? "준비 완료. 선택한 취향을 바탕으로 비슷한 카페 추천으로 이어갈 수 있습니다."
-          : `최소 ${MIN_RECOMMENDATION_READY_COUNT}곳 이상 고르면 취향 추천을 시작할 수 있습니다.`}
+          ? messages.similarTasteReady
+          : messages.similarTasteNeedMore(MIN_RECOMMENDATION_READY_COUNT)}
       </p>
     </section>
   );
 }
 
-function BackendSyncSection({ status, fetchedCount, totalCount, errorMessage, isVisible }) {
+function BackendSyncSection({ status, fetchedCount, totalCount, errorMessage, isVisible, messages }) {
   if (!isVisible) {
     return null;
   }
@@ -291,38 +288,38 @@ function BackendSyncSection({ status, fetchedCount, totalCount, errorMessage, is
   return (
     <section className="mt-4 rounded-[24px] border border-white/10 bg-[rgba(255,255,255,0.08)] p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d8b89f]">
-        백엔드 조회
+        {messages.backendSyncTitle}
       </p>
       <p className="mt-2 text-sm text-[#f7ede4]">
-        로컬 스토리지에 저장한 카페를 기준으로 백엔드에서 최신 카페 정보를 다시 불러옵니다.
+        {messages.backendSyncDescription}
       </p>
 
       <div className="mt-4 rounded-2xl bg-white/8 px-3 py-3 text-sm text-[#f7ede4]">
         {isLoading
-          ? `백엔드에서 카페 정보를 조회하는 중입니다. (${fetchedCount}/${totalCount})`
+          ? messages.backendSyncLoading(fetchedCount, totalCount)
           : null}
         {isSuccess
-          ? `백엔드 조회 완료. ${fetchedCount}개의 카페 정보를 불러왔습니다.`
+          ? messages.backendSyncSuccess(fetchedCount)
           : null}
-        {isError ? errorMessage || "백엔드 조회에 실패했습니다." : null}
+        {isError ? errorMessage || messages.backendSyncError : null}
         {!isLoading && !isSuccess && !isError
-          ? "저장한 카페가 있으면 백엔드 조회가 자동으로 시작됩니다."
+          ? messages.backendSyncIdle
           : null}
       </div>
     </section>
   );
 }
 
-function BackendSyncBanner({ status, errorMessage }) {
+function BackendSyncBanner({ status, errorMessage, messages }) {
   if (status !== "error") {
     return null;
   }
 
   return (
     <section className="rounded-[24px] border border-[#e7c9c2] bg-[#fff1ed] px-5 py-4 text-[#6f3126] shadow-[0_12px_30px_rgba(111,49,38,0.08)]">
-      <p className="text-sm font-semibold">카페 불러오기 중 문제가 발생했습니다.</p>
+      <p className="text-sm font-semibold">{messages.backendBannerTitle}</p>
       <p className="mt-1 text-sm leading-6">
-        {errorMessage || "백엔드에서 카페 정보를 조회하거나 최신 상태로 맞추는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."}
+        {errorMessage || messages.backendBannerFallback}
       </p>
     </section>
   );
@@ -333,6 +330,7 @@ function SidebarContent({
   onClose,
   onRemoveFavorite,
   isDesktop = false,
+  messages,
 }) {
   const wrapperClassName = isDesktop
     ? "rounded-[28px] border border-[#e7dccf] bg-[#fbf7f2] p-4 shadow-[0_24px_60px_rgba(84,52,27,0.1)]"
@@ -342,7 +340,7 @@ function SidebarContent({
     <div className={wrapperClassName}>
       <section className="rounded-[24px] bg-[#2f221b] p-4 text-white shadow-[0_16px_40px_rgba(47,34,27,0.24)]">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d8b89f]">
-          내 취향 카페
+          {messages.favoriteSectionTitle}
         </p>
         {!isDesktop ? (
           <div className="mt-3 flex justify-end">
@@ -351,7 +349,7 @@ function SidebarContent({
               onClick={onClose}
               className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-[#f7ede4]"
             >
-              닫기
+              {messages.closeButton}
             </button>
           </div>
         ) : null}
@@ -364,13 +362,13 @@ function SidebarContent({
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{cafe.name}</p>
                     <p className="mt-1 text-xs text-[#d9c3b4]">
-                      {cafe.roadAddress || cafe.address || "주소 정보 없음"}
+                      {cafe.roadAddress || cafe.address || messages.noAddress}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => onRemoveFavorite(cafe.id)}
-                    aria-label={`${cafe.name} 즐겨찾기 해제`}
+                    aria-label={messages.removeFavoriteAriaLabel(cafe.name)}
                     className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2f221b] text-base leading-none text-[#f3c76d]"
                   >
                     ×
@@ -380,12 +378,12 @@ function SidebarContent({
             ))
           ) : (
             <div className="rounded-2xl bg-white/8 px-3 py-3 text-sm text-[#d9c3b4]">
-              아직 고른 카페가 없습니다.
+              {messages.noFavoriteCafes}
             </div>
           )}
         </div>
 
-        <SimilarTasteSection favoriteCount={favoriteCafes.length} />
+        <SimilarTasteSection favoriteCount={favoriteCafes.length} messages={messages} />
       </section>
     </div>
   );
@@ -396,6 +394,7 @@ function Sidebar({
   isOpen,
   onClose,
   onRemoveFavorite,
+  messages,
 }) {
   if (!isOpen) {
     return null;
@@ -414,6 +413,7 @@ function Sidebar({
           favoriteCafes={favoriteCafes}
           onClose={onClose}
           onRemoveFavorite={onRemoveFavorite}
+          messages={messages}
         />
       </aside>
     </>
@@ -424,6 +424,7 @@ function DesktopSidebar({
   favoriteCafes,
   isOpen,
   onRemoveFavorite,
+  messages,
 }) {
   if (!isOpen) {
     return null;
@@ -436,6 +437,7 @@ function DesktopSidebar({
           favoriteCafes={favoriteCafes}
           onRemoveFavorite={onRemoveFavorite}
           isDesktop
+          messages={messages}
         />
       </div>
     </div>
@@ -468,6 +470,7 @@ function HeaderV2({
   onToggleSidebar,
   locale,
   onLocaleChange,
+  messages,
 }) {
   const [isLocaleMenuOpen, setIsLocaleMenuOpen] = useState(false);
   const localeOptions = ["ko", "en", "ja"];
@@ -481,12 +484,12 @@ function HeaderV2({
     <header className="sticky top-0 z-40 border-b border-[#e7ddd2] bg-[rgba(255,251,246,0.96)] backdrop-blur">
       <div className="mx-auto flex w-full max-w-[2200px] items-center gap-4 px-4 py-4 sm:px-6 xl:px-8">
         <div className="flex min-w-0 items-center gap-3">
-          <HamburgerButton isOpen={isSidebarOpen} onClick={onToggleSidebar} />
+          <HamburgerButton isOpen={isSidebarOpen} onClick={onToggleSidebar} messages={messages} />
 
           <div className="relative h-11 w-11 overflow-hidden rounded-2xl border border-[#dbcab8] bg-white shadow-[0_10px_24px_rgba(84,52,27,0.08)]">
             <Image
               src={coffeebaraLogo}
-              alt="Coffeebara 로고"
+              alt={messages.logoAlt}
               fill
               sizes="44px"
               className="object-cover"
@@ -509,6 +512,7 @@ function HeaderV2({
             <button
               type="button"
               onClick={() => setIsLocaleMenuOpen((current) => !current)}
+              aria-label={messages.localeLabel}
               className="inline-flex items-center gap-2 rounded-full border border-[#dccfbe] bg-white/90 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5f4b3f] shadow-[0_10px_24px_rgba(84,52,27,0.06)] transition hover:bg-[#f7efe6]"
             >
               <span>{locale.toUpperCase()}</span>
@@ -548,12 +552,12 @@ function HeaderV2({
             className="min-w-[280px] max-w-[620px] flex-1 items-center gap-3 md:flex"
           >
             <label className="flex flex-1 items-center rounded-full border border-[#dccfbe] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(84,52,27,0.06)]">
-              <span className="sr-only">카페 이름 검색</span>
+              <span className="sr-only">{messages.searchInputLabel}</span>
               <input
                 type="search"
                 value={searchInput}
                 onChange={(event) => onSearchInputChange(event.target.value)}
-                placeholder="카페명"
+                placeholder={messages.searchInputPlaceholder}
                 className="w-full bg-transparent text-sm text-[#352720] outline-none placeholder:text-[#a38b79]"
               />
             </label>
@@ -562,7 +566,7 @@ function HeaderV2({
               type="submit"
               className="shrink-0 rounded-full bg-[#2f221b] px-4 py-3 text-sm font-medium text-white"
             >
-              카페 검색
+              {messages.searchButton}
             </button>
           </form>
         </div>
@@ -574,12 +578,12 @@ function HeaderV2({
           className="mx-auto flex w-full max-w-[2200px] items-center gap-3 xl:px-8"
         >
           <label className="flex flex-1 items-center rounded-full border border-[#dccfbe] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(84,52,27,0.06)]">
-            <span className="sr-only">카페 이름 검색</span>
+            <span className="sr-only">{messages.searchInputLabel}</span>
             <input
               type="search"
               value={searchInput}
               onChange={(event) => onSearchInputChange(event.target.value)}
-              placeholder="카페명"
+              placeholder={messages.searchInputPlaceholder}
               className="w-full bg-transparent text-sm text-[#352720] outline-none placeholder:text-[#a38b79]"
             />
           </label>
@@ -587,7 +591,7 @@ function HeaderV2({
             type="submit"
             className="shrink-0 rounded-full bg-[#2f221b] px-4 py-3 text-sm font-medium text-white"
           >
-            검색
+            {messages.searchButtonCompact}
           </button>
         </form>
       </div>
@@ -607,6 +611,7 @@ function MapPanelV2({
   isSidebarOpen,
   searchNoticeMessage,
   onCloseSearchNotice,
+  messages,
 }) {
   return (
     <section className="relative overflow-hidden rounded-[32px] border border-[#e7dccf] bg-white shadow-[0_24px_60px_rgba(84,52,27,0.08)]">
@@ -615,6 +620,7 @@ function MapPanelV2({
           <SearchResultNoticeV2
             message={searchNoticeMessage}
             onClose={onCloseSearchNotice}
+            messages={messages}
           />
         </div>
       </div>
@@ -658,6 +664,7 @@ function BottomPanelV2({
   favoriteCafeIds,
   onToggleFavorite,
   onSelectSearchResult,
+  messages,
 }) {
   const isSearching = Boolean(searchQuery.trim());
   const visibleSearchResults = searchState.results.slice(0, SEARCH_RESULT_PANEL_LIMIT);
@@ -845,6 +852,8 @@ export default function Home() {
   const [hasHydratedFavoriteCafes, setHasHydratedFavoriteCafes] = useState(false);
   const [searchNoticeMessage, setSearchNoticeMessage] = useState("");
   const [searchNoticeQuery, setSearchNoticeQuery] = useState("");
+  const messages = useMemo(() => getMessages(locale), [locale]);
+  const searchTooManyNotice = messages.searchTooManyNotice;
 
   useEffect(() => {
     try {
@@ -913,7 +922,7 @@ export default function Home() {
           );
 
           if (!response.ok) {
-            throw new Error(await parseBackendError(response, cafe.name));
+            throw new Error(await parseBackendError(response, cafe.name, messages));
           }
 
           const data = await response.json();
@@ -957,7 +966,7 @@ export default function Home() {
           errorMessage:
             error instanceof Error
               ? error.message
-              : "카페 정보를 불러오는 중 예상하지 못한 문제가 발생했습니다.",
+              : messages.fetchUnexpectedError,
         });
         setHasHydratedFavoriteCafes(true);
       }
@@ -968,7 +977,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [favoriteCafes, hasHydratedFavoriteCafes, isStorageReady]);
+  }, [favoriteCafes, hasHydratedFavoriteCafes, isStorageReady, messages]);
 
   useEffect(() => {
     if (!isSidebarOpen) {
@@ -1007,8 +1016,8 @@ export default function Home() {
     }
 
     setSearchNoticeQuery(normalizedQuery);
-    setSearchNoticeMessage(messages.searchTooManyNotice);
-  }, [searchNoticeQuery, searchQuery, searchState.status, searchState.totalCount]);
+    setSearchNoticeMessage(searchTooManyNotice);
+  }, [searchNoticeQuery, searchQuery, searchState.status, searchState.totalCount, searchTooManyNotice]);
 
   useEffect(() => {
     if (!searchNoticeMessage) {
@@ -1033,12 +1042,12 @@ export default function Home() {
       return;
     }
 
-    if (searchNoticeMessage === messages.searchTooManyNotice) {
+    if (searchNoticeMessage === searchTooManyNotice) {
       return;
     }
 
-    setSearchNoticeMessage(messages.searchTooManyNotice);
-  }, [searchNoticeMessage, searchState.totalCount]);
+    setSearchNoticeMessage(searchTooManyNotice);
+  }, [searchNoticeMessage, searchState.totalCount, searchTooManyNotice]);
 
   const favoriteCafeIds = useMemo(
     () => new Set(favoriteCafes.map((cafe) => cafe.id)),
@@ -1067,7 +1076,7 @@ export default function Home() {
       return;
     }
 
-    syncFavoriteCafeToBackend(nextCafe)
+    syncFavoriteCafeToBackend(nextCafe, messages)
       .then(() => {
         setBackendFavoriteFetch((current) => ({
           ...current,
@@ -1082,7 +1091,7 @@ export default function Home() {
           errorMessage:
             error instanceof Error
               ? error.message
-              : "선택한 카페를 저장하는 중 예상하지 못한 문제가 발생했습니다.",
+              : messages.saveUnexpectedError,
         }));
       });
   };
@@ -1117,11 +1126,13 @@ export default function Home() {
         onToggleSidebar={() => setIsSidebarOpen((current) => !current)}
         locale={locale}
         onLocaleChange={setLocale}
+        messages={messages}
       />
 
       <SearchLoadingOverlayV2
         isVisible={searchState.status === "loading" && Boolean(searchQuery.trim())}
         searchQuery={searchQuery}
+        messages={messages}
       />
 
       <Sidebar
@@ -1129,20 +1140,23 @@ export default function Home() {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onRemoveFavorite={handleRemoveFavorite}
+        messages={messages}
       />
 
       <div className="mx-auto w-full max-w-[2200px] px-4 py-6 sm:px-6 xl:px-8">
         <main className="relative flex min-w-0 gap-6">
-          <DesktopSidebar
-            favoriteCafes={favoriteCafes}
-            isOpen={isSidebarOpen}
-            onRemoveFavorite={handleRemoveFavorite}
-          />
+            <DesktopSidebar
+              favoriteCafes={favoriteCafes}
+              isOpen={isSidebarOpen}
+              onRemoveFavorite={handleRemoveFavorite}
+              messages={messages}
+            />
 
           <div className="min-w-0 flex-1 space-y-6">
             <BackendSyncBanner
               status={backendFavoriteFetch.status}
               errorMessage={backendFavoriteFetch.errorMessage}
+              messages={messages}
             />
 
             <MapPanelV2
@@ -1157,6 +1171,7 @@ export default function Home() {
               isSidebarOpen={isSidebarOpen}
               searchNoticeMessage={searchNoticeMessage}
               onCloseSearchNotice={() => setSearchNoticeMessage("")}
+              messages={messages}
             />
 
             <BottomPanelV2
@@ -1166,6 +1181,7 @@ export default function Home() {
               favoriteCafeIds={favoriteCafeIds}
               onToggleFavorite={handleToggleFavorite}
               onSelectSearchResult={handleSelectCafe}
+              messages={messages}
             />
           </div>
         </main>

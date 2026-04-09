@@ -1,10 +1,11 @@
 ﻿"use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import coffeebaraLogo from "./coffeebara-logo.png";
+import HeaderBar from "./components/home/HeaderBar";
 import KakaoMap from "./components/KakaoMap";
+import SearchLoadingOverlay from "./components/home/SearchLoadingOverlay";
+import SearchResultNotice from "./components/home/SearchResultNotice";
 import { getMessages } from "./messages";
 
 const STORAGE_KEY = "coffeebara.preferred-cafes";
@@ -154,90 +155,6 @@ async function syncFavoriteCafeToBackend(cafe, messages) {
   }
 }
 
-function HamburgerButton({ isOpen, onClick, messages }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={isOpen ? messages.menuClose : messages.menuOpen}
-      aria-expanded={isOpen}
-      className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#cdb8a6] bg-white text-[#2f221b] shadow-[0_10px_24px_rgba(84,52,27,0.08)] transition hover:bg-[#f6efe7]"
-    >
-      <span className="flex flex-col gap-[3px]">
-        <span className="block h-[2px] w-4 rounded-full bg-current" />
-        <span className="block h-[2px] w-4 rounded-full bg-current" />
-        <span className="block h-[2px] w-4 rounded-full bg-current" />
-      </span>
-    </button>
-  );
-}
-
-function SearchResultNoticeV2({ notice, onClose, messages }) {
-  if (!notice?.message) {
-    return null;
-  }
-
-  return (
-    <div className="w-full overflow-hidden rounded-[28px] border border-[#6d5443] bg-[linear-gradient(160deg,rgba(56,39,30,0.98)_0%,rgba(38,26,21,0.97)_100%)] px-4 py-4 text-[#f8efe6] shadow-[0_28px_70px_rgba(27,15,8,0.32)] backdrop-blur">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top_left,rgba(243,198,151,0.28),transparent_58%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-8 bottom-0 h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(120,85,62,0.22),transparent_70%)]"
-      />
-      <div className="relative flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#d9b99d]">
-            {messages.searchNoticeLabel}
-          </p>
-          <p className="mt-2 text-sm font-semibold text-[#f7e3d0]">
-            {notice.title}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-[#f2e5da]">{notice.message}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={messages.searchNoticeClose}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#8a6b56] bg-[rgba(255,248,241,0.1)] text-[#fff7f0] transition hover:bg-[rgba(255,248,241,0.18)]"
-        >
-          ×
-        </button>
-      </div>
-      <div className="relative mt-4 h-[3px] overflow-hidden rounded-full bg-[rgba(255,244,235,0.12)]">
-        <div className="search-progress-bar h-full w-1/3 rounded-full bg-[linear-gradient(90deg,#f2d1b0_0%,#fff4e7_100%)]" />
-      </div>
-    </div>
-  );
-}
-
-function SearchLoadingOverlayV2({ isVisible, searchQuery, messages }) {
-  if (!isVisible) {
-    return null;
-  }
-
-  const queryLabel = searchQuery.trim();
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,24,19,0.22)] backdrop-blur-[1.5px]">
-      <div className="mx-4 flex w-full max-w-md flex-col gap-2 rounded-[28px] border border-[#e7dccf] bg-[rgba(255,251,246,0.96)] px-5 py-5 shadow-[0_24px_60px_rgba(84,52,27,0.16)]">
-        <div className="flex items-center justify-between gap-3 text-sm font-medium text-[#5f4b3f]">
-          <span>
-            {queryLabel
-              ? messages.searchLoadingWithQuery(queryLabel)
-              : messages.searchLoadingWithoutQuery}
-          </span>
-          <span className="shrink-0 text-[#8f725d]">{messages.searchLoadingWait}</span>
-        </div>
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#e8d9ca]">
-          <div className="search-progress-bar h-full w-1/3 rounded-full bg-[#2f221b]" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function SimilarTasteSection({ favoriteCount, messages }) {
   const isReady = favoriteCount >= MIN_RECOMMENDATION_READY_COUNT;
@@ -462,142 +379,6 @@ function SectionCard({ title, description, children, className = "" }) {
   );
 }
 
-function HeaderV2({
-  searchInput,
-  onSearchInputChange,
-  onSearchSubmit,
-  isSidebarOpen,
-  onToggleSidebar,
-  locale,
-  onLocaleChange,
-  messages,
-}) {
-  const [isLocaleMenuOpen, setIsLocaleMenuOpen] = useState(false);
-  const localeOptions = ["ko", "en", "ja"];
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    onSearchSubmit();
-  };
-
-  return (
-    <header className="sticky top-0 z-40 border-b border-[#e7ddd2] bg-[rgba(255,251,246,0.96)] backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[2200px] items-center gap-4 px-4 py-4 sm:px-6 xl:px-8">
-        <div className="flex min-w-0 items-center gap-3">
-          <HamburgerButton isOpen={isSidebarOpen} onClick={onToggleSidebar} messages={messages} />
-
-          <div className="relative h-11 w-11 overflow-hidden rounded-2xl border border-[#dbcab8] bg-white shadow-[0_10px_24px_rgba(84,52,27,0.08)]">
-            <Image
-              src={coffeebaraLogo}
-              alt={messages.logoAlt}
-              fill
-              sizes="44px"
-              className="object-cover"
-              priority
-            />
-          </div>
-
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8f725d]">
-              Coffeebara
-            </p>
-            <h1 className="truncate text-lg font-semibold text-[#241813]">
-              {messages.headerTitle}
-            </h1>
-          </div>
-        </div>
-
-        <div className="ml-auto hidden items-center gap-3 md:flex">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsLocaleMenuOpen((current) => !current)}
-              aria-label={messages.localeLabel}
-              className="inline-flex items-center gap-2 rounded-full border border-[#dccfbe] bg-white/90 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5f4b3f] shadow-[0_10px_24px_rgba(84,52,27,0.06)] transition hover:bg-[#f7efe6]"
-            >
-              <span>{locale.toUpperCase()}</span>
-              <span className="text-[#8f725d]">{isLocaleMenuOpen ? "▲" : "▼"}</span>
-            </button>
-
-            {isLocaleMenuOpen ? (
-              <div className="absolute right-0 top-[calc(100%+8px)] z-40 min-w-[88px] overflow-hidden rounded-2xl border border-[#dccfbe] bg-white shadow-[0_18px_40px_rgba(84,52,27,0.12)]">
-                {localeOptions.map((option) => {
-                  const isActive = locale === option;
-
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => {
-                        onLocaleChange(option);
-                        setIsLocaleMenuOpen(false);
-                      }}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition ${
-                        isActive
-                          ? "bg-[#f7efe6] text-[#2f221b]"
-                          : "text-[#6d584b] hover:bg-[#fcf7f2]"
-                      }`}
-                    >
-                      <span>{option.toUpperCase()}</span>
-                      <span>{isActive ? "•" : ""}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
-
-          <form
-            onSubmit={handleSubmit}
-            className="min-w-[280px] max-w-[620px] flex-1 items-center gap-3 md:flex"
-          >
-            <label className="flex flex-1 items-center rounded-full border border-[#dccfbe] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(84,52,27,0.06)]">
-              <span className="sr-only">{messages.searchInputLabel}</span>
-              <input
-                type="search"
-                value={searchInput}
-                onChange={(event) => onSearchInputChange(event.target.value)}
-                placeholder={messages.searchInputPlaceholder}
-                className="w-full bg-transparent text-sm text-[#352720] outline-none placeholder:text-[#a38b79]"
-              />
-            </label>
-
-            <button
-              type="submit"
-              className="shrink-0 rounded-full bg-[#2f221b] px-4 py-3 text-sm font-medium text-white"
-            >
-              {messages.searchButton}
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <div className="px-4 pb-4 md:hidden">
-        <form
-          onSubmit={handleSubmit}
-          className="mx-auto flex w-full max-w-[2200px] items-center gap-3 xl:px-8"
-        >
-          <label className="flex flex-1 items-center rounded-full border border-[#dccfbe] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(84,52,27,0.06)]">
-            <span className="sr-only">{messages.searchInputLabel}</span>
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(event) => onSearchInputChange(event.target.value)}
-              placeholder={messages.searchInputPlaceholder}
-              className="w-full bg-transparent text-sm text-[#352720] outline-none placeholder:text-[#a38b79]"
-            />
-          </label>
-          <button
-            type="submit"
-            className="shrink-0 rounded-full bg-[#2f221b] px-4 py-3 text-sm font-medium text-white"
-          >
-            {messages.searchButtonCompact}
-          </button>
-        </form>
-      </div>
-    </header>
-  );
-}
 
 function MapPanelV2({
   kakaoMapKey,
@@ -618,7 +399,7 @@ function MapPanelV2({
     <section className="relative overflow-hidden rounded-[32px] border border-[#e7dccf] bg-white shadow-[0_24px_60px_rgba(84,52,27,0.08)]">
       <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-4">
         <div className="pointer-events-auto w-full max-w-[380px]">
-          <SearchResultNoticeV2
+          <SearchResultNotice
             notice={noticeState}
             onClose={onCloseNotice}
             messages={messages}
@@ -1201,7 +982,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#fffaf5] text-[#241813]">
-      <HeaderV2
+      <HeaderBar
         searchInput={searchInput}
         onSearchInputChange={setSearchInput}
         onSearchSubmit={handleSearchSubmit}
@@ -1212,7 +993,7 @@ export default function Home() {
         messages={messages}
       />
 
-      <SearchLoadingOverlayV2
+      <SearchLoadingOverlay
         isVisible={searchState.status === "loading" && Boolean(searchQuery.trim())}
         searchQuery={searchQuery}
         messages={messages}

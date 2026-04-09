@@ -60,6 +60,7 @@ public class KakaoCafeSearchService {
 	private final RateLimitProperties rateLimitProperties;
 	private final RequestRateLimiter requestRateLimiter;
 	private final Map<String, CachedSearchResponse> searchResponseCache = new ConcurrentHashMap<>();
+	private final Map<String, CachedPlaceDocumentsResponse> mapResponseCache = new ConcurrentHashMap<>();
 	private final Map<String, CompletableFuture<KakaoKeywordSearchResponseVo>> inFlightSearchResponses = new ConcurrentHashMap<>();
 
 	public KakaoCafeSearchService(
@@ -134,6 +135,13 @@ public class KakaoCafeSearchService {
 			"지도 검색 요청이 많습니다. 잠시 후 다시 시도해 주세요."
 		);
 
+		String cacheKey = buildMapCacheKey(null, swLat, swLng, neLat, neLng);
+		KakaoPlaceDocumentsResponseVo cachedResponse = getCachedMapResponse(cacheKey);
+		if (cachedResponse != null) {
+			log.info("searchCafesInBounds cache hit swLat={} swLng={} neLat={} neLng={}", swLat, swLng, neLat, neLng);
+			return cachedResponse;
+		}
+
 		String rect = toRect(swLat, swLng, neLat, neLng);
 		Map<String, KakaoPlaceDocumentVo> deduplicated = new LinkedHashMap<>();
 		int page = 1;
@@ -151,7 +159,9 @@ public class KakaoCafeSearchService {
 			if (response.meta().isEnd() || page >= MAX_MAP_FETCH_PAGE_COUNT) {
 				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
 				saveCafeBatch(cafes);
-				return new KakaoPlaceDocumentsResponseVo(cafes);
+				KakaoPlaceDocumentsResponseVo result = new KakaoPlaceDocumentsResponseVo(cafes);
+				cacheMapResponse(cacheKey, result);
+				return result;
 			}
 
 			page += 1;
@@ -175,6 +185,20 @@ public class KakaoCafeSearchService {
 			"지도 검색 요청이 많습니다. 잠시 후 다시 시도해 주세요."
 		);
 
+		String cacheKey = buildMapCacheKey(query, swLat, swLng, neLat, neLng);
+		KakaoPlaceDocumentsResponseVo cachedResponse = getCachedMapResponse(cacheKey);
+		if (cachedResponse != null) {
+			log.info(
+				"searchCafesByKeywordInBounds cache hit query='{}' swLat={} swLng={} neLat={} neLng={}",
+				query,
+				swLat,
+				swLng,
+				neLat,
+				neLng
+			);
+			return cachedResponse;
+		}
+
 		String rect = toRect(swLat, swLng, neLat, neLng);
 		Map<String, KakaoPlaceDocumentVo> deduplicated = new LinkedHashMap<>();
 		int page = 1;
@@ -197,7 +221,9 @@ public class KakaoCafeSearchService {
 			if (response.meta().isEnd() || page >= MAX_MAP_FETCH_PAGE_COUNT) {
 				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
 				saveCafeBatch(cafes);
-				return new KakaoPlaceDocumentsResponseVo(cafes);
+				KakaoPlaceDocumentsResponseVo result = new KakaoPlaceDocumentsResponseVo(cafes);
+				cacheMapResponse(cacheKey, result);
+				return result;
 			}
 
 			page += 1;
@@ -417,6 +443,25 @@ public class KakaoCafeSearchService {
 		return normalizeSearchText(query) + "|" + String.valueOf(page) + "|" + String.valueOf(size);
 	}
 
+	private String buildMapCacheKey(
+		String query,
+		double swLat,
+		double swLng,
+		double neLat,
+		double neLng
+	) {
+		return "map|"
+			+ normalizeSearchText(query)
+			+ "|"
+			+ roundBoundValue(swLat)
+			+ "|"
+			+ roundBoundValue(swLng)
+			+ "|"
+			+ roundBoundValue(neLat)
+			+ "|"
+			+ roundBoundValue(neLng);
+	}
+
 	private KakaoKeywordSearchResponseVo getCachedSearchResponse(String cacheKey) {
 		CachedSearchResponse cached = searchResponseCache.get(cacheKey);
 		if (cached == null) {
@@ -446,6 +491,35 @@ public class KakaoCafeSearchService {
 		searchResponseCache.put(cacheKey, new CachedSearchResponse(response, System.currentTimeMillis()));
 	}
 
+	private KakaoPlaceDocumentsResponseVo getCachedMapResponse(String cacheKey) {
+		CachedPlaceDocumentsResponse cached = mapResponseCache.get(cacheKey);
+		if (cached == null) {
+			return null;
+		}
+
+		long ttlMillis = Math.max(searchCacheProperties.ttlSeconds(), 0L) * 1000L;
+		if (ttlMillis == 0L) {
+			mapResponseCache.remove(cacheKey);
+			return null;
+		}
+
+		if (System.currentTimeMillis() - cached.cachedAtMillis() >= ttlMillis) {
+			mapResponseCache.remove(cacheKey);
+			return null;
+		}
+
+		return cached.response();
+	}
+
+	private void cacheMapResponse(String cacheKey, KakaoPlaceDocumentsResponseVo response) {
+		if (searchCacheProperties.ttlSeconds() <= 0L) {
+			return;
+		}
+
+		evictMapCacheEntriesIfNeeded();
+		mapResponseCache.put(cacheKey, new CachedPlaceDocumentsResponse(response, System.currentTimeMillis()));
+	}
+
 	private void evictSearchCacheEntriesIfNeeded() {
 		int maxEntries = searchCacheProperties.maxEntries();
 		if (maxEntries <= 0 || searchResponseCache.size() < maxEntries) {
@@ -469,6 +543,29 @@ public class KakaoCafeSearchService {
 			.ifPresent(searchResponseCache::remove);
 	}
 
+	private void evictMapCacheEntriesIfNeeded() {
+		int maxEntries = searchCacheProperties.maxEntries();
+		if (maxEntries <= 0 || mapResponseCache.size() < maxEntries) {
+			return;
+		}
+
+		long now = System.currentTimeMillis();
+		long ttlMillis = Math.max(searchCacheProperties.ttlSeconds(), 0L) * 1000L;
+		mapResponseCache.entrySet().removeIf(entry -> {
+			CachedPlaceDocumentsResponse cached = entry.getValue();
+			return ttlMillis == 0L || now - cached.cachedAtMillis() >= ttlMillis;
+		});
+
+		if (mapResponseCache.size() < maxEntries) {
+			return;
+		}
+
+		mapResponseCache.entrySet().stream()
+			.min(Comparator.comparingLong(entry -> entry.getValue().cachedAtMillis()))
+			.map(Map.Entry::getKey)
+			.ifPresent(mapResponseCache::remove);
+	}
+
 	private Integer sanitizePage(Integer page) {
 		if (page == null) {
 			return null;
@@ -483,6 +580,10 @@ public class KakaoCafeSearchService {
 		}
 
 		return Math.min(Math.max(size, 1), KAKAO_PAGE_SIZE);
+	}
+
+	private String roundBoundValue(double value) {
+		return String.format(java.util.Locale.ROOT, "%.4f", value);
 	}
 
 	private void collectNearbyCandidates(CafeUpsertRequest request) {
@@ -762,6 +863,12 @@ public class KakaoCafeSearchService {
 
 	private record CachedSearchResponse(
 		KakaoKeywordSearchResponseVo response,
+		long cachedAtMillis
+	) {
+	}
+
+	private record CachedPlaceDocumentsResponse(
+		KakaoPlaceDocumentsResponseVo response,
 		long cachedAtMillis
 	) {
 	}

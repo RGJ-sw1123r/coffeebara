@@ -501,6 +501,14 @@ function buildBoundsCacheKey(map, query = "") {
   ].join("|");
 }
 
+function clearCurrentAreaCache(responseCache) {
+  Array.from(responseCache.keys())
+    .filter((cacheKey) => cacheKey.startsWith("bounds-search|"))
+    .forEach((cacheKey) => {
+      responseCache.delete(cacheKey);
+    });
+}
+
 function MarkerList({
   places,
   selectedPlaceId,
@@ -931,6 +939,7 @@ export default function KakaoMap({
     normalizedSearchQueryRef.current = "";
     isCurrentAreaModeRef.current = false;
     currentViewModeRef.current = "idle";
+    clearCurrentAreaCache(responseCacheRef.current);
     map.setLevel(DEFAULT_LEVEL);
     map.panTo(new kakao.maps.LatLng(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng));
     onViewportChange?.({

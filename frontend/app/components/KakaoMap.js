@@ -678,6 +678,7 @@ export default function KakaoMap({
     }
 
     const map = mapInstanceRef.current;
+    const cacheKey = `bounds-search|${buildBoundsCacheKey(map)}`;
 
     clearSelection();
     shouldFocusSearchResultsRef.current = false;
@@ -688,7 +689,12 @@ export default function KakaoMap({
     setErrorMessage("");
 
     try {
-      const results = await fetchAllVisibleCafes(map);
+      const cachedResults = responseCacheRef.current.get(cacheKey);
+      const results = cachedResults ?? await fetchAllVisibleCafes(map);
+
+      if (!cachedResults) {
+        responseCacheRef.current.set(cacheKey, results);
+      }
 
       setSearchPlaces([]);
       setMapPlaces(results);

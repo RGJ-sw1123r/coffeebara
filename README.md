@@ -43,7 +43,8 @@ AGENTS.md는 이 과정에서 사용한 작업 원칙과 제약을 정리한 문
 - `GET /api/cafes/map/search` 지도 영역 + 검색어 조회 API
 - 검색 결과를 `kakao_place_id` 기준으로 중복 제거 후 `cafe` 테이블에 upsert
 - 카카오 키워드 검색 상한에 맞춰 최대 3페이지, 최대 45건까지 수집 및 적재
-- 검색 API에 10초 TTL 메모리 캐시 적용
+- 검색 API와 지도 bounds 조회에 10초 TTL 메모리 캐시 적용
+- Kakao 호출 과다를 막기 위해 서버 레이트리밋과 최대 엔트리 수 기반 캐시 상한 적용
 - CORS 허용 origin을 `app.cors.allowed-origins` 프로퍼티로 외부화
 - 내 취향 카페 저장 시 해당 카페 주변 카페도 추가 수집 후 `cafe` 테이블에 upsert
 - 지도 bounds 기반 조회(`GET /api/cafes/map`, `GET /api/cafes/map/search`) 결과도 `cafe` 테이블에 upsert
@@ -231,8 +232,21 @@ spring.datasource.password=YOUR_DB_PASSWORD
 spring.datasource.driver-class-name=com.p6spy.engine.spy.P6SpyDriver
 spring.sql.init.mode=never
 app.search-cache.ttl-seconds=10
+app.search-cache.max-entries=200
+app.rate-limit.window-seconds=30
+app.rate-limit.search-max-requests=20
+app.rate-limit.map-max-requests=20
+app.rate-limit.save-max-requests=6
+app.rate-limit.detail-max-requests=30
+app.rate-limit.max-tracked-keys=2000
 app.cors.allowed-origins=http://localhost:3000,http://127.0.0.1:3000
 ```
+
+운영 설정 메모:
+
+- `app.search-cache.ttl-seconds`: 검색/지도 조회 메모리 캐시 TTL
+- `app.search-cache.max-entries`: 메모리 캐시 최대 엔트리 수
+- `app.rate-limit.*`: 검색, 지도 조회, 저장, 상세 조회 요청의 서버 측 rate limit 기준
 
 ### 3. 프런트 환경 변수
 

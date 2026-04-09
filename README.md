@@ -48,6 +48,7 @@ AGENTS.md는 이 과정에서 사용한 작업 원칙과 제약을 정리한 문
 - CORS 허용 origin을 `app.cors.allowed-origins` 프로퍼티로 외부화
 - 내 취향 카페 저장 시 해당 카페 주변 카페도 추가 수집 후 `cafe` 테이블에 upsert
 - 지도 bounds 기반 조회(`GET /api/cafes/map`, `GET /api/cafes/map/search`) 결과도 `cafe` 테이블에 upsert
+- `cafe.latitude`, `cafe.longitude`는 numeric 컬럼으로 저장
 - 30일이 지난 카페 데이터는 상세 조회 시 Kakao Local API 기준으로 refresh
 
 ### Frontend
@@ -136,6 +137,7 @@ AGENTS.md는 이 과정에서 사용한 작업 원칙과 제약을 정리한 문
 - 선택한 카페 1건을 `cafe` 테이블에 upsert 합니다.
 - 그 다음 해당 카페의 `latitude`, `longitude`를 기준으로 주변 카페를 추가 수집합니다.
 - 주변 카페도 `cafe` 테이블에 upsert 합니다.
+- 앱 초기 진입 시 localStorage에 남아 있는 `내 취향 카페`는 백엔드와 다시 sync 되며, 이 과정에서도 주변 카페 수집이 다시 실행됩니다.
 
 ### 3. 상세 조회와 freshness
 

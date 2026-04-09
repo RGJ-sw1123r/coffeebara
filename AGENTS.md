@@ -158,7 +158,7 @@ If any future design note below conflicts with the current implementation direct
 - Cafe schema
   - unique key: `kakao_place_id`
   - freshness fields exist
-  - current coordinate columns are still string-based, not numeric
+  - coordinate columns use numeric types
 
 ## Guest-first policy
 - The current product should behave as a guest-first service.
@@ -275,10 +275,9 @@ These notes are meant to guide future design discussions, not current execution.
 - Avoid hardcoded `localhost:3000` assumptions so deployment config is less error-prone.
 
 ### 4. Cafe table and map-query improvements
-- Promote `lat` / `lng` from string-like storage to numeric types suitable for range queries.
 - Add a composite bounding-box-friendly index such as `(lat, lng)`.
 - Add DB-backed map bounds query support.
-- Current schema still stores cafe coordinates as strings, so this remains a pending alignment task.
+- Cafe coordinate columns are now numeric, but DB-backed map bounds query support is still pending.
 - Treat this as a high-priority improvement because it improves recommendation quality, cost, and map performance.
 
 ### 5. Remove runtime ALTER behavior

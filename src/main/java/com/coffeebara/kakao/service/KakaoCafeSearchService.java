@@ -754,6 +754,14 @@ public class KakaoCafeSearchService {
 		if (!StringUtils.hasText(request.name())) {
 			throw new IllegalArgumentException("name must not be blank");
 		}
+
+		if (StringUtils.hasText(request.latitude()) && parseCoordinate(request.latitude()) == null) {
+			throw new IllegalArgumentException("latitude must be a valid decimal value");
+		}
+
+		if (StringUtils.hasText(request.longitude()) && parseCoordinate(request.longitude()) == null) {
+			throw new IllegalArgumentException("longitude must be a valid decimal value");
+		}
 	}
 
 	private boolean isStale(Map<String, Object> cafe) {
@@ -793,6 +801,8 @@ public class KakaoCafeSearchService {
 
 	private Map<String, Object> toCafeMap(KakaoPlaceDocumentVo document) {
 		LocalDateTime fetchedAt = LocalDateTime.now();
+		Double longitude = parseCoordinate(document.x());
+		Double latitude = parseCoordinate(document.y());
 
 		Map<String, Object> cafe = new HashMap<>();
 		cafe.put("kakaoPlaceId", document.id());
@@ -801,8 +811,8 @@ public class KakaoCafeSearchService {
 		cafe.put("phone", document.phone());
 		cafe.put("addressName", document.addressName());
 		cafe.put("roadAddressName", document.roadAddressName());
-		cafe.put("longitude", document.x());
-		cafe.put("latitude", document.y());
+		cafe.put("longitude", longitude);
+		cafe.put("latitude", latitude);
 		cafe.put("placeUrl", document.placeUrl());
 		cafe.put("lastFetchedAt", fetchedAt);
 		cafe.put("nextRefreshAt", fetchedAt.plusDays(CAFE_DATA_FRESHNESS_DAYS));
@@ -811,6 +821,8 @@ public class KakaoCafeSearchService {
 
 	private Map<String, Object> toCafeMap(CafeUpsertRequest request) {
 		LocalDateTime fetchedAt = LocalDateTime.now();
+		Double longitude = parseCoordinate(request.longitude());
+		Double latitude = parseCoordinate(request.latitude());
 
 		Map<String, Object> cafe = new HashMap<>();
 		cafe.put("kakaoPlaceId", request.kakaoPlaceId());
@@ -819,8 +831,8 @@ public class KakaoCafeSearchService {
 		cafe.put("phone", request.phone());
 		cafe.put("addressName", request.addressName());
 		cafe.put("roadAddressName", request.roadAddressName());
-		cafe.put("longitude", request.longitude());
-		cafe.put("latitude", request.latitude());
+		cafe.put("longitude", longitude);
+		cafe.put("latitude", latitude);
 		cafe.put("placeUrl", request.placeUrl());
 		cafe.put("lastFetchedAt", fetchedAt);
 		cafe.put("nextRefreshAt", fetchedAt.plusDays(CAFE_DATA_FRESHNESS_DAYS));

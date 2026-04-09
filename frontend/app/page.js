@@ -837,7 +837,9 @@ export default function Home() {
           }
 
           const data = await response.json();
-          fetchedCafes.push(mapBackendCafeToFavoriteCafe(data));
+          const fetchedCafe = mapBackendCafeToFavoriteCafe(data);
+          await syncFavoriteCafeToBackend(fetchedCafe, messages);
+          fetchedCafes.push(fetchedCafe);
 
           if (cancelled) {
             return;

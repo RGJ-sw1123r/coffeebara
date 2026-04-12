@@ -1217,15 +1217,15 @@ export default function KakaoMap({
       {!normalizeAppKey(appKey) ||
       normalizeAppKey(appKey) === "MOCK_KAKAO_MAP_KEY" ? (
         <div className="absolute left-4 top-4 rounded-full bg-[#2f221b]/90 px-3 py-2 text-xs font-medium text-white shadow-[0_16px_30px_rgba(47,34,27,0.24)]">
-          카카오맵 키가 설정되지 않았습니다.
+          {messages.mapKeyMissing}
         </div>
       ) : null}
 
       {status === "loading" ? (
         <div className="absolute bottom-[260px] right-4 rounded-full bg-white/92 px-3 py-2 text-xs font-medium text-[#5e493d] shadow-[0_10px_25px_rgba(84,52,27,0.08)]">
           {normalizedSearchQuery
-            ? "검색한 카페를 찾는 중"
-            : "현재 지도 범위의 카페를 불러오는 중"}
+            ? messages.mapLoadingSearch
+            : messages.mapLoadingArea}
         </div>
       ) : null}
 
@@ -1250,14 +1250,13 @@ export default function KakaoMap({
 
       {status === "error" ? (
         <div className="absolute inset-x-4 bottom-[260px] rounded-2xl border border-[#eadfd3] bg-white/95 px-4 py-3 text-sm text-[#5f4b3f] shadow-[0_14px_30px_rgba(84,52,27,0.1)]">
-          <p>카카오 지도 데이터를 불러오지 못했습니다.</p>
+          <p>{messages.mapLoadFailedTitle}</p>
           <p className="mt-1 text-xs text-[#8b7162]">
             {errorMessage ||
-              "`frontend/.env.local`의 `NEXT_PUBLIC_KAKAO_MAP_KEY` 값을 확인한 뒤 개발 서버를 다시 실행해 주세요."}
+              messages.mapLoadFailedBody}
           </p>
           <p className="mt-2 text-xs text-[#8b7162]">
-            카카오 개발자 콘솔에 `http://localhost:3000` 이 허용 도메인으로 등록되어
-            있는지도 확인해 주세요.
+            {messages.mapLoadFailedDomainHint}
           </p>
         </div>
       ) : null}
@@ -1265,8 +1264,8 @@ export default function KakaoMap({
       {status === "ready" && displayedPlaces.length === 0 ? (
         <div className="absolute bottom-[260px] left-4 rounded-2xl border border-[#eadfd3] bg-white/95 px-4 py-3 text-sm text-[#5f4b3f] shadow-[0_14px_30px_rgba(84,52,27,0.1)]">
           {normalizedSearchQuery
-            ? "검색한 카페가 없습니다."
-            : "현재 지도 범위에서 카페를 찾지 못했습니다."}
+            ? messages.mapEmptySearch
+            : messages.mapEmptyArea}
         </div>
       ) : null}
 

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Coffeebara",
   description:
-    "카카오맵 기반으로 주변 카페를 탐색하고 저장 목록을 바탕으로 취향 추천을 받는 서비스",
+    "원두, 브루 기록, 장소 맥락, 커피 메모를 차분하게 쌓아 가는 개인 커피 아카이브",
 };
 
 export default function RootLayout({ children }) {

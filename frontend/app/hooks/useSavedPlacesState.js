@@ -5,15 +5,19 @@ import { useCallback, useMemo, useState, useEffect } from "react";
 const STORAGE_KEY = "coffeebara.guestFavorites.v1";
 const LEGACY_STORAGE_KEY = "coffeebara.preferred-cafes";
 const PLACE_PROFILE_STORAGE_KEY = "coffeebara.placeProfiles.v1";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
 
 function normalizeSavedPlace(place) {
   if (!place || typeof place !== "object") {
     return null;
   }
 
-  const normalizedId = typeof place.id === "string" ? place.id : String(place.id ?? "");
+  const rawId = place.kakaoPlaceId ?? place.id ?? "";
+  const rawName = place.name ?? place.placeName ?? "";
+  const normalizedId = typeof rawId === "string" ? rawId : String(rawId);
   const normalizedName =
-    typeof place.name === "string" ? place.name.trim() : String(place.name ?? "").trim();
+    typeof rawName === "string" ? rawName.trim() : String(rawName).trim();
 
   if (!normalizedId || !normalizedName) {
     return null;
@@ -21,20 +25,36 @@ function normalizeSavedPlace(place) {
 
   return {
     id: normalizedId,
+    savedCafeId:
+      place.savedCafeId ?? (place.kakaoPlaceId ? place.id ?? "" : ""),
     name: normalizedName,
-    address: typeof place.address === "string" ? place.address : "",
-    roadAddress: typeof place.roadAddress === "string" ? place.roadAddress : "",
+    address:
+      typeof place.address === "string"
+        ? place.address
+        : typeof place.addressName === "string"
+          ? place.addressName
+          : "",
+    roadAddress:
+      typeof place.roadAddress === "string"
+        ? place.roadAddress
+        : typeof place.roadAddressName === "string"
+          ? place.roadAddressName
+          : "",
     phone: typeof place.phone === "string" ? place.phone : "",
     placeUrl: typeof place.placeUrl === "string" ? place.placeUrl : "",
     categoryName: typeof place.categoryName === "string" ? place.categoryName : "",
     lat:
       typeof place.lat === "number" && Number.isFinite(place.lat)
         ? place.lat
-        : Number(place.lat) || 0,
+        : typeof place.latitude === "number" && Number.isFinite(place.latitude)
+          ? place.latitude
+          : Number(place.lat ?? place.latitude) || 0,
     lng:
       typeof place.lng === "number" && Number.isFinite(place.lng)
         ? place.lng
-        : Number(place.lng) || 0,
+        : typeof place.longitude === "number" && Number.isFinite(place.longitude)
+          ? place.longitude
+          : Number(place.lng ?? place.longitude) || 0,
   };
 }
 
@@ -46,11 +66,22 @@ function normalizeSavedPlaces(places) {
   return places.map(normalizeSavedPlace).filter(Boolean);
 }
 
-export default function useSavedPlacesState({ authStatus, authMode }) {
+async function readErrorMessage(response, fallbackMessage) {
+  const payload = await response.json().catch(() => null);
+  return payload?.message || fallbackMessage;
+}
+
+export default function useSavedPlacesState({ authStatus, authMode, messages }) {
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isGuestModeToastVisible, setIsGuestModeToastVisible] = useState(false);
   const [placeProfiles, setPlaceProfiles] = useState({});
+  const [backendSavedPlaceFetch, setBackendSavedPlaceFetch] = useState({
+    status: "idle",
+    fetchedCount: 0,
+    totalCount: 0,
+    errorMessage: "",
+  });
 
   useEffect(() => {
     if (authStatus !== "authenticated" || authMode !== "guest") {
@@ -72,32 +103,121 @@ export default function useSavedPlacesState({ authStatus, authMode }) {
       return;
     }
 
-    try {
-      const stored =
-        window.localStorage.getItem(STORAGE_KEY) ??
-        window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    let cancelled = false;
 
-      if (!stored) {
+    async function hydrateSavedPlaces() {
+      if (authMode === "guest") {
+        try {
+          const stored =
+            window.localStorage.getItem(STORAGE_KEY) ??
+            window.localStorage.getItem(LEGACY_STORAGE_KEY);
+
+          if (!stored) {
+            setSavedPlaces([]);
+            return;
+          }
+
+          const parsed = JSON.parse(stored);
+          const normalizedPlaces = Array.isArray(parsed)
+            ? normalizeSavedPlaces(parsed)
+            : [];
+
+          if (cancelled) {
+            return;
+          }
+
+          if (normalizedPlaces.length > 0 || Array.isArray(parsed)) {
+            setSavedPlaces(normalizedPlaces);
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedPlaces));
+            window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+          } else {
+            setSavedPlaces([]);
+          }
+        } catch {
+          window.localStorage.removeItem(STORAGE_KEY);
+          window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+          if (!cancelled) {
+            setSavedPlaces([]);
+          }
+        } finally {
+          if (!cancelled) {
+            setBackendSavedPlaceFetch({
+              status: "idle",
+              fetchedCount: 0,
+              totalCount: 0,
+              errorMessage: "",
+            });
+            setIsStorageReady(true);
+          }
+        }
+
         return;
       }
 
-      const parsed = JSON.parse(stored);
-      const normalizedPlaces = Array.isArray(parsed)
-        ? normalizeSavedPlaces(parsed)
-        : [];
+      setBackendSavedPlaceFetch({
+        status: "loading",
+        fetchedCount: 0,
+        totalCount: 0,
+        errorMessage: "",
+      });
 
-      if (normalizedPlaces.length > 0 || Array.isArray(parsed)) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/user-saved-cafes`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            await readErrorMessage(
+              response,
+              messages?.fetchUnexpectedError || "Failed to load saved cafes.",
+            ),
+          );
+        }
+
+        const payload = await response.json().catch(() => []);
+        const normalizedPlaces = normalizeSavedPlaces(payload);
+
+        if (cancelled) {
+          return;
+        }
+
         setSavedPlaces(normalizedPlaces);
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedPlaces));
-        window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+        setBackendSavedPlaceFetch({
+          status: "success",
+          fetchedCount: normalizedPlaces.length,
+          totalCount: normalizedPlaces.length,
+          errorMessage: "",
+        });
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        setSavedPlaces([]);
+        setBackendSavedPlaceFetch({
+          status: "error",
+          fetchedCount: 0,
+          totalCount: 0,
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : messages?.backendBannerFallback || "",
+        });
+      } finally {
+        if (!cancelled) {
+          setIsStorageReady(true);
+        }
       }
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
-      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
-    } finally {
-      setIsStorageReady(true);
     }
-  }, [authStatus]);
+
+    hydrateSavedPlaces();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authMode, authStatus, messages]);
 
   useEffect(() => {
     if (authStatus !== "authenticated") {
@@ -122,12 +242,16 @@ export default function useSavedPlacesState({ authStatus, authMode }) {
   }, [authStatus]);
 
   useEffect(() => {
-    if (authStatus !== "authenticated" || !isStorageReady) {
+    if (
+      authStatus !== "authenticated" ||
+      authMode !== "guest" ||
+      !isStorageReady
+    ) {
       return;
     }
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(savedPlaces));
-  }, [authStatus, isStorageReady, savedPlaces]);
+  }, [authMode, authStatus, isStorageReady, savedPlaces]);
 
   useEffect(() => {
     if (authStatus !== "authenticated") {
@@ -145,42 +269,184 @@ export default function useSavedPlacesState({ authStatus, authMode }) {
     [savedPlaces],
   );
 
-  const handleToggleSavedPlace = useCallback((place) => {
-    const nextPlace = normalizeSavedPlace(place);
-    if (!nextPlace) {
-      return;
-    }
+  const handleToggleSavedPlace = useCallback(
+    async (place) => {
+      const nextPlace = normalizeSavedPlace(place);
+      if (!nextPlace) {
+        return;
+      }
 
-    setSavedPlaces((current) => {
-      const exists = current.some((item) => item.id === nextPlace.id);
+      if (authMode === "guest") {
+        setSavedPlaces((current) => {
+          const exists = current.some((item) => item.id === nextPlace.id);
 
-      if (exists) {
+          if (exists) {
+            setPlaceProfiles((currentProfiles) => {
+              if (!(nextPlace.id in currentProfiles)) {
+                return currentProfiles;
+              }
+
+              const { [nextPlace.id]: _removed, ...rest } = currentProfiles;
+              return rest;
+            });
+            return current.filter((item) => item.id !== nextPlace.id);
+          }
+
+          return [...current, nextPlace];
+        });
+        return;
+      }
+
+      const exists = savedPlaces.some((item) => item.id === nextPlace.id);
+
+      try {
+        if (exists) {
+          const response = await fetch(
+            `${API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(nextPlace.id)}`,
+            {
+              method: "DELETE",
+              credentials: "include",
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              await readErrorMessage(
+                response,
+                messages?.saveUnexpectedError || "Failed to update saved cafe.",
+              ),
+            );
+          }
+
+          setSavedPlaces((current) =>
+            current.filter((item) => item.id !== nextPlace.id),
+          );
+          setPlaceProfiles((currentProfiles) => {
+            if (!(nextPlace.id in currentProfiles)) {
+              return currentProfiles;
+            }
+
+            const { [nextPlace.id]: _removed, ...rest } = currentProfiles;
+            return rest;
+          });
+        } else {
+          const response = await fetch(`${API_BASE_URL}/api/user-saved-cafes`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              kakaoPlaceId: nextPlace.id,
+              name: nextPlace.name,
+              categoryName: nextPlace.categoryName,
+              phone: nextPlace.phone,
+              addressName: nextPlace.address,
+              roadAddressName: nextPlace.roadAddress,
+              latitude: String(nextPlace.lat || ""),
+              longitude: String(nextPlace.lng || ""),
+              placeUrl: nextPlace.placeUrl,
+              savedType: "GENERAL",
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              await readErrorMessage(
+                response,
+                messages?.saveUnexpectedError || "Failed to save cafe.",
+              ),
+            );
+          }
+
+          const payload = await response.json().catch(() => null);
+          const normalizedPlace = normalizeSavedPlace(payload) ?? nextPlace;
+
+          setSavedPlaces((current) => {
+            const filtered = current.filter((item) => item.id !== normalizedPlace.id);
+            return [...filtered, normalizedPlace];
+          });
+        }
+
+        setBackendSavedPlaceFetch((current) => ({
+          ...current,
+          status: "success",
+          errorMessage: "",
+        }));
+      } catch (error) {
+        setBackendSavedPlaceFetch((current) => ({
+          ...current,
+          status: "error",
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : messages?.backendBannerFallback || "",
+        }));
+      }
+    },
+    [authMode, messages, savedPlaces],
+  );
+
+  const handleRemoveSavedPlace = useCallback(
+    async (placeId) => {
+      if (authMode === "guest") {
+        setSavedPlaces((current) => current.filter((item) => item.id !== placeId));
         setPlaceProfiles((currentProfiles) => {
-          if (!(nextPlace.id in currentProfiles)) {
+          if (!(placeId in currentProfiles)) {
             return currentProfiles;
           }
 
-          const { [nextPlace.id]: _removed, ...rest } = currentProfiles;
+          const { [placeId]: _removed, ...rest } = currentProfiles;
           return rest;
         });
-        return current.filter((item) => item.id !== nextPlace.id);
+        return;
       }
 
-      return [...current, nextPlace];
-    });
-  }, []);
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(placeId)}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          },
+        );
 
-  const handleRemoveSavedPlace = useCallback((placeId) => {
-    setSavedPlaces((current) => current.filter((item) => item.id !== placeId));
-    setPlaceProfiles((currentProfiles) => {
-      if (!(placeId in currentProfiles)) {
-        return currentProfiles;
+        if (!response.ok) {
+          throw new Error(
+            await readErrorMessage(
+              response,
+              messages?.saveUnexpectedError || "Failed to delete saved cafe.",
+            ),
+          );
+        }
+
+        setSavedPlaces((current) => current.filter((item) => item.id !== placeId));
+        setPlaceProfiles((currentProfiles) => {
+          if (!(placeId in currentProfiles)) {
+            return currentProfiles;
+          }
+
+          const { [placeId]: _removed, ...rest } = currentProfiles;
+          return rest;
+        });
+        setBackendSavedPlaceFetch((current) => ({
+          ...current,
+          status: "success",
+          errorMessage: "",
+        }));
+      } catch (error) {
+        setBackendSavedPlaceFetch((current) => ({
+          ...current,
+          status: "error",
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : messages?.backendBannerFallback || "",
+        }));
       }
-
-      const { [placeId]: _removed, ...rest } = currentProfiles;
-      return rest;
-    });
-  }, []);
+    },
+    [authMode, messages],
+  );
 
   const clearSavedPlaces = useCallback(() => {
     window.localStorage.removeItem(STORAGE_KEY);
@@ -189,6 +455,12 @@ export default function useSavedPlacesState({ authStatus, authMode }) {
     setSavedPlaces([]);
     setPlaceProfiles({});
     setIsGuestModeToastVisible(false);
+    setBackendSavedPlaceFetch({
+      status: "idle",
+      fetchedCount: 0,
+      totalCount: 0,
+      errorMessage: "",
+    });
   }, []);
 
   const savePlaceProfile = useCallback((placeId, tags) => {
@@ -200,16 +472,6 @@ export default function useSavedPlacesState({ authStatus, authMode }) {
       [placeId]: Array.isArray(tags) ? tags : [],
     }));
   }, []);
-
-  const backendSavedPlaceFetch = useMemo(
-    () => ({
-      status: "idle",
-      fetchedCount: 0,
-      totalCount: 0,
-      errorMessage: "",
-    }),
-    [],
-  );
 
   return {
     backendSavedPlaceFetch,

@@ -29,3 +29,20 @@ CREATE TABLE IF NOT EXISTS app_user (
     PRIMARY KEY (id),
     UNIQUE KEY uk_app_user_provider (auth_provider, provider_user_id)
 ) COMMENT='Application users authenticated by social login';
+
+CREATE TABLE IF NOT EXISTS user_saved_cafe (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'User saved cafe primary key',
+    app_user_id BIGINT NOT NULL COMMENT 'Owner app_user id',
+    kakao_place_id VARCHAR(64) NOT NULL COMMENT 'Saved Kakao place id',
+    saved_type VARCHAR(40) NOT NULL DEFAULT 'GENERAL' COMMENT 'Saved cafe usage type',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created timestamp',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated timestamp',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_user_saved_cafe_user_place (app_user_id, kakao_place_id),
+    KEY idx_user_saved_cafe_user_created (app_user_id, created_at),
+    KEY idx_user_saved_cafe_place (kakao_place_id),
+    CONSTRAINT fk_user_saved_cafe_app_user
+        FOREIGN KEY (app_user_id) REFERENCES app_user (id),
+    CONSTRAINT fk_user_saved_cafe_cafe
+        FOREIGN KEY (kakao_place_id) REFERENCES cafe (kakao_place_id)
+) COMMENT='Member-owned saved cafe relations';

@@ -45,8 +45,7 @@ public class KakaoCafeSearchService {
 	private static final String CAFE_CATEGORY_GROUP_NAME = CafeCategoryConstants.KAKAO_CAFE_CATEGORY_GROUP_NAME;
 	private static final int CAFE_DATA_FRESHNESS_DAYS = 30;
 	private static final int KAKAO_PAGE_SIZE = 15;
-	private static final int MAX_SEARCH_FETCH_PAGE_COUNT = 3;
-	private static final int MAX_MAP_FETCH_PAGE_COUNT = 3;
+	private static final int MAX_SEARCH_FETCH_PAGE_COUNT = 1;
 	private static final int MAX_NEARBY_FETCH_PAGE_COUNT = 3;
 	private static final int MAX_FIND_BY_ID_FETCH_PAGE_COUNT = 3;
 	private static final int MAX_SEARCH_SAVE_COUNT = KAKAO_PAGE_SIZE * MAX_SEARCH_FETCH_PAGE_COUNT;
@@ -143,28 +142,20 @@ public class KakaoCafeSearchService {
 		}
 
 		String rect = toRect(swLat, swLng, neLat, neLng);
-		Map<String, KakaoPlaceDocumentVo> deduplicated = new LinkedHashMap<>();
-		int page = 1;
-
-		while (true) {
-			KakaoKeywordSearchResponseVo response = kakaoLocalClient.searchByCategory(
-				CAFE_CATEGORY_GROUP_CODE,
-				page,
-				KAKAO_PAGE_SIZE,
-				rect
-			);
-
-			response.documents().forEach(document -> deduplicated.putIfAbsent(document.id(), document));
-
-			if (response.meta().isEnd() || page >= MAX_MAP_FETCH_PAGE_COUNT) {
-				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
-				KakaoPlaceDocumentsResponseVo result = new KakaoPlaceDocumentsResponseVo(cafes);
-				cacheMapResponse(cacheKey, result);
-				return result;
-			}
-
-			page += 1;
-		}
+		KakaoKeywordSearchResponseVo response = kakaoLocalClient.searchByCategory(
+			CAFE_CATEGORY_GROUP_CODE,
+			1,
+			KAKAO_PAGE_SIZE,
+			rect
+		);
+		List<KakaoPlaceDocumentVo> cafes = response.documents()
+			.stream()
+			.filter(document -> CAFE_CATEGORY_GROUP_CODE.equals(document.categoryGroupCode()))
+			.toList();
+		cacheCafeBatchSafely(cafes, "map-bounds");
+		KakaoPlaceDocumentsResponseVo result = new KakaoPlaceDocumentsResponseVo(cafes);
+		cacheMapResponse(cacheKey, result);
+		return result;
 	}
 
 	public KakaoPlaceDocumentsResponseVo searchCafesByKeywordInBounds(
@@ -199,33 +190,20 @@ public class KakaoCafeSearchService {
 		}
 
 		String rect = toRect(swLat, swLng, neLat, neLng);
-		Map<String, KakaoPlaceDocumentVo> deduplicated = new LinkedHashMap<>();
-		int page = 1;
-
-		while (true) {
-			KakaoKeywordSearchResponseVo response = kakaoLocalClient.searchByKeyword(
-				query,
-				page,
-				KAKAO_PAGE_SIZE,
-				rect,
-				CAFE_CATEGORY_GROUP_CODE
-			);
-
-			response.documents().forEach(document -> {
-				if (CAFE_CATEGORY_GROUP_CODE.equals(document.categoryGroupCode())) {
-					deduplicated.putIfAbsent(document.id(), document);
-				}
-			});
-
-			if (response.meta().isEnd() || page >= MAX_MAP_FETCH_PAGE_COUNT) {
-				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
-				KakaoPlaceDocumentsResponseVo result = new KakaoPlaceDocumentsResponseVo(cafes);
-				cacheMapResponse(cacheKey, result);
-				return result;
-			}
-
-			page += 1;
-		}
+		KakaoKeywordSearchResponseVo response = kakaoLocalClient.searchByKeyword(
+			query,
+			1,
+			KAKAO_PAGE_SIZE,
+			rect,
+			CAFE_CATEGORY_GROUP_CODE
+		);
+		List<KakaoPlaceDocumentVo> cafes = response.documents().stream()
+			.filter(document -> CAFE_CATEGORY_GROUP_CODE.equals(document.categoryGroupCode()))
+			.toList();
+		cacheCafeBatchSafely(cafes, "map-keyword");
+		KakaoPlaceDocumentsResponseVo result = new KakaoPlaceDocumentsResponseVo(cafes);
+		cacheMapResponse(cacheKey, result);
+		return result;
 	}
 
 	public Optional<KakaoPlaceDocumentVo> findCafeById(String placeId, String query) {
@@ -233,8 +211,17 @@ public class KakaoCafeSearchService {
 			throw new IllegalArgumentException("placeId must not be blank");
 		}
 
+		Map<String, Object> persistedCafe = findPersistedCafeSafely(placeId);
+		if (persistedCafe != null && !isStale(persistedCafe)) {
+			log.info("findCafeById cache hit placeId='{}' source=db", placeId);
+			return Optional.of(toKakaoPlaceDocument(persistedCafe));
+		}
+
 		if (!StringUtils.hasText(query)) {
-			throw new IllegalArgumentException("query must not be blank");
+			log.info("findCafeById returning persisted row without refresh because query is missing. placeId='{}'", placeId);
+			return persistedCafe == null
+				? Optional.empty()
+				: Optional.of(toKakaoPlaceDocument(persistedCafe));
 		}
 
 		requestRateLimiter.checkLimit(
@@ -254,11 +241,14 @@ public class KakaoCafeSearchService {
 				.findFirst();
 
 			if (matchedCafe.isPresent()) {
+				cacheCafeSafely(matchedCafe.get(), "detail-refresh");
 				return matchedCafe;
 			}
 
 			if (response.meta().isEnd() || page >= MAX_FIND_BY_ID_FETCH_PAGE_COUNT) {
-				return Optional.empty();
+				return persistedCafe == null
+					? Optional.empty()
+					: Optional.of(toKakaoPlaceDocument(persistedCafe));
 			}
 
 			page += 1;
@@ -267,7 +257,8 @@ public class KakaoCafeSearchService {
 
 	public void saveCafe(CafeUpsertRequest request) {
 		validateCafeUpsertRequest(request);
-		log.info("saveCafe no-op because cafe DB persistence is disabled. kakaoPlaceId='{}'", request.kakaoPlaceId());
+		upsertCafe(toCafeMap(request));
+		log.info("saveCafe persisted kakaoPlaceId='{}'", request.kakaoPlaceId());
 	}
 
 	private boolean isRelevantSearchResult(KakaoPlaceDocumentVo document, String query) {
@@ -349,40 +340,21 @@ public class KakaoCafeSearchService {
 				.filter(document -> CAFE_CATEGORY_GROUP_CODE.equals(document.categoryGroupCode()))
 				.filter(document -> isRelevantSearchResult(document, query))
 				.toList();
+			cacheCafeBatchSafely(cafeDocuments, "search-paged");
 			log.info("searchCafes paged query='{}' page={} size={} filteredCount={}", query, page, size, cafeDocuments.size());
 			return new KakaoKeywordSearchResponseVo(cafeDocuments, response.meta());
 		}
 
-		Map<String, KakaoPlaceDocumentVo> deduplicated = new LinkedHashMap<>();
-		int currentPage = 1;
-		KakaoKeywordSearchResponseVo lastResponse;
-
-		while (true) {
-			lastResponse = kakaoLocalClient.searchByKeyword(query, currentPage, KAKAO_PAGE_SIZE);
-			int beforeCount = deduplicated.size();
-			lastResponse.documents().stream()
+		KakaoKeywordSearchResponseVo response = kakaoLocalClient.searchByKeyword(query, 1, KAKAO_PAGE_SIZE);
+		List<KakaoPlaceDocumentVo> cafes = filterSearchResultsByPriority(
+			response.documents().stream()
 				.filter(document -> CAFE_CATEGORY_GROUP_CODE.equals(document.categoryGroupCode()))
-				.forEach(document -> deduplicated.putIfAbsent(document.id(), document));
-			int addedCount = deduplicated.size() - beforeCount;
-			log.info(
-				"searchCafes query='{}' fetchedPage={} addedCount={} accumulatedCount={} isEnd={}",
-				query,
-				currentPage,
-				addedCount,
-				deduplicated.size(),
-				lastResponse.meta().isEnd()
-			);
-
-			if (lastResponse.meta().isEnd() || currentPage >= MAX_SEARCH_FETCH_PAGE_COUNT) {
-				List<KakaoPlaceDocumentVo> cafes = filterSearchResultsByPriority(
-					List.copyOf(deduplicated.values()),
-					query
-				);
-				return new KakaoKeywordSearchResponseVo(cafes, lastResponse.meta());
-			}
-
-			currentPage += 1;
-		}
+				.toList(),
+			query
+		);
+		cacheCafeBatchSafely(cafes, "search");
+		log.info("searchCafes query='{}' fetchedPage=1 filteredCount={}", query, cafes.size());
+		return new KakaoKeywordSearchResponseVo(cafes, response.meta());
 	}
 
 	private void saveCafeBatch(List<KakaoPlaceDocumentVo> cafes) {
@@ -399,6 +371,30 @@ public class KakaoCafeSearchService {
 
 		log.info("saveCafeBatch totalCandidates={} selectedCount={}", cafes.size(), cafeMaps.size());
 		processCafeBatchUpsert(cafeMaps);
+	}
+
+	private void cacheCafeBatchSafely(List<KakaoPlaceDocumentVo> cafes, String source) {
+		if (cafes == null || cafes.isEmpty()) {
+			return;
+		}
+
+		try {
+			saveCafeBatch(cafes);
+		} catch (RuntimeException exception) {
+			log.warn("cacheCafeBatchSafely skipped source={} cafeCount={}", source, cafes.size(), exception);
+		}
+	}
+
+	private void cacheCafeSafely(KakaoPlaceDocumentVo cafe, String source) {
+		if (cafe == null) {
+			return;
+		}
+
+		try {
+			upsertCafe(cafe);
+		} catch (RuntimeException exception) {
+			log.warn("cacheCafeSafely skipped source={} kakaoPlaceId={}", source, cafe.id(), exception);
+		}
 	}
 
 	private List<KakaoPlaceDocumentVo> selectCafesForSave(List<KakaoPlaceDocumentVo> cafes) {
@@ -569,6 +565,7 @@ public class KakaoCafeSearchService {
 		return String.format(java.util.Locale.ROOT, "%.4f", value);
 	}
 
+	@SuppressWarnings("unused")
 	private void collectNearbyCandidates(CafeUpsertRequest request) {
 		Double latitude = parseCoordinate(request.latitude());
 		Double longitude = parseCoordinate(request.longitude());
@@ -613,6 +610,7 @@ public class KakaoCafeSearchService {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void saveNearbyCandidateCafes(String sourceKakaoPlaceId, List<KakaoPlaceDocumentVo> nearbyCafes) {
 		if (nearbyCafes.isEmpty()) {
 			log.info("saveNearbyCandidateCafes skipped because no nearby cafes were collected. source={}", sourceKakaoPlaceId);
@@ -651,6 +649,15 @@ public class KakaoCafeSearchService {
 
 		String normalized = value.toLowerCase().replaceAll("\\s+", "");
 		return NON_LETTER_OR_DIGIT_PATTERN.matcher(normalized).replaceAll("");
+	}
+
+	private Map<String, Object> findPersistedCafeSafely(String placeId) {
+		try {
+			return findPersistedCafe(placeId);
+		} catch (ApiException exception) {
+			log.warn("findPersistedCafeSafely failed placeId='{}'", placeId, exception);
+			return null;
+		}
 	}
 
 	private Map<String, Object> findPersistedCafe(String placeId) {

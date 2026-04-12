@@ -44,7 +44,7 @@ public class KakaoCafeSearchController {
 	@GetMapping("/{placeId}")
 	public ResponseEntity<KakaoPlaceDocumentVo> getCafe(
 		@PathVariable("placeId") String placeId,
-		@RequestParam("query") String query
+		@RequestParam(value = "query", required = false) String query
 	) {
 		return kakaoCafeSearchService.findCafeById(placeId, query)
 			.map(ResponseEntity::ok)

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import coffeebaraLogo from "../../coffeebara-logo.png";
+import { formatCount } from "../../lib/formatCount";
 
 function HamburgerButton({ isOpen, onClick, messages }) {
   return (
@@ -69,7 +70,7 @@ function MenuActionButton({ children, onClick }) {
       className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-[#5f4b3f] transition hover:bg-[#fcf7f2]"
     >
       <span>{children}</span>
-      <span>↗</span>
+      <span>{">"}</span>
     </button>
   );
 }
@@ -79,16 +80,18 @@ function AccountMenu({
   onLogout,
   onLogoutWithKakaoAccount,
   onUpdateDisplayName,
+  savedCafeCount,
+  recordCount = 0,
   messages,
 }) {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
   const [draftDisplayName, setDraftDisplayName] = useState(
-    authUser?.displayName || authUser?.nickname || ""
+    authUser?.displayName || authUser?.nickname || "",
   );
   const [isSavingDisplayName, setIsSavingDisplayName] = useState(false);
   const menuRef = useRef(null);
-  const currentDisplayName = authUser?.displayName || authUser?.nickname || "사용자";
+  const currentDisplayName = authUser?.displayName || authUser?.nickname || "User";
 
   useEffect(() => {
     if (!isAccountMenuOpen) {
@@ -122,87 +125,121 @@ function AccountMenu({
 
       {isAccountMenuOpen ? (
         <div className="absolute right-0 top-[calc(100%+8px)] z-40 min-w-[288px] overflow-hidden rounded-2xl border border-[#dccfbe] bg-white shadow-[0_18px_40px_rgba(84,52,27,0.12)]">
-          {authUser?.mode === "kakao" ? (
-            <div className="border-b border-[#efe5da] px-4 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <p className="min-w-0 truncate text-sm font-semibold text-[#2f221b]">
-                  {currentDisplayName}님
-                </p>
+          <div className="border-b border-[#efe5da] px-4 py-4">
+            {authUser?.mode === "kakao" ? (
+              <>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="min-w-0 truncate text-sm font-semibold text-[#2f221b]">
+                    {currentDisplayName}
+                  </p>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDraftDisplayName(authUser?.displayName || authUser?.nickname || "");
-                    setIsEditingDisplayName((current) => !current);
-                  }}
-                  aria-label="표시 이름 수정"
-                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#dccfbe] bg-[#fcf7f2] text-[#5f4b3f] transition hover:bg-[#f5ede4]"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
-                  >
-                    <path
-                      d="M4 20h4l9.5-9.5a1.8 1.8 0 0 0 0-2.5l-1.5-1.5a1.8 1.8 0 0 0-2.5 0L4 16v4Z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="m12.5 7.5 4 4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              {isEditingDisplayName ? (
-                <div className="mt-3 flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={draftDisplayName}
-                    onChange={(event) => setDraftDisplayName(event.target.value)}
-                    maxLength={100}
-                    placeholder="표시 이름"
-                    onKeyDown={async (event) => {
-                      if (event.key !== "Enter") {
-                        return;
-                      }
-
-                      event.preventDefault();
-                      setIsSavingDisplayName(true);
-                      const succeeded = await onUpdateDisplayName(draftDisplayName);
-                      setIsSavingDisplayName(false);
-                      if (succeeded) {
-                        setIsEditingDisplayName(false);
-                      }
-                    }}
-                    className="h-10 min-w-0 flex-1 rounded-full border border-[#dccfbe] bg-white px-4 text-sm text-[#352720] outline-none placeholder:text-[#a38b79]"
-                  />
                   <button
                     type="button"
-                    onClick={async () => {
-                      setIsSavingDisplayName(true);
-                      const succeeded = await onUpdateDisplayName(draftDisplayName);
-                      setIsSavingDisplayName(false);
-                      if (succeeded) {
-                        setIsEditingDisplayName(false);
-                      }
+                    onClick={() => {
+                      setDraftDisplayName(
+                        authUser?.displayName || authUser?.nickname || "",
+                      );
+                      setIsEditingDisplayName((current) => !current);
                     }}
-                    disabled={isSavingDisplayName}
-                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${
-                      isSavingDisplayName
-                        ? "cursor-not-allowed bg-[#8f725d] text-white/80"
-                        : "bg-[#2f221b] text-white hover:bg-[#241813]"
-                    }`}
+                    aria-label="Edit display name"
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#dccfbe] bg-[#fcf7f2] text-[#5f4b3f] transition hover:bg-[#f5ede4]"
                   >
-                    저장
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                    >
+                      <path
+                        d="M4 20h4l9.5-9.5a1.8 1.8 0 0 0 0-2.5l-1.5-1.5a1.8 1.8 0 0 0-2.5 0L4 16v4Z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="m12.5 7.5 4 4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </button>
                 </div>
-              ) : null}
+
+                {isEditingDisplayName ? (
+                  <div className="mt-3 flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={draftDisplayName}
+                      onChange={(event) => setDraftDisplayName(event.target.value)}
+                      maxLength={100}
+                      placeholder="Display name"
+                      onKeyDown={async (event) => {
+                        if (event.key !== "Enter") {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        setIsSavingDisplayName(true);
+                        const succeeded = await onUpdateDisplayName(draftDisplayName);
+                        setIsSavingDisplayName(false);
+                        if (succeeded) {
+                          setIsEditingDisplayName(false);
+                        }
+                      }}
+                      className="h-10 min-w-0 flex-1 rounded-full border border-[#dccfbe] bg-white px-4 text-sm text-[#352720] outline-none placeholder:text-[#a38b79]"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setIsSavingDisplayName(true);
+                        const succeeded = await onUpdateDisplayName(draftDisplayName);
+                        setIsSavingDisplayName(false);
+                        if (succeeded) {
+                          setIsEditingDisplayName(false);
+                        }
+                      }}
+                      disabled={isSavingDisplayName}
+                      className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${
+                        isSavingDisplayName
+                          ? "cursor-not-allowed bg-[#8f725d] text-white/80"
+                          : "bg-[#2f221b] text-white hover:bg-[#241813]"
+                      }`}
+                    >
+                      Save
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <p className="min-w-0 truncate text-sm font-semibold text-[#2f221b]">
+                {currentDisplayName}
+              </p>
+            )}
+
+            <div className="mt-4 grid gap-3">
+              <div className="rounded-[20px] border border-[#efe5da] bg-[#fcf7f2] px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8f725d]">
+                  {messages.accountSavedCafeCountLabel}
+                </p>
+                <p className="mt-2 text-right text-2xl font-semibold leading-none text-[#2f221b]">
+                  {formatCount(savedCafeCount)}
+                </p>
+              </div>
+
+              <div className="rounded-[20px] border border-[#efe5da] bg-[#fcf7f2] px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8f725d]">
+                  {messages.accountRecordCountLabel}
+                </p>
+                {authUser?.mode === "guest" ? (
+                  <p className="mt-2 text-sm font-medium leading-5 text-[#7a6456]">
+                    {messages.accountGuestRecordUnavailable}
+                  </p>
+                ) : (
+                  <p className="mt-2 text-right text-2xl font-semibold leading-none text-[#2f221b]">
+                    {formatCount(recordCount)}
+                  </p>
+                )}
+              </div>
             </div>
-          ) : null}
+          </div>
 
           <MenuActionButton
             onClick={() => {
@@ -237,6 +274,8 @@ export default function HeaderBar({
   authUser,
   accountNotice,
   onUpdateDisplayName,
+  savedCafeCount = 0,
+  recordCount = 0,
   messages,
 }) {
   const [isLocaleMenuOpen, setIsLocaleMenuOpen] = useState(false);
@@ -276,7 +315,11 @@ export default function HeaderBar({
 
       <div className="mx-auto flex w-full max-w-[2200px] items-center gap-4 px-4 py-4 sm:px-6 xl:px-8">
         <div className="flex min-w-0 items-center gap-3">
-          <HamburgerButton isOpen={isSidebarOpen} onClick={onToggleSidebar} messages={messages} />
+          <HamburgerButton
+            isOpen={isSidebarOpen}
+            onClick={onToggleSidebar}
+            messages={messages}
+          />
 
           <Link
             href="/"
@@ -314,7 +357,7 @@ export default function HeaderBar({
               className="inline-flex items-center gap-2 rounded-full border border-[#dccfbe] bg-white/90 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5f4b3f] shadow-[0_10px_24px_rgba(84,52,27,0.06)] transition hover:bg-[#f7efe6]"
             >
               <span>{locale.toUpperCase()}</span>
-              <span className="text-[#8f725d]">{isLocaleMenuOpen ? "▴" : "▾"}</span>
+              <span className="text-[#8f725d]">{isLocaleMenuOpen ? "˄" : "˅"}</span>
             </button>
 
             {isLocaleMenuOpen ? (
@@ -337,7 +380,7 @@ export default function HeaderBar({
                       }`}
                     >
                       <span>{option.toUpperCase()}</span>
-                      <span>{isActive ? "✓" : ""}</span>
+                      <span>{isActive ? "•" : ""}</span>
                     </button>
                   );
                 })}
@@ -371,6 +414,8 @@ export default function HeaderBar({
               onLogout={onLogout}
               onLogoutWithKakaoAccount={onLogoutWithKakaoAccount}
               onUpdateDisplayName={onUpdateDisplayName}
+              savedCafeCount={savedCafeCount}
+              recordCount={recordCount}
               messages={messages}
             />
           </form>
@@ -403,6 +448,8 @@ export default function HeaderBar({
             onLogout={onLogout}
             onLogoutWithKakaoAccount={onLogoutWithKakaoAccount}
             onUpdateDisplayName={onUpdateDisplayName}
+            savedCafeCount={savedCafeCount}
+            recordCount={recordCount}
             messages={messages}
           />
         </form>

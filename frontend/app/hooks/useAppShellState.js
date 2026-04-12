@@ -52,6 +52,7 @@ export default function useAppShellState() {
   } = useSavedPlacesState({
     authStatus,
     authMode: authUser?.mode ?? "",
+    messages,
   });
 
   useEffect(() => {
@@ -160,20 +161,18 @@ export default function useAppShellState() {
       // Ignore logout transport failures and continue local cleanup.
     }
 
-    clearSavedPlaces();
     setIsSidebarOpen(false);
     setAuthUser(null);
     setAuthStatus("redirecting");
     router.replace("/login");
-  }, [clearSavedPlaces, router]);
+  }, [router]);
 
   const handleLogoutWithKakaoAccount = useCallback(() => {
-    clearSavedPlaces();
     setIsSidebarOpen(false);
     setAuthUser(null);
     setAuthStatus("redirecting");
     window.location.assign(`${API_BASE_URL}/api/auth/logout/kakao-account`);
-  }, [clearSavedPlaces]);
+  }, []);
 
   const updateDisplayName = useCallback(async (displayName) => {
     try {

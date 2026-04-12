@@ -70,6 +70,8 @@ export default function Home() {
         authUser={authUser}
         accountNotice={accountNotice}
         onUpdateDisplayName={updateDisplayName}
+        savedCafeCount={savedPlaces.length}
+        recordCount={0}
         messages={messages}
       />
 

@@ -9,8 +9,6 @@ import coffeebaraLogo from "../coffeebara-logo.png";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
-const GUEST_FAVORITES_STORAGE_KEY = "coffeebara.guestFavorites.v1";
-const LEGACY_GUEST_FAVORITES_STORAGE_KEY = "coffeebara.preferred-cafes";
 const LOCALE_STORAGE_KEY = "coffeebara.locale.v1";
 
 function getInitialLocale() {
@@ -46,11 +44,6 @@ export default function LoginPage() {
       // Ignore storage access failures and keep the in-memory locale.
     }
   }, [locale]);
-
-  useEffect(() => {
-    window.localStorage.removeItem(GUEST_FAVORITES_STORAGE_KEY);
-    window.localStorage.removeItem(LEGACY_GUEST_FAVORITES_STORAGE_KEY);
-  }, []);
 
   useEffect(() => {
     if (searchParams.get("error") !== "kakao") {

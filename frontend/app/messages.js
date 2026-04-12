@@ -19,6 +19,9 @@ const messages = {
     loginPageStatusFailed:
       "로그인 상태를 확인하지 못했습니다. 백엔드가 실행 중인지 확인해 주세요.",
     accountMenuLabel: "계정 메뉴 열기",
+    accountSavedCafeCountLabel: "저장한 카페",
+    accountRecordCountLabel: "남긴 기록",
+    accountGuestRecordUnavailable: "게스트는 이 기능을 이용할 수 없습니다",
     logoutButton: "로그아웃",
     guestModeBannerTitle: "현재 게스트로 이용 중입니다.",
     guestModeBannerBody:
@@ -85,7 +88,7 @@ const messages = {
     similarTasteNeedMore: (count) =>
       `최소 ${count}곳 이상 저장하면 다음 기록 흐름을 시험하기 좋습니다.`,
     favoriteSectionTitle: "저장한 카페",
-    homeLabel: "Home",
+    homeLabel: "홈",
     placeDetailTitle: "카페 정보",
     placeDetailLoading: "저장한 카페 정보를 불러오는 중입니다.",
     placeDetailCardLabel: "저장한 카페",
@@ -175,6 +178,9 @@ const messages = {
     loginPageStatusFailed:
       "Could not verify login status. Check whether the backend is running.",
     accountMenuLabel: "Open account menu",
+    accountSavedCafeCountLabel: "Saved Cafes",
+    accountRecordCountLabel: "Records",
+    accountGuestRecordUnavailable: "Guests cannot use this feature",
     logoutButton: "Log out",
     guestModeBannerTitle: "You are currently using guest mode.",
     guestModeBannerBody:
@@ -329,6 +335,9 @@ const messages = {
     loginPageStatusFailed:
       "ログイン状態を確認できませんでした。バックエンドが起動しているか確認してください。",
     accountMenuLabel: "アカウントメニューを開く",
+    accountSavedCafeCountLabel: "保存したカフェ",
+    accountRecordCountLabel: "記録件数",
+    accountGuestRecordUnavailable: "ゲストはこの機能を利用できません",
     logoutButton: "ログアウト",
     guestModeBannerTitle: "現在ゲストモードで利用中です。",
     guestModeBannerBody:
@@ -455,7 +464,7 @@ const messages = {
       "カフェ情報の読み込み中に予期しない問題が発生しました。",
     saveUnexpectedError:
       "選択したカフェの保存中に予期しない問題が発生しました。",
-    homeLabel: "Home",
+    homeLabel: "ホーム",
     privacyNoticeTitle: "個人情報のご案内",
     privacyNoticeBody:
       "コーヒーバラは、個人を直接識別できる情報、ユーザーの移動経路、検索履歴、検索した地域、ユーザー座標をサーバーに保存しません。",

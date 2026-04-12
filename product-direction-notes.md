@@ -112,6 +112,8 @@ It is not primarily about generating recommendation candidates.
 
 The next meaningful product slices are:
 
+- guest sample/demo record page
+- member record hub entered from saved cafes
 - bean record creation
 - brewing record creation
 - place selection for purchase and drinking context
@@ -125,7 +127,64 @@ The next meaningful product slices are:
 
 These are small enough to build realistically and meaningful enough to make the product personally useful.
 
-## 9. Mood Color As Product Identity
+## 9. What Has Already Been Reconnected
+
+The direction shift is no longer only conceptual. Several important pieces have already been reconnected in code.
+
+- cafe search and map lookup remain active
+- `cafe` is now functioning again as a place cache / master table
+- search and map results are being upserted into `cafe`
+- cafe detail now prefers DB data first and refreshes from Kakao when stale
+- member saved cafes are now persisted through `user_saved_cafe`
+- guest saved cafes remain local-storage based
+- frontend saved-cafe behavior is now intentionally split by auth mode
+- account/profile UI is being reshaped around the personal archive direction
+
+This matters because the repository is no longer merely "planning" to move away from the earlier recommendation framing.
+The implementation path has already started changing in concrete ways.
+
+## 10. How Current Persistence Should Be Understood
+
+The current persistence model should be described carefully.
+
+- `cafe` is shared place cache/master data
+- `user_saved_cafe` is member-owned saved cafe state
+- guest saved cafes are temporary local browser state
+- future bean/brew/record tables will be the actual archive core
+
+This is an important distinction.
+
+It means the app is not returning to the old "save every place because places are the product" interpretation.
+It is using place persistence to support archive flows more reliably and to reduce repeated Kakao API calls.
+
+## 11. Search And Map Scope Should Stay Modest
+
+The current direction also implies a different attitude toward Kakao API usage.
+
+- search does not need recommendation-style deep page crawling
+- map lookup does not need broad candidate harvesting
+- it is enough to cache what the user actually searched or viewed
+- detail refresh should happen when needed, not through aggressive place accumulation
+
+This makes the system simpler and keeps the place layer aligned with the archive product goal.
+
+## 12. Guest Mode Should Be Treated As Intentional
+
+Guest mode is not just a temporary workaround.
+
+Its current role is:
+
+- let a user explore cafe search and saving without immediate account commitment
+- preserve a lightweight local experience in the browser
+- preview the product direction before durable archive features are available
+
+But guest mode still has limits:
+
+- guest saved cafes are not durable account records
+- guest mode should not be treated as real record ownership
+- guest users should eventually be directed to sample/demo archive flows rather than full member record creation
+
+## 13. Mood Color As Product Identity
 
 One of the more distinctive parts of the new direction is the mood color feature.
 
@@ -134,7 +193,7 @@ The point is to let the user capture the felt character of a coffee in a way tha
 
 That is why the feature should remain expressive in the UI, while still mapping internally to a limited meaningful palette.
 
-## 10. AI Should Remain Secondary
+## 14. AI Should Remain Secondary
 
 AI still has a place in the product, but not as the foundation.
 
@@ -152,7 +211,7 @@ The weakest use of AI would be:
 
 The archive must stand on its own without AI.
 
-## 11. Practical Conclusion
+## 15. Practical Conclusion
 
 The important conclusion is not that the earlier direction failed completely.
 
@@ -165,7 +224,7 @@ The more accurate conclusion is:
 
 That gives the project a calmer and more durable purpose.
 
-## 12. Final Framing
+## 16. Final Framing
 
 Coffeebara should continue as the same repository, with the earlier work preserved as v1 and the next phase focused on a personal brewing record and coffee archive system.
 

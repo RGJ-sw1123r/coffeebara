@@ -7,6 +7,7 @@ const DEFAULT_LEVEL = 7;
 const MAX_ZOOM_OUT_LEVEL = 8;
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
+const API_REQUEST_TIMEOUT_MS = 12000;
 let kakaoMapSdkPromise = null;
 const DEFAULT_MARKER_Z_INDEX = 1;
 const ACTIVE_MARKER_Z_INDEX = 1000;
@@ -270,13 +271,15 @@ function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
   const wrap = document.createElement("div");
   wrap.style.width = "296px";
   wrap.style.overflow = "hidden";
-  wrap.style.border = "1px solid #eadfd3";
-  wrap.style.borderRadius = "20px";
-  wrap.style.background = "rgba(255,255,255,0.98)";
-  wrap.style.boxShadow = "0 18px 36px rgba(84,52,27,0.14)";
+  wrap.style.border = "none";
+  wrap.style.borderRadius = "24px";
+  wrap.style.background =
+    "linear-gradient(180deg, rgba(255,252,247,0.98) 0%, rgba(249,241,231,0.98) 100%)";
+  wrap.style.boxShadow = "0 20px 40px rgba(60, 42, 30, 0.12)";
+  wrap.style.backdropFilter = "blur(12px)";
 
   const body = document.createElement("div");
-  body.style.padding = "16px";
+  body.style.padding = "18px";
 
   const header = document.createElement("div");
   header.style.display = "flex";
@@ -289,15 +292,21 @@ function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
 
   const title = document.createElement("div");
   title.textContent = place.place_name;
-  title.style.fontSize = "15px";
+  title.style.fontSize = "16px";
   title.style.fontWeight = "700";
   title.style.color = "#241813";
+  title.style.lineHeight = "1.4";
 
   const category = document.createElement("div");
   category.textContent = place.category_name || messages?.cafeCategoryFallback || "카페";
-  category.style.marginTop = "4px";
+  category.style.marginTop = "6px";
+  category.style.display = "inline-flex";
+  category.style.alignItems = "center";
+  category.style.padding = "4px 10px";
+  category.style.borderRadius = "999px";
+  category.style.background = "rgba(239, 227, 213, 0.9)";
   category.style.fontSize = "12px";
-  category.style.color = "#8f725d";
+  category.style.color = "#7a604f";
 
   titleWrap.appendChild(title);
   titleWrap.appendChild(category);
@@ -317,6 +326,7 @@ function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
   favoriteButton.style.color = isSavedPlace ? "#f3c76d" : "#5d473b";
   favoriteButton.style.fontSize = "18px";
   favoriteButton.style.cursor = "pointer";
+  favoriteButton.style.boxShadow = "0 10px 20px rgba(47, 34, 27, 0.12)";
   favoriteButton.addEventListener("click", onToggleSavedPlace);
 
   header.appendChild(titleWrap);
@@ -328,13 +338,15 @@ function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
   address.style.fontSize = "13px";
   address.style.lineHeight = "1.5";
   address.style.color = "#5f4b3f";
+  address.style.wordBreak = "keep-all";
 
   body.appendChild(header);
+  body.appendChild(address);
 
   if (place.phone) {
     const phone = document.createElement("div");
     phone.textContent = place.phone;
-    phone.style.marginTop = "8px";
+    phone.style.marginTop = "10px";
     phone.style.fontSize = "12px";
     phone.style.color = "#8b7162";
     body.appendChild(phone);
@@ -353,6 +365,7 @@ function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
     link.style.padding = "9px 14px";
     link.style.borderRadius = "999px";
     link.style.textDecoration = "none";
+    link.style.boxShadow = "0 12px 24px rgba(47, 34, 27, 0.14)";
     link.style.setProperty("background", "#2f221b", "important");
     link.style.setProperty("color", "#ffffff", "important");
     link.style.setProperty("-webkit-text-fill-color", "#ffffff", "important");
@@ -387,10 +400,32 @@ function getMapCenter(map) {
 }
 
 async function fetchCafeDocuments(pathname, params) {
-  const response = await fetch(`${API_BASE_URL}${pathname}?${params.toString()}`, {
-    method: "GET",
-    credentials: "include",
-  });
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => {
+    controller.abort();
+  }, API_REQUEST_TIMEOUT_MS);
+
+  let response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${pathname}?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+      signal: controller.signal,
+    });
+  } catch (error) {
+    window.clearTimeout(timeoutId);
+
+    if (error instanceof Error && error.name === "AbortError") {
+      const timeoutError = new Error("Request timed out while loading places.");
+      timeoutError.code = "REQUEST_TIMEOUT";
+      throw timeoutError;
+    }
+
+    throw error;
+  }
+
+  window.clearTimeout(timeoutId);
 
   if (!response.ok) {
     let errorCode = "";
@@ -525,6 +560,12 @@ function clearCurrentAreaCache(responseCache) {
     });
 }
 
+function waitForNextFrame() {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, 0);
+  });
+}
+
 function MarkerList({
   places,
   selectedPlaceId,
@@ -636,7 +677,7 @@ export default function KakaoMap({
 }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const infoWindowRef = useRef(null);
+  const overlayRef = useRef(null);
   const markerEntriesRef = useRef([]);
   const idleListenerRef = useRef(null);
   const mapClickListenerRef = useRef(null);
@@ -678,7 +719,7 @@ export default function KakaoMap({
     ? sortedSearchPlaces
     : sortedMapPlaces;
   const hiddenSearchResultCount = normalizedSearchQuery
-    ? 0
+    ? Math.max(searchPlaces.length - sortedSearchPlaces.length, 0)
     : 0;
 
   const clearSelection = () => {
@@ -686,14 +727,14 @@ export default function KakaoMap({
     setSelectedPlaceId("");
     onSelectPlaceRef.current?.(null);
     applyMarkerPriority(markerEntriesRef.current, "");
-    infoWindowRef.current?.close();
+    overlayRef.current?.setMap(null);
   };
 
   const clearSelectionWithoutState = () => {
     selectedPlaceRef.current = null;
     onSelectPlaceRef.current?.(null);
     applyMarkerPriority(markerEntriesRef.current, "");
-    infoWindowRef.current?.close();
+    overlayRef.current?.setMap(null);
   };
 
   const handleSearchCurrentView = async () => {
@@ -750,14 +791,14 @@ export default function KakaoMap({
     onSearchResultsChange?.({
       results: (normalizedSearchQuery ? sortedSearchPlaces : sortedMapPlaces).map(toSavedPlace),
       visibleCount: displayedPlaces.length,
-      totalCount: normalizedSearchQuery ? sortedSearchPlaces.length : sortedMapPlaces.length,
+      totalCount: normalizedSearchQuery ? searchPlaces.length : sortedMapPlaces.length,
       hiddenCount: hiddenSearchResultCount,
       isSearching: Boolean(normalizedSearchQuery),
       source:
-        currentViewModeRef.current === "map"
-          ? "map"
-          : normalizedSearchQuery
-            ? "search"
+        currentViewModeRef.current === "search"
+          ? "search"
+          : currentViewModeRef.current === "map"
+            ? "map"
             : "idle",
       status,
       errorMessage,
@@ -770,6 +811,7 @@ export default function KakaoMap({
     hiddenSearchResultCount,
     normalizedSearchQuery,
     onSearchResultsChange,
+    searchPlaces.length,
     sortedMapPlaces,
     sortedSearchPlaces,
     status,
@@ -835,9 +877,11 @@ export default function KakaoMap({
         });
         map.setMaxLevel(MAX_ZOOM_OUT_LEVEL);
 
-        const infoWindow = new kakao.maps.InfoWindow({
-          removable: true,
+        const overlay = new kakao.maps.CustomOverlay({
+          clickable: true,
           zIndex: INFO_WINDOW_Z_INDEX,
+          yAnchor: 1.2,
+          xAnchor: 0.5,
         });
         const zoomControl = new kakao.maps.ZoomControl();
 
@@ -849,7 +893,7 @@ export default function KakaoMap({
         });
 
         mapInstanceRef.current = map;
-        infoWindowRef.current = infoWindow;
+        overlayRef.current = overlay;
 
         const searchVisibleCafes = async () => {
           if (normalizedSearchQueryRef.current || isCurrentAreaModeRef.current) {
@@ -929,9 +973,9 @@ export default function KakaoMap({
 
       markerEntriesRef.current.forEach(({ marker }) => marker.setMap(null));
       markerEntriesRef.current = [];
-      infoWindowRef.current?.close();
+      overlayRef.current?.setMap(null);
       mapInstanceRef.current = null;
-      infoWindowRef.current = null;
+      overlayRef.current = null;
       idleListenerRef.current = null;
       mapClickListenerRef.current = null;
       dragStartListenerRef.current = null;
@@ -1001,11 +1045,15 @@ export default function KakaoMap({
       setStatus("loading");
       setErrorMessage("");
       setErrorCode("");
-      setErrorCode("");
 
       try {
         const cacheKey = buildKeywordSearchCacheKey(normalizedSearchQuery);
         const cachedResults = responseCacheRef.current.get(cacheKey);
+
+        if (cachedResults) {
+          await waitForNextFrame();
+        }
+
         const results =
           cachedResults ?? await fetchKeywordResults(normalizedSearchQuery);
 
@@ -1047,7 +1095,7 @@ export default function KakaoMap({
 
     const kakao = window.kakao;
     const map = mapInstanceRef.current;
-    const infoWindow = infoWindowRef.current;
+    const overlay = overlayRef.current;
 
     markerEntriesRef.current.forEach(({ marker }) => marker.setMap(null));
 
@@ -1078,8 +1126,9 @@ export default function KakaoMap({
           messages,
         );
 
-        infoWindow?.setContent(content);
-        infoWindow?.open(map, marker);
+        overlay?.setContent(content);
+        overlay?.setPosition(marker.getPosition());
+        overlay?.setMap(map);
       });
 
       return { place, marker };
@@ -1120,8 +1169,9 @@ export default function KakaoMap({
       messages,
     );
 
-    infoWindow?.setContent(content);
-    infoWindow?.open(map, selectedEntry.marker);
+    overlay?.setContent(content);
+    overlay?.setPosition(selectedEntry.marker.getPosition());
+    overlay?.setMap(map);
     applyMarkerPriority(markerEntriesRef.current, selectedEntry.place.id);
   }, [displayedPlaces, messages, normalizedSearchQuery, savedPlaceIds, selectedPlaceId]);
 
@@ -1163,8 +1213,9 @@ export default function KakaoMap({
       lat: Number(targetEntry.place.y),
       lng: Number(targetEntry.place.x),
     });
-    infoWindowRef.current?.setContent(content);
-    infoWindowRef.current?.open(mapInstanceRef.current, targetEntry.marker);
+    overlayRef.current?.setContent(content);
+    overlayRef.current?.setPosition(targetEntry.marker.getPosition());
+    overlayRef.current?.setMap(mapInstanceRef.current);
   };
 
   useEffect(() => {
@@ -1204,8 +1255,9 @@ export default function KakaoMap({
       lat: Number(targetEntry.place.y),
       lng: Number(targetEntry.place.x),
     });
-    infoWindowRef.current?.setContent(content);
-    infoWindowRef.current?.open(mapInstanceRef.current, targetEntry.marker);
+    overlayRef.current?.setContent(content);
+    overlayRef.current?.setPosition(targetEntry.marker.getPosition());
+    overlayRef.current?.setMap(mapInstanceRef.current);
   }, [activePlaceId, displayedPlaces, messages, normalizedSearchQuery, onViewportChange]);
 
   return (

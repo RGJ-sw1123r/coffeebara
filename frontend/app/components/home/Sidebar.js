@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 function SidebarPolicySection({ messages }) {
   const privacyNoticeTitle = messages.privacyNoticeTitle ?? "개인정보 처리 안내";
   const privacyNoticeBody =
@@ -8,7 +10,7 @@ function SidebarPolicySection({ messages }) {
   const guestNoticeTitle = messages.guestNoticeTitle ?? "게스트 이용 안내";
   const guestNoticeBody =
     messages.guestNoticeBody ??
-    "게스트로 이용하는 동안 생성된 정보는 브라우저 환경이나 운영 정책에 따라 초기화될 수 있습니다.";
+    "게스트로 이용하는 동안 생성한 정보는 브라우저 환경이나 운영 정책에 따라 초기화될 수 있습니다.";
   const dataPolicyTitle = messages.dataPolicyTitle ?? "데이터 수집 안내";
   const dataPolicyBody =
     messages.dataPolicyBody ??
@@ -57,6 +59,7 @@ function SidebarContent({
   onRemoveSavedPlace,
   kakaoMapUrl,
   isDesktop = false,
+  lockedPlaceId = "",
   messages,
 }) {
   const wrapperClassName = isDesktop
@@ -71,8 +74,28 @@ function SidebarContent({
           onClick={onHomeClick}
           className="flex w-full items-center gap-3 rounded-2xl bg-white/8 px-3 py-3 text-left text-sm font-semibold text-[#fff7f0] transition hover:bg-white/12"
         >
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(255,248,241,0.12)] text-base leading-none text-[#f3d2b4]">
-            ⌂
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(255,248,241,0.12)] text-[#f3d2b4]">
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+            >
+              <path
+                d="M4.5 10.5 12 4l7.5 6.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M6.75 9.75v9h10.5v-9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M10 18.75v-4.5h4v4.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </span>
           <span>{messages.homeLabel ?? "Home"}</span>
         </button>
@@ -96,26 +119,43 @@ function SidebarContent({
 
         <div className="mt-4 space-y-3">
           {savedPlaces.length > 0 ? (
-            savedPlaces.map((place) => (
-              <div key={place.id} className="rounded-2xl bg-white/8 px-3 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{place.name}</p>
-                    <p className="mt-1 text-xs text-[#d9c3b4]">
-                      {place.roadAddress || place.address || messages.noAddress}
-                    </p>
+            savedPlaces.map((place) => {
+              const isLockedPlace = lockedPlaceId === place.id;
+
+              return (
+                <div key={place.id} className="rounded-2xl bg-white/8 px-3 py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <Link
+                      href={`/places/${encodeURIComponent(place.id)}`}
+                      onClick={onClose}
+                      className="min-w-0 flex-1 rounded-xl outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#f3d2b4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#2f221b]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-medium">{place.name}</p>
+                        {isLockedPlace ? (
+                          <span className="shrink-0 rounded-full bg-[rgba(243,210,180,0.16)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#f3d2b4]">
+                            {messages.savedPlaceLockedBadge}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-xs text-[#d9c3b4]">
+                        {place.roadAddress || place.address || messages.noAddress}
+                      </p>
+                    </Link>
+                    {isLockedPlace ? null : (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveSavedPlace(place.id)}
+                        aria-label={messages.removeFavoriteAriaLabel(place.name)}
+                        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2f221b] text-base leading-none text-[#f3c76d]"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveSavedPlace(place.id)}
-                    aria-label={messages.removeFavoriteAriaLabel(place.name)}
-                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2f221b] text-base leading-none text-[#f3c76d]"
-                  >
-                    ×
-                  </button>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="rounded-2xl bg-white/8 px-3 py-3 text-sm text-[#d9c3b4]">
               {messages.noFavoriteCafes}
@@ -136,6 +176,7 @@ export function Sidebar({
   onHomeClick,
   onRemoveSavedPlace,
   kakaoMapUrl,
+  lockedPlaceId,
   messages,
 }) {
   if (!isOpen) {
@@ -157,6 +198,7 @@ export function Sidebar({
           onHomeClick={onHomeClick}
           onRemoveSavedPlace={onRemoveSavedPlace}
           kakaoMapUrl={kakaoMapUrl}
+          lockedPlaceId={lockedPlaceId}
           messages={messages}
         />
       </aside>
@@ -170,6 +212,7 @@ export function DesktopSidebar({
   onHomeClick,
   onRemoveSavedPlace,
   kakaoMapUrl,
+  lockedPlaceId,
   messages,
 }) {
   if (!isOpen) {
@@ -184,6 +227,7 @@ export function DesktopSidebar({
           onHomeClick={onHomeClick}
           onRemoveSavedPlace={onRemoveSavedPlace}
           kakaoMapUrl={kakaoMapUrl}
+          lockedPlaceId={lockedPlaceId}
           isDesktop
           messages={messages}
         />

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState, useEffect } from "react";
 
 const STORAGE_KEY = "coffeebara.guestFavorites.v1";
 const LEGACY_STORAGE_KEY = "coffeebara.preferred-cafes";
+const PLACE_PROFILE_STORAGE_KEY = "coffeebara.placeProfiles.v1";
 
 function normalizeSavedPlace(place) {
   if (!place || typeof place !== "object") {
@@ -49,6 +50,7 @@ export default function useSavedPlacesState({ authStatus }) {
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isGuestModeToastVisible, setIsGuestModeToastVisible] = useState(false);
+  const [placeProfiles, setPlaceProfiles] = useState({});
 
   useEffect(() => {
     if (authStatus !== "authenticated") {
@@ -98,12 +100,45 @@ export default function useSavedPlacesState({ authStatus }) {
   }, [authStatus]);
 
   useEffect(() => {
+    if (authStatus !== "authenticated") {
+      return;
+    }
+
+    try {
+      const storedProfiles = window.localStorage.getItem(PLACE_PROFILE_STORAGE_KEY);
+
+      if (!storedProfiles) {
+        return;
+      }
+
+      const parsed = JSON.parse(storedProfiles);
+
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        setPlaceProfiles(parsed);
+      }
+    } catch {
+      window.localStorage.removeItem(PLACE_PROFILE_STORAGE_KEY);
+    }
+  }, [authStatus]);
+
+  useEffect(() => {
     if (authStatus !== "authenticated" || !isStorageReady) {
       return;
     }
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(savedPlaces));
   }, [authStatus, isStorageReady, savedPlaces]);
+
+  useEffect(() => {
+    if (authStatus !== "authenticated") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      PLACE_PROFILE_STORAGE_KEY,
+      JSON.stringify(placeProfiles),
+    );
+  }, [authStatus, placeProfiles]);
 
   const savedPlaceIds = useMemo(
     () => new Set(savedPlaces.map((place) => place.id)),
@@ -120,6 +155,14 @@ export default function useSavedPlacesState({ authStatus }) {
       const exists = current.some((item) => item.id === nextPlace.id);
 
       if (exists) {
+        setPlaceProfiles((currentProfiles) => {
+          if (!(nextPlace.id in currentProfiles)) {
+            return currentProfiles;
+          }
+
+          const { [nextPlace.id]: _removed, ...rest } = currentProfiles;
+          return rest;
+        });
         return current.filter((item) => item.id !== nextPlace.id);
       }
 
@@ -129,13 +172,33 @@ export default function useSavedPlacesState({ authStatus }) {
 
   const handleRemoveSavedPlace = useCallback((placeId) => {
     setSavedPlaces((current) => current.filter((item) => item.id !== placeId));
+    setPlaceProfiles((currentProfiles) => {
+      if (!(placeId in currentProfiles)) {
+        return currentProfiles;
+      }
+
+      const { [placeId]: _removed, ...rest } = currentProfiles;
+      return rest;
+    });
   }, []);
 
   const clearSavedPlaces = useCallback(() => {
     window.localStorage.removeItem(STORAGE_KEY);
     window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    window.localStorage.removeItem(PLACE_PROFILE_STORAGE_KEY);
     setSavedPlaces([]);
+    setPlaceProfiles({});
     setIsGuestModeToastVisible(false);
+  }, []);
+
+  const savePlaceProfile = useCallback((placeId, tags) => {
+    if (!placeId) {
+      return;
+    }
+    setPlaceProfiles((current) => ({
+      ...current,
+      [placeId]: Array.isArray(tags) ? tags : [],
+    }));
   }, []);
 
   const backendSavedPlaceFetch = useMemo(
@@ -154,7 +217,9 @@ export default function useSavedPlacesState({ authStatus }) {
     handleRemoveSavedPlace,
     handleToggleSavedPlace,
     isGuestModeToastVisible,
+    placeProfiles,
     savedPlaceIds,
     savedPlaces,
+    savePlaceProfile,
   };
 }

@@ -32,7 +32,7 @@ export default function useAppShellState() {
   const router = useRouter();
   const [locale, setLocale] = useState(getInitialLocale);
   const [authStatus, setAuthStatus] = useState("checking");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const messages = useMemo(() => getMessages(locale), [locale]);
   const {
     backendSavedPlaceFetch,

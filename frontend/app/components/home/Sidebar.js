@@ -63,12 +63,12 @@ function SidebarContent({
   messages,
 }) {
   const wrapperClassName = isDesktop
-    ? "rounded-[28px] border border-[#e7dccf] bg-[#fbf7f2] p-4 shadow-[0_24px_60px_rgba(84,52,27,0.1)]"
+    ? "h-full rounded-[28px] border border-[#e7dccf] bg-[#fbf7f2] p-4 shadow-[0_24px_60px_rgba(84,52,27,0.1)]"
     : "h-full overflow-y-auto px-4 py-5";
 
   return (
     <div className={wrapperClassName}>
-      <section className="rounded-[24px] bg-[#2f221b] p-4 text-white shadow-[0_16px_40px_rgba(47,34,27,0.24)]">
+      <section className="h-full rounded-[24px] bg-[#2f221b] p-4 text-white shadow-[0_16px_40px_rgba(47,34,27,0.24)]">
         <button
           type="button"
           onClick={onHomeClick}

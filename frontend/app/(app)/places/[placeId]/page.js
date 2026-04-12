@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import coffeebaraLogo from "../../../coffeebara-logo.png";
@@ -31,7 +31,6 @@ function normalizeSavedPlace(place) {
 }
 
 export default function SavedPlaceDetailPage() {
-  const router = useRouter();
   const params = useParams();
   const {
     closeSidebar,
@@ -67,18 +66,9 @@ export default function SavedPlaceDetailPage() {
     { key: "espressoBar", label: messages.placeProfileOptionEspressoBar },
   ];
 
-  const handleBack = () => {
-    if (window.history.length > 1) {
-      router.back();
-      return;
-    }
-
-    router.push("/");
-  };
-
   const handleGoHome = (event) => {
     event?.preventDefault?.();
-    router.push("/");
+    window.location.href = "/";
   };
 
   const openProfileModal = () => {
@@ -233,15 +223,6 @@ export default function SavedPlaceDetailPage() {
           />
 
           <div className="min-w-0 flex-1">
-            <button
-              type="button"
-              onClick={handleBack}
-              className="mb-4 inline-flex items-center gap-2 rounded-full px-1 py-1 text-sm font-medium text-[#7a6456] transition hover:text-[#2f221b]"
-            >
-              <span>{"<"}</span>
-              <span>{messages.placeDetailBackButton}</span>
-            </button>
-
             <section className="rounded-[32px] border border-[#e7dccf] bg-white p-6 shadow-[0_24px_60px_rgba(84,52,27,0.08)] sm:p-8">
               {savedPlace ? (
                 <>

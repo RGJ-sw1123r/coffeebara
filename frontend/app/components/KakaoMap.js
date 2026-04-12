@@ -269,7 +269,7 @@ function isRelevantSearchResult(place, query) {
 
 function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
   const wrap = document.createElement("div");
-  wrap.style.width = "296px";
+  wrap.style.width = "354px";
   wrap.style.overflow = "hidden";
   wrap.style.border = "none";
   wrap.style.borderRadius = "24px";
@@ -289,6 +289,7 @@ function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
 
   const titleWrap = document.createElement("div");
   titleWrap.style.minWidth = "0";
+  titleWrap.style.flex = "1";
 
   const title = document.createElement("div");
   title.textContent = place.place_name;
@@ -307,6 +308,10 @@ function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
   category.style.background = "rgba(239, 227, 213, 0.9)";
   category.style.fontSize = "12px";
   category.style.color = "#7a604f";
+  category.style.maxWidth = "100%";
+  category.style.whiteSpace = "nowrap";
+  category.style.overflow = "hidden";
+  category.style.textOverflow = "ellipsis";
 
   titleWrap.appendChild(title);
   titleWrap.appendChild(category);
@@ -327,6 +332,7 @@ function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
   favoriteButton.style.fontSize = "18px";
   favoriteButton.style.cursor = "pointer";
   favoriteButton.style.boxShadow = "0 10px 20px rgba(47, 34, 27, 0.12)";
+  favoriteButton.style.flexShrink = "0";
   favoriteButton.addEventListener("click", onToggleSavedPlace);
 
   header.appendChild(titleWrap);

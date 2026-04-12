@@ -49,7 +49,7 @@ export default function Home() {
   } = useHomePageState();
 
   return (
-    <div className="min-h-screen bg-[#fffaf5] text-[#241813]">
+    <div className="min-h-screen bg-[#fffaf5] text-[#241813] xl:h-screen xl:overflow-hidden">
       <GuestModeToast
         isVisible={isGuestModeToastVisible}
         messages={messages}
@@ -84,8 +84,8 @@ export default function Home() {
         messages={messages}
       />
 
-      <div className="mx-auto w-full max-w-[2200px] px-4 py-6 sm:px-6 xl:px-8">
-        <main className="relative flex min-w-0 gap-6">
+      <div className="mx-auto w-full max-w-[2200px] px-4 py-6 sm:px-6 xl:h-[calc(100vh-88px)] xl:px-8 xl:py-4">
+        <main className="relative flex min-w-0 gap-6 xl:h-full xl:overflow-hidden">
           <DesktopSidebar
             savedPlaces={savedPlaces}
             isOpen={isSidebarOpen}
@@ -95,39 +95,43 @@ export default function Home() {
             messages={messages}
           />
 
-          <div className="min-w-0 flex-1 space-y-6">
+          <div className="min-w-0 flex-1 space-y-6 xl:flex xl:h-full xl:min-h-0 xl:flex-col xl:overflow-hidden">
             <BackendSyncBanner
               status={backendSavedPlaceFetch.status}
               errorMessage={backendSavedPlaceFetch.errorMessage}
               messages={messages}
             />
 
-            <MapPanel
-              kakaoMapKey={kakaoMapKey}
-              savedPlaces={savedPlaces}
-              onToggleSavedPlace={handleToggleSavedPlace}
-              searchQuery={searchQuery}
-              searchRequestVersion={searchRequestVersion}
-              resetViewVersion={resetViewVersion}
-              onSelectPlace={handleSelectPlace}
-              activePlaceId={activePlaceId}
-              onSearchResultsChange={setSearchState}
-              onViewportChange={setMapViewport}
-              isSidebarOpen={isSidebarOpen}
-              noticeState={noticeState}
-              onCloseNotice={closeNotice}
-              messages={messages}
-            />
+            <div className="flex min-w-0 flex-col gap-6 xl:flex-1 xl:min-h-0 xl:flex-row xl:items-stretch xl:overflow-hidden">
+              <div className="min-w-0 flex-1 xl:h-[calc(100vh-128px)]">
+                <MapPanel
+                  kakaoMapKey={kakaoMapKey}
+                  savedPlaces={savedPlaces}
+                  onToggleSavedPlace={handleToggleSavedPlace}
+                  searchQuery={searchQuery}
+                  searchRequestVersion={searchRequestVersion}
+                  resetViewVersion={resetViewVersion}
+                  onSelectPlace={handleSelectPlace}
+                  activePlaceId={activePlaceId}
+                  onSearchResultsChange={setSearchState}
+                  onViewportChange={setMapViewport}
+                  isSidebarOpen={isSidebarOpen}
+                  noticeState={noticeState}
+                  onCloseNotice={closeNotice}
+                  messages={messages}
+                />
+              </div>
 
-            <BottomPanel
-              searchQuery={searchQuery}
-              searchState={searchState}
-              selectedPlace={selectedPlace}
-              savedPlaceIds={savedPlaceIds}
-              onToggleSavedPlace={handleToggleSavedPlace}
-              onSelectSearchResult={handleSelectPlace}
-              messages={messages}
-            />
+              <BottomPanel
+                searchQuery={searchQuery}
+                searchState={searchState}
+                selectedPlace={selectedPlace}
+                savedPlaceIds={savedPlaceIds}
+                onToggleSavedPlace={handleToggleSavedPlace}
+                onSelectSearchResult={handleSelectPlace}
+                messages={messages}
+              />
+            </div>
           </div>
         </main>
       </div>

@@ -22,7 +22,7 @@ function MapPanel({
   messages,
 }) {
   return (
-    <section className="relative overflow-hidden rounded-[32px] border border-[#e7dccf] bg-white shadow-[0_24px_60px_rgba(84,52,27,0.08)]">
+    <section className="relative flex h-full flex-col overflow-hidden rounded-[32px] border border-[#e7dccf] bg-white shadow-[0_24px_60px_rgba(84,52,27,0.08)]">
       <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-4">
         <div className="pointer-events-auto w-full max-w-[380px]">
           <SearchResultNotice
@@ -48,7 +48,7 @@ function MapPanel({
         </div>
       </div>
 
-      <div className="h-[420px] bg-[radial-gradient(circle_at_top_left,_rgba(214,184,153,0.28),_transparent_28%),linear-gradient(180deg,_#f8f2ea_0%,_#f2e7da_100%)] sm:h-[520px]">
+      <div className="h-[420px] bg-[radial-gradient(circle_at_top_left,_rgba(214,184,153,0.28),_transparent_28%),linear-gradient(180deg,_#f8f2ea_0%,_#f2e7da_100%)] sm:h-[520px] xl:min-h-0 xl:flex-1">
         <KakaoMap
           appKey={kakaoMapKey}
           savedPlaces={savedPlaces}

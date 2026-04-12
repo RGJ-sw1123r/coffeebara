@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Coffeebara",
   description:
-    "원두, 브루 기록, 장소 맥락, 커피 메모를 차분하게 쌓아 가는 개인 커피 아카이브",
+    "원두, 브루잉 기록, 카페 맥락, 커피 메모를 차분하게 쌓아 가는 개인 커피 아카이브",
 };
 
 export default function RootLayout({ children }) {

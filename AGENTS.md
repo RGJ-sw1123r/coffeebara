@@ -33,7 +33,7 @@ The product should feel like a **personal coffee logbook with cafe context**, no
 
 ## Important current-state rule
 
-Do **not** describe the current runtime as if cafe DB persistence were still an active product feature.
+Do **not** describe the current runtime as if member saved-cafe persistence were already fully migrated to the database.
 
 That would be inaccurate.
 
@@ -43,7 +43,8 @@ As of the current codebase state:
 - map-based cafe lookup is active
 - auth and account persistence are active
 - frontend saved-cafe state is currently local-state / local-storage centered
-- cafe DB persistence is **not** an active runtime feature
+- guest saved-cafe behavior is currently local-storage centered
+- member-to-saved-cafe relational persistence is **not yet** the active runtime path
 - the old persistence-oriented interpretation has already been partially removed, not merely "planned for decoupling"
 
 If documentation or generated text describes the current project as still heavily centered on place persistence, that description should be corrected.
@@ -112,6 +113,7 @@ The currently active backend scope is centered on:
 - map-bounds cafe lookup
 - keyword-in-bounds cafe lookup
 - caching and rate limiting around search flows
+- legacy cafe upsert/cache structure still present in code, but not fully reconnected as the current saved-cafe runtime
 
 ### Active frontend reality
 
@@ -128,13 +130,36 @@ The currently active frontend scope is centered on:
 
 Do **not** present these as active product-complete features:
 
-- cafe master persistence as a live product feature
+- member saved-cafe DB persistence as a completed product feature
+- guest-to-member saved-cafe migration as a completed product feature
 - recommendation engine behavior
 - bean record CRUD
 - brew record CRUD
 - completed personal archive flows
 
 If legacy schema, mapper, or compatibility paths still exist in the repository, do not confuse their presence with active product scope.
+
+---
+
+## Current implementation direction
+
+The current agreed next-step implementation direction is:
+
+- reactivate the v1-origin cafe upsert path so cafe data can be persisted one row at a time into `cafe`
+- use the `cafe` table as a Kakao place cache / master layer to reduce repeated API calls
+- load cafe detail from DB first, and refresh from Kakao only when the cached row is stale
+- move member saved-cafe relationships out of frontend local storage into a dedicated `user_saved_cafe` style table connected to `app_user`
+- keep guest saved-cafe storage in local storage
+- allow guests to save cafes locally, but do not allow guests to create real archive records
+- when a guest selects a saved cafe from the left menu, route them to a sample/demo-style page instead of a real record flow
+- build the sample page frontend first, then attach real archive features incrementally
+
+Important interpretation:
+
+- `cafe` is not the user-owned record itself
+- `cafe` is the shared place cache / master data layer
+- user ownership and save state belong in a separate table linked to `app_user`
+- guest demo behavior is an intentional product decision, not a temporary bug
 
 ---
 
@@ -146,10 +171,14 @@ Interpret them carefully.
 
 Rules:
 
-- do not describe cafe persistence as the current main backend behavior
+- do not describe member saved-cafe DB persistence as already fully shipped when it is still being reintroduced
 - do not say the app is still primarily running on a storage-first v1 runtime path
 - do not frame the project as merely waiting for decoupling if removal has already progressed in the live path
 - distinguish between **legacy remnants**, **compatibility leftovers**, and **active runtime behavior**
+- distinguish clearly between:
+  - `cafe` as place cache / master data
+  - `user_saved_cafe`-style relations as member-owned saved cafes
+  - guest local-storage behavior as guest-only temporary storage
 
 A leftover endpoint, schema file, mapper, or helper method does **not** automatically mean the feature is active.
 
@@ -233,11 +262,19 @@ Their role is now:
 - selecting cafes
 - attaching cafe context to future records
 - keeping the cafe layer available as reference context
+- reducing unnecessary Kakao API calls through place caching in `cafe`
 
 They are **not** currently to be described as an active large-scale persistence pipeline.
 They are also **not** to be framed as recommendation-candidate accumulation.
 
 Cafes are context, not the product center.
+
+When discussing data modeling, use this distinction:
+
+- `cafe`: shared place cache / master table
+- `user_saved_cafe`: member-specific saved cafe relation
+- future record tables: user-owned archive data linked to cafes as context
+- guest saved cafes: local-only convenience state, not durable account data
 
 ---
 
@@ -307,10 +344,13 @@ Right now, the repository is closer to:
 - map-based interaction groundwork
 - frontend shell refinement
 - archive-oriented product reframing
+- sample/demo record-page groundwork for guest education
+- member saved-cafe persistence redesign
 
 ### Future MVP should include
 
 - practical identity flow
+- member saved-cafe persistence linked to `app_user`
 - bean record creation
 - brewing record creation
 - cafe selection for purchase context
@@ -329,6 +369,12 @@ Right now, the repository is closer to:
 - scraping pipelines
 - social/community features
 - unnecessary integrations
+
+Guest policy for MVP:
+
+- guests may search and save cafes locally
+- guests may view sample pages that demonstrate the intended archive experience
+- guests may not create durable personal records until they use a real account
 
 ---
 

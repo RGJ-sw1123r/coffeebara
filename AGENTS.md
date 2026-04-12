@@ -15,19 +15,38 @@ Instead:
 
 The current direction is:
 
-**a personal coffee archive and brewing record system**
+**a personal coffee archive and brewing record system with cafe context**
 
-The product should help the user record and revisit:
+The product should eventually help the user revisit:
 
 - coffee beans
 - brewing parameters
 - tasting notes
 - subjective impressions
-- purchase places
-- drinking places
+- which cafe the bean came from
+- which cafe the coffee was consumed at
 - personal preference tendencies over time
 
-The product should feel like a **personal coffee logbook with place context**, not a recommendation platform.
+The product should feel like a **personal coffee logbook with cafe context**, not a recommendation platform.
+
+---
+
+## Important current-state rule
+
+Do **not** describe the current runtime as if cafe DB persistence were still an active product feature.
+
+That would be inaccurate.
+
+As of the current codebase state:
+
+- cafe search is active
+- map-based cafe lookup is active
+- auth and account persistence are active
+- frontend saved-cafe state is currently local-state / local-storage centered
+- cafe DB persistence is **not** an active runtime feature
+- the old persistence-oriented interpretation has already been partially removed, not merely "planned for decoupling"
+
+If documentation or generated text describes the current project as still heavily centered on place persistence, that description should be corrected.
 
 ---
 
@@ -40,7 +59,7 @@ Do **not** create a symbolic "fresh start" by pretending the earlier work has no
 The correct interpretation is:
 
 - Coffeebara v1 already exists in this repository
-- v1 focused on cafe exploration, storage, map usage, and recommendation-oriented assumptions
+- v1 focused on cafe exploration, favorite-style cafe accumulation, map usage, and recommendation-oriented assumptions
 - those assumptions were reviewed and partially rejected
 - the repository now continues forward with a new product focus
 
@@ -60,7 +79,7 @@ Important:
 
 - Kakao Local API based cafe search
 - map exploration
-- place persistence
+- favorite-style cafe saving / preference accumulation
 - guest-first flow
 - recommendation-oriented product assumptions
 
@@ -70,9 +89,69 @@ However, v1 is **not** the current main direction.
 
 Its role now is:
 
-- implementation foundation
+- implementation milestone
 - technical asset base
 - product-learning milestone
+- archived reference for what was kept, removed, or reinterpreted
+
+---
+
+## Current codebase reality
+
+When you analyze or describe the repository, use the following interpretation.
+
+### Active backend reality
+
+The currently active backend scope is centered on:
+
+- Kakao OAuth login
+- user account upsert / profile handling
+- auth status and guest flow
+- cafe keyword search
+- cafe detail lookup
+- map-bounds cafe lookup
+- keyword-in-bounds cafe lookup
+- caching and rate limiting around search flows
+
+### Active frontend reality
+
+The currently active frontend scope is centered on:
+
+- login and locale flow
+- app shell and map UI
+- keyword search
+- map-based browsing
+- saved-cafe UI flow backed by local state / local storage
+- lightweight place-profile tagging in the frontend state
+
+### Inactive or non-primary runtime reality
+
+Do **not** present these as active product-complete features:
+
+- cafe master persistence as a live product feature
+- recommendation engine behavior
+- bean record CRUD
+- brew record CRUD
+- completed personal archive flows
+
+If legacy schema, mapper, or compatibility paths still exist in the repository, do not confuse their presence with active product scope.
+
+---
+
+## Special note about cafe persistence
+
+There may still be remnants of earlier persistence-oriented structure in the repository.
+
+Interpret them carefully.
+
+Rules:
+
+- do not describe cafe persistence as the current main backend behavior
+- do not say the app is still primarily running on a storage-first v1 runtime path
+- do not frame the project as merely waiting for decoupling if removal has already progressed in the live path
+- distinguish between **legacy remnants**, **compatibility leftovers**, and **active runtime behavior**
+
+A leftover endpoint, schema file, mapper, or helper method does **not** automatically mean the feature is active.
 
 ---
 
@@ -86,7 +165,7 @@ Primary value:
 
 - help the user keep meaningful coffee records they actually care about
 - make brewing history easy to revisit
-- preserve context about beans, places, and impressions
+- preserve context about beans, cafes, and impressions
 - support later reflection on preference patterns
 - optionally support lightweight AI-based summaries later
 
@@ -101,12 +180,12 @@ It should not pretend to be a public recommendation platform.
 These existing assets are worth keeping and reusing when practical:
 
 - Kakao social login
+- account persistence through `app_user`
 - Kakao Map integration
-- place search and place selection flow
-- place master data using `kakao_place_id`
+- cafe search and cafe selection flow
 - Spring Boot + MyBatis + MariaDB base structure
 - frontend app structure and current UI groundwork
-- existing operational patterns such as caching, rate limiting, and structured persistence where relevant
+- caching and rate limiting patterns where still relevant
 
 Their **role** changes, but their **technical value** remains.
 
@@ -119,7 +198,7 @@ Kakao login remains valid.
 Its role is now:
 
 - personal identity
-- restoring and syncing the user's archive
+- restoring and syncing the user's archive later
 - protecting user-owned records
 
 It is **not** for social identity, public review activity, or community features.
@@ -144,20 +223,21 @@ Do not collapse them again unless explicitly intended.
 
 ---
 
-## Current place direction
+## Current cafe direction
 
-Kakao Map remains valid.
+Kakao Map and cafe search remain valid.
 
-Its role is now:
+Their role is now:
 
-- selecting where a bean was purchased
-- selecting where a coffee was consumed
-- attaching place context to a record
-- saving coffee-related places as references
+- finding cafes
+- selecting cafes
+- attaching cafe context to future records
+- keeping the cafe layer available as reference context
 
-It is **not** for recommendation candidate discovery.
+They are **not** currently to be described as an active large-scale persistence pipeline.
+They are also **not** to be framed as recommendation-candidate accumulation.
 
-Places are supporting context, not the product center.
+Cafes are context, not the product center.
 
 ---
 
@@ -165,7 +245,7 @@ Places are supporting context, not the product center.
 
 ### Primary goal
 
-Build a personal system where the user can record:
+Build a personal system where the user can eventually record:
 
 - which bean they used
 - where they bought it
@@ -216,15 +296,25 @@ The value of this project should come from:
 
 ---
 
-## MVP definition
+## MVP direction
 
-### MVP must include
+### Near-term active reality
 
-- Kakao login or another practical identity flow
+Right now, the repository is closer to:
+
+- auth/account groundwork
+- cafe search groundwork
+- map-based interaction groundwork
+- frontend shell refinement
+- archive-oriented product reframing
+
+### Future MVP should include
+
+- practical identity flow
 - bean record creation
 - brewing record creation
-- purchase place selection
-- drink place selection
+- cafe selection for purchase context
+- cafe selection for drinking context
 - brewing history view
 - bean detail view
 - record detail view
@@ -238,14 +328,13 @@ The value of this project should come from:
 - recommendation engine
 - scraping pipelines
 - social/community features
-- complex dashboards too early
 - unnecessary integrations
 
 ---
 
 ## Data philosophy
 
-This project should store three kinds of data.
+This project should eventually combine three kinds of data.
 
 ### 1. Objective bean data
 
@@ -297,22 +386,6 @@ Allow the user to record the overall feeling of a coffee by selecting one color 
 
 The UI may feel like free color selection, but stored values should map to a **limited meaningful palette**.
 
-That means:
-
-- visually: circular color picker or radial color selection
-- internally: map the selected position to a semantic mood bucket
-
-Examples:
-
-- `bright_floral`
-- `juicy_fruity`
-- `berry_like`
-- `winey`
-- `herbal`
-- `clean_cool`
-- `nutty_balanced`
-- `dull_flat`
-
 Store both:
 
 - color value
@@ -353,17 +426,9 @@ AI is optional enhancement, not foundation.
 - prefer usefulness over novelty
 - prefer continuity over unnecessary restart
 - prefer refactoring over symbolic reinvention
-- prefer stable storage over flashy features
+- prefer honest current-state description over inflated scope
 - prefer meaningful personal data over speculative intelligence
 - prefer a product the user will genuinely return to
-
-The project should feel:
-
-- personal
-- deliberate
-- tactile
-- calm
-- coffee-focused
 
 Avoid making it feel like:
 
@@ -394,147 +459,8 @@ If the answer is no, do not prioritize it.
 
 ---
 
-## Technical direction
-
-### Backend
-
-- Java
-- Spring Boot
-- MyBatis preferred over ORM-heavy design
-- transparent SQL flow
-- practical schema design
-- reliable storage of user-owned records
-- reuse existing persistence patterns when practical
-
-### Frontend
-
-- modern, clean UI
-- easy record creation flow
-- record-first interaction model
-- place selection should feel natural
-- mood color selection should feel satisfying but not noisy
-
-### Migration mindset
-
-This is not "old project dead, new project from scratch."
-
-This is:
-
-- current Coffeebara codebase
-- updated product definition
-- reused working assets
-- removed recommendation assumptions
-- added brewing archive direction
-
----
-
-## Current schema direction
-
-### `cafe`
-
-Reference place data reused from Kakao.
-
-Current important fields include:
-
-- `kakao_place_id`
-- `place_name`
-- `address_name`
-- `road_address_name`
-- `latitude`
-- `longitude`
-- `place_url`
-
-### `app_user`
-
-Current user/account table.
-
-Important fields:
-
-- `id`
-- `auth_provider`
-- `provider_user_id`
-- `nickname`
-- `display_name`
-- `profile_image_url`
-- `role`
-- `created_at`
-- `updated_at`
-- `last_login_at`
-
-When extending user data, keep the separation between provider profile data and Coffeebara-owned profile data.
-
-### Suggested future entities
-
-#### Bean
-
-- `id`
-- `roastery_or_shop`
-- `bean_name`
-- `country`
-- `region`
-- `process`
-- `roast_date`
-- `purchase_date`
-- `purchase_place_id`
-- `memo`
-
-#### BrewRecord
-
-- `id`
-- `bean_id`
-- `brewed_at`
-- `brewer`
-- `dose_gram`
-- `water_gram`
-- `water_temp_celsius`
-- `total_time_seconds`
-- `grind_setting`
-- `aroma_note`
-- `taste_note`
-- `satisfaction_rating`
-- `mood_color_hex`
-- `mood_color_label`
-- `drink_place_id`
-- `memo`
-
-#### PreferenceSummary
-
-- `id`
-- `generated_at`
-- `summary_text`
-- `summary_json`
-- `based_on_record_count`
-
----
-
-## What success looks like
-
-A successful Coffeebara should let the user say:
-
-- "I can keep using the same project without throwing everything away."
-- "I can record beans, brews, and places in one system."
-- "I can look back and compare my coffee experiences meaningfully."
-- "The color feature captures something text alone misses."
-- "The AI summary helps me reflect on my coffee preferences without replacing my judgment."
-
----
-
-## What failure looks like
-
-- the project becomes another vague recommendation idea again
-- the direction change causes unnecessary full rewrites
-- useful assets are discarded for no reason
-- the logging flow becomes annoying
-- the AI feature becomes the center instead of the archive
-- the color feature becomes decorative but useless
-- the user stops wanting to use it personally
-
-If the current Coffeebara repository becomes harder to use and harder to evolve after the direction change, something is wrong.
-
----
-
 ## Final rule
 
 This project should continue by transforming the existing Coffeebara codebase into a meaningful personal coffee archive.
 
-Every implementation decision should protect that continuity and that new goal.
+Every implementation decision should protect that continuity, describe the current state honestly, and support that new goal.

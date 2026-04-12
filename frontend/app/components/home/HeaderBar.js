@@ -139,7 +139,7 @@ export default function HeaderBar({
 
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8f725d]">
-                Coffeebara
+                {messages.brandName}
               </p>
               <h1 className="truncate text-lg font-semibold text-[#241813]">
                 {messages.headerTitle}

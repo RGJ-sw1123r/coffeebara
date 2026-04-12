@@ -1,7 +1,9 @@
 const messages = {
   ko: {
-    headerTitle: "취향 카페 탐색",
-    loginPageEyebrow: "Coffeebara",
+    brandName: "Coffeebara",
+    brandTagline: "개인 커피 아카이브",
+    headerTitle: "브루 기록과 커피 메모",
+    loginPageEyebrow: "개인 커피 아카이브",
     loginPageTitle: "LOGIN",
     loginPageDescription:
       "Kakao 소셜 로그인 또는 게스트 이용 중 하나를 선택해 계속 진행할 수 있습니다.",
@@ -113,8 +115,10 @@ const messages = {
       "선택한 카페를 저장하는 중 예상하지 못한 문제가 발생했습니다.",
   },
   en: {
-    headerTitle: "Cafe Preference Explorer",
-    loginPageEyebrow: "Coffeebara",
+    brandName: "Coffeebara",
+    brandTagline: "Personal Coffee Archive",
+    headerTitle: "Brew Records and Coffee Notes",
+    loginPageEyebrow: "Personal Coffee Archive",
     loginPageTitle: "LOGIN",
     loginPageDescription:
       "Choose Kakao social login or continue as a guest to proceed.",
@@ -224,8 +228,10 @@ const messages = {
     saveUnexpectedError: "An unexpected error occurred while saving the selected cafe.",
   },
   ja: {
-    headerTitle: "好みのカフェ探し",
-    loginPageEyebrow: "Coffeebara",
+    brandName: "Coffeebara",
+    brandTagline: "パーソナルコーヒーアーカイブ",
+    headerTitle: "抽出記録とコーヒーメモ",
+    loginPageEyebrow: "パーソナルコーヒーアーカイブ",
     loginPageTitle: "LOGIN",
     loginPageDescription:
       "Kakao ソーシャルログインまたはゲスト利用のどちらかを選んで続行できます。",

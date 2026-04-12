@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { getMessages } from "../messages";
 import coffeebaraLogo from "../coffeebara-logo.png";
@@ -33,6 +33,7 @@ function getInitialLocale() {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [locale, setLocale] = useState(getInitialLocale);
   const [status, setStatus] = useState("idle");
   const [toastMessage, setToastMessage] = useState("");
@@ -50,6 +51,21 @@ export default function LoginPage() {
     window.localStorage.removeItem(GUEST_FAVORITES_STORAGE_KEY);
     window.localStorage.removeItem(LEGACY_GUEST_FAVORITES_STORAGE_KEY);
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get("error") !== "kakao") {
+      return;
+    }
+
+    const errorMessages = {
+      ko: "카카오 로그인에 실패했습니다. 동의 항목과 앱 설정을 확인한 뒤 다시 시도해 주세요.",
+      en: "Kakao login failed. Check the consent items and app settings, then try again.",
+      ja: "Kakaoログインに失敗しました。 同意項目とアプリ設定を確認してから、もう一度お試しください。",
+    };
+
+    setToastMessage(errorMessages[locale] ?? errorMessages.ko);
+    router.replace("/login");
+  }, [locale, router, searchParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -103,6 +119,12 @@ export default function LoginPage() {
       setStatus("error");
       setToastMessage(messages.loginPageGuestFailed);
     }
+  };
+
+  const handleKakaoAccess = () => {
+    setStatus("loading");
+    setToastMessage("");
+    window.location.assign(`${API_BASE_URL}/oauth2/authorization/kakao`);
   };
 
   useEffect(() => {
@@ -167,9 +189,13 @@ export default function LoginPage() {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => setToastMessage(messages.loginPagePending("Kakao"))}
-                aria-disabled="true"
-                className="flex w-full items-center justify-center rounded-2xl border border-[#e2d3c1] bg-[#fee500] px-4 py-3 text-sm font-semibold text-[#3b2a1f]/70"
+                onClick={handleKakaoAccess}
+                disabled={status === "loading"}
+                className={`flex w-full items-center justify-center rounded-2xl border border-[#e2d3c1] px-4 py-3 text-sm font-semibold transition ${
+                  status === "loading"
+                    ? "cursor-not-allowed bg-[#fee500]/80 text-[#3b2a1f]/70"
+                    : "bg-[#fee500] text-[#3b2a1f] hover:bg-[#f5de00]"
+                }`}
               >
                 {messages.loginPageKakaoButton}
               </button>

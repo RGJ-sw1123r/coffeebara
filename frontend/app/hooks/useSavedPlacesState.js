@@ -46,14 +46,14 @@ function normalizeSavedPlaces(places) {
   return places.map(normalizeSavedPlace).filter(Boolean);
 }
 
-export default function useSavedPlacesState({ authStatus }) {
+export default function useSavedPlacesState({ authStatus, authMode }) {
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isGuestModeToastVisible, setIsGuestModeToastVisible] = useState(false);
   const [placeProfiles, setPlaceProfiles] = useState({});
 
   useEffect(() => {
-    if (authStatus !== "authenticated") {
+    if (authStatus !== "authenticated" || authMode !== "guest") {
       return;
     }
 
@@ -65,7 +65,7 @@ export default function useSavedPlacesState({ authStatus }) {
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [authStatus]);
+  }, [authMode, authStatus]);
 
   useEffect(() => {
     if (authStatus !== "authenticated") {

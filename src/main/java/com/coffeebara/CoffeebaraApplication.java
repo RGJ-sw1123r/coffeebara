@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@MapperScan("com.coffeebara.cafe.mapper")
+@MapperScan("com.coffeebara.*.mapper")
 public class CoffeebaraApplication {
 
 	public static void main(String[] args) {

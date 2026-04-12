@@ -24,9 +24,71 @@ function HamburgerButton({ isOpen, onClick, messages }) {
   );
 }
 
-function AccountMenu({ onLogout, messages }) {
+function AccountAvatar({ authUser, messages }) {
+  const profileImageUrl = authUser?.profileImageUrl?.trim() ?? "";
+  const isKakaoUser = authUser?.mode === "kakao";
+
+  if (profileImageUrl) {
+    return (
+      <span className="inline-flex h-11 w-11 overflow-hidden rounded-full border border-[#dccfbe] bg-white shadow-[0_10px_24px_rgba(84,52,27,0.12)]">
+        <span className="relative h-full w-full">
+          <Image
+            src={profileImageUrl}
+            alt={authUser?.displayName || authUser?.nickname || messages.accountMenuLabel}
+            fill
+            sizes="44px"
+            className="object-cover"
+            referrerPolicy="no-referrer"
+            unoptimized
+          />
+        </span>
+      </span>
+    );
+  }
+
+  if (isKakaoUser) {
+    return (
+      <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#d7be22] bg-[#fee500] text-sm font-semibold text-[#2f221b] shadow-[0_10px_24px_rgba(84,52,27,0.12)]">
+        K
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#2f221b] bg-[#2f221b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(84,52,27,0.12)]">
+      G
+    </span>
+  );
+}
+
+function MenuActionButton({ children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-[#5f4b3f] transition hover:bg-[#fcf7f2]"
+    >
+      <span>{children}</span>
+      <span>↗</span>
+    </button>
+  );
+}
+
+function AccountMenu({
+  authUser,
+  onLogout,
+  onLogoutWithKakaoAccount,
+  onUpdateDisplayName,
+  messages,
+}) {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
+  const [draftDisplayName, setDraftDisplayName] = useState(
+    authUser?.displayName || authUser?.nickname || ""
+  );
+  const [isSavingDisplayName, setIsSavingDisplayName] = useState(false);
   const menuRef = useRef(null);
+  const currentDisplayName = authUser?.displayName || authUser?.nickname || "사용자";
 
   useEffect(() => {
     if (!isAccountMenuOpen) {
@@ -36,6 +98,7 @@ function AccountMenu({ onLogout, messages }) {
     const handlePointerDown = (event) => {
       if (!menuRef.current?.contains(event.target)) {
         setIsAccountMenuOpen(false);
+        setIsEditingDisplayName(false);
       }
     };
 
@@ -52,24 +115,108 @@ function AccountMenu({ onLogout, messages }) {
         type="button"
         onClick={() => setIsAccountMenuOpen((current) => !current)}
         aria-label={messages.accountMenuLabel}
-        className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#2f221b] bg-[#2f221b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(84,52,27,0.12)] transition hover:bg-[#241813]"
+        className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition hover:opacity-90"
       >
-        G
+        <AccountAvatar authUser={authUser} messages={messages} />
       </button>
 
       {isAccountMenuOpen ? (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-40 min-w-[132px] overflow-hidden rounded-2xl border border-[#dccfbe] bg-white shadow-[0_18px_40px_rgba(84,52,27,0.12)]">
-          <button
-            type="button"
+        <div className="absolute right-0 top-[calc(100%+8px)] z-40 min-w-[288px] overflow-hidden rounded-2xl border border-[#dccfbe] bg-white shadow-[0_18px_40px_rgba(84,52,27,0.12)]">
+          {authUser?.mode === "kakao" ? (
+            <div className="border-b border-[#efe5da] px-4 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <p className="min-w-0 truncate text-sm font-semibold text-[#2f221b]">
+                  {currentDisplayName}님
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDraftDisplayName(authUser?.displayName || authUser?.nickname || "");
+                    setIsEditingDisplayName((current) => !current);
+                  }}
+                  aria-label="표시 이름 수정"
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#dccfbe] bg-[#fcf7f2] text-[#5f4b3f] transition hover:bg-[#f5ede4]"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                  >
+                    <path
+                      d="M4 20h4l9.5-9.5a1.8 1.8 0 0 0 0-2.5l-1.5-1.5a1.8 1.8 0 0 0-2.5 0L4 16v4Z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="m12.5 7.5 4 4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {isEditingDisplayName ? (
+                <div className="mt-3 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={draftDisplayName}
+                    onChange={(event) => setDraftDisplayName(event.target.value)}
+                    maxLength={100}
+                    placeholder="표시 이름"
+                    onKeyDown={async (event) => {
+                      if (event.key !== "Enter") {
+                        return;
+                      }
+
+                      event.preventDefault();
+                      setIsSavingDisplayName(true);
+                      const succeeded = await onUpdateDisplayName(draftDisplayName);
+                      setIsSavingDisplayName(false);
+                      if (succeeded) {
+                        setIsEditingDisplayName(false);
+                      }
+                    }}
+                    className="h-10 min-w-0 flex-1 rounded-full border border-[#dccfbe] bg-white px-4 text-sm text-[#352720] outline-none placeholder:text-[#a38b79]"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setIsSavingDisplayName(true);
+                      const succeeded = await onUpdateDisplayName(draftDisplayName);
+                      setIsSavingDisplayName(false);
+                      if (succeeded) {
+                        setIsEditingDisplayName(false);
+                      }
+                    }}
+                    disabled={isSavingDisplayName}
+                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${
+                      isSavingDisplayName
+                        ? "cursor-not-allowed bg-[#8f725d] text-white/80"
+                        : "bg-[#2f221b] text-white hover:bg-[#241813]"
+                    }`}
+                  >
+                    저장
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          <MenuActionButton
             onClick={() => {
               setIsAccountMenuOpen(false);
+              if (authUser?.mode === "kakao") {
+                onLogoutWithKakaoAccount();
+                return;
+              }
+
               onLogout();
             }}
-            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-[#5f4b3f] transition hover:bg-[#fcf7f2]"
           >
-            <span>{messages.logoutButton}</span>
-            <span>↗</span>
-          </button>
+            {messages.logoutButton}
+          </MenuActionButton>
         </div>
       ) : null}
     </div>
@@ -86,6 +233,10 @@ export default function HeaderBar({
   locale,
   onLocaleChange,
   onLogout,
+  onLogoutWithKakaoAccount,
+  authUser,
+  accountNotice,
+  onUpdateDisplayName,
   messages,
 }) {
   const [isLocaleMenuOpen, setIsLocaleMenuOpen] = useState(false);
@@ -117,6 +268,12 @@ export default function HeaderBar({
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#e7ddd2] bg-[rgba(255,251,246,0.96)] backdrop-blur">
+      {accountNotice?.message ? (
+        <div className="border-b border-[#eaded1] bg-[#fff8f1] px-4 py-2 text-center text-sm text-[#6f3126]">
+          {accountNotice.message}
+        </div>
+      ) : null}
+
       <div className="mx-auto flex w-full max-w-[2200px] items-center gap-4 px-4 py-4 sm:px-6 xl:px-8">
         <div className="flex min-w-0 items-center gap-3">
           <HamburgerButton isOpen={isSidebarOpen} onClick={onToggleSidebar} messages={messages} />
@@ -157,7 +314,7 @@ export default function HeaderBar({
               className="inline-flex items-center gap-2 rounded-full border border-[#dccfbe] bg-white/90 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5f4b3f] shadow-[0_10px_24px_rgba(84,52,27,0.06)] transition hover:bg-[#f7efe6]"
             >
               <span>{locale.toUpperCase()}</span>
-              <span className="text-[#8f725d]">{isLocaleMenuOpen ? "▲" : "▼"}</span>
+              <span className="text-[#8f725d]">{isLocaleMenuOpen ? "▴" : "▾"}</span>
             </button>
 
             {isLocaleMenuOpen ? (
@@ -180,7 +337,7 @@ export default function HeaderBar({
                       }`}
                     >
                       <span>{option.toUpperCase()}</span>
-                      <span>{isActive ? "•" : ""}</span>
+                      <span>{isActive ? "✓" : ""}</span>
                     </button>
                   );
                 })}
@@ -209,7 +366,13 @@ export default function HeaderBar({
             >
               {messages.searchButton}
             </button>
-            <AccountMenu onLogout={onLogout} messages={messages} />
+            <AccountMenu
+              authUser={authUser}
+              onLogout={onLogout}
+              onLogoutWithKakaoAccount={onLogoutWithKakaoAccount}
+              onUpdateDisplayName={onUpdateDisplayName}
+              messages={messages}
+            />
           </form>
         </div>
       </div>
@@ -235,7 +398,13 @@ export default function HeaderBar({
           >
             {messages.searchButtonCompact}
           </button>
-          <AccountMenu onLogout={onLogout} messages={messages} />
+          <AccountMenu
+            authUser={authUser}
+            onLogout={onLogout}
+            onLogoutWithKakaoAccount={onLogoutWithKakaoAccount}
+            onUpdateDisplayName={onUpdateDisplayName}
+            messages={messages}
+          />
         </form>
       </div>
     </header>

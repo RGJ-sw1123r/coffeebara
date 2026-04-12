@@ -15,9 +15,12 @@ export default function Home() {
     process.env.KAKAO_MAP_KEY?.trim() ??
     "";
   const {
+    accountNotice,
+    authUser,
     backendSavedPlaceFetch,
     closeSidebar,
     handleLogout,
+    handleLogoutWithKakaoAccount,
     handleRemoveSavedPlace,
     handleToggleSavedPlace,
     isGuestModeToastVisible,
@@ -28,6 +31,7 @@ export default function Home() {
     savedPlaces,
     setLocale,
     toggleSidebar,
+    updateDisplayName,
   } = useAppShell();
   const {
     activePlaceId,
@@ -50,10 +54,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#fffaf5] text-[#241813] xl:h-screen xl:overflow-hidden">
-      <GuestModeToast
-        isVisible={isGuestModeToastVisible}
-        messages={messages}
-      />
+      <GuestModeToast isVisible={isGuestModeToastVisible} messages={messages} />
 
       <HeaderBar
         searchInput={searchInput}
@@ -65,6 +66,10 @@ export default function Home() {
         locale={locale}
         onLocaleChange={setLocale}
         onLogout={handleLogout}
+        onLogoutWithKakaoAccount={handleLogoutWithKakaoAccount}
+        authUser={authUser}
+        accountNotice={accountNotice}
+        onUpdateDisplayName={updateDisplayName}
         messages={messages}
       />
 

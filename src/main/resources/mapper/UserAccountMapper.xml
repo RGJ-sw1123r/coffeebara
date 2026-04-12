@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.coffeebara.auth.mapper.UserAccountMapper">
+
+  <select id="findByProviderUserId" resultType="map">
+    SELECT
+      id,
+      auth_provider AS authProvider,
+      provider_user_id AS providerUserId,
+      email,
+      nickname,
+      COALESCE(display_name, nickname) AS displayName,
+      profile_image_url AS profileImageUrl,
+      role,
+      created_at AS createdAt,
+      updated_at AS updatedAt,
+      last_login_at AS lastLoginAt
+    FROM app_user
+    WHERE auth_provider = #{authProvider}
+      AND provider_user_id = #{providerUserId}
+  </select>
+
+  <select id="findById" resultType="map">
+    SELECT
+      id,
+      auth_provider AS authProvider,
+      provider_user_id AS providerUserId,
+      email,
+      nickname,
+      COALESCE(display_name, nickname) AS displayName,
+      profile_image_url AS profileImageUrl,
+      role,
+      created_at AS createdAt,
+      updated_at AS updatedAt,
+      last_login_at AS lastLoginAt
+    FROM app_user
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO app_user (
+      auth_provider,
+      provider_user_id,
+      email,
+      nickname,
+      display_name,
+      profile_image_url,
+      role,
+      last_login_at
+    ) VALUES (
+      #{authProvider},
+      #{providerUserId},
+      #{email},
+      #{nickname},
+      #{displayName},
+      #{profileImageUrl},
+      #{role},
+      NOW()
+    )
+  </insert>
+
+  <update id="updateProfileAndLastLogin" parameterType="map">
+    UPDATE app_user
+    SET
+      email = #{email},
+      nickname = #{nickname},
+      profile_image_url = #{profileImageUrl},
+      last_login_at = NOW(),
+      updated_at = NOW()
+    WHERE auth_provider = #{authProvider}
+      AND provider_user_id = #{providerUserId}
+  </update>
+
+  <update id="updateDisplayNameById">
+    UPDATE app_user
+    SET
+      display_name = #{displayName},
+      updated_at = NOW()
+    WHERE id = #{id}
+  </update>
+
+</mapper>

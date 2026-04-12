@@ -1,179 +1,181 @@
 # Coffeebara
 
-Coffeebara is continuing forward inside the same repository.
+Coffeebara는 같은 저장소 안에서 계속 이어지는 프로젝트입니다.
 
-Earlier work in this repository focused on cafe search, map exploration, place persistence, and recommendation-oriented assumptions built on top of Kakao Local API. That phase remains an important v1 milestone. It is not being erased, and its working assets still matter.
+이 저장소의 앞선 작업은 Kakao Local API 기반의 카페 검색, 지도 탐색, 장소 저장, 추천 지향 가정을 중심으로 진행되었습니다. 그 단계는 v1로서 여전히 중요한 이정표이며, 지워지지 않습니다. 이미 만들어 둔 동작하는 자산도 그대로 의미가 있습니다.
 
-The current direction is more grounded and more personal:
+지금의 방향은 더 단단하고 더 개인적인 쪽으로 옮겨가고 있습니다.
 
-**Coffeebara is now being shaped into a personal coffee archive and brewing record system.**
+**Coffeebara는 이제 개인 커피 아카이브이자 브루잉 기록 시스템으로 정리되고 있습니다.**
 
-The goal is to help the user keep coffee records they actually want to revisit:
+이 프로젝트가 돕고자 하는 것은 사용자가 실제로 다시 꺼내 보고 싶은 커피 기록입니다.
 
-- beans
-- brewing parameters
-- tasting notes
-- subjective impressions
-- purchase places
-- drink places
-- personal preference tendencies over time
+- 원두
+- 브루잉 파라미터
+- 테이스팅 노트
+- 주관적 인상
+- 구매한 장소
+- 마신 장소
+- 시간에 따라 쌓이는 개인 취향 경향
 
-This project should feel like a personal coffee logbook with place context, not a public recommendation platform.
+이 프로젝트는 공개 추천 플랫폼이 아니라, 장소 맥락을 함께 담는 개인 커피 로그북처럼 느껴져야 합니다.
 
-Product direction notes from the earlier phase are still kept in [product-direction-notes.md](./product-direction-notes.md). The working rules and current product framing are documented in [AGENTS.md](./AGENTS.md).
+이전 단계에서 정리한 방향 메모는 [product-direction-notes.md](./product-direction-notes.md)에 남겨 두었고, 현재 작업 원칙과 제품 정의는 [AGENTS.md](./AGENTS.md)에 정리되어 있습니다.
 
-## How To Read This Repository
+## 이 저장소를 보는 방법
 
-This repository should be read in continuity, not as a reset.
+이 저장소는 리셋이 아니라 연속성 안에서 봐야 합니다.
 
-- v1 remains here as a documented implementation milestone
-- the repository itself remains the main project
-- the current direction reuses the existing technical assets where they still fit
-- the product focus has changed from recommendation assumptions to personal archive value
+- v1은 구현 이정표로서 그대로 남아 있습니다
+- 저장소 자체가 계속 메인 프로젝트입니다
+- 지금의 방향은 기존 기술 자산을 가능한 곳에서 재사용합니다
+- 제품의 중심만 추천 가정에서 개인 아카이브 가치로 옮겨갑니다
 
-In practice, that means existing place-search, map, persistence, and authentication-related groundwork still has value. Their role is changing, not disappearing.
+즉, 기존의 장소 검색, 지도, 적재, 인증 관련 기반은 여전히 유효합니다. 사라지는 것이 아니라 역할이 바뀌는 것입니다.
 
-## What Exists Today
+## 현재 이 저장소에 있는 것
 
-The repository already contains working implementation around the earlier cafe exploration direction.
+이 저장소에는 앞선 카페 탐색 방향에서 만든 실제 구현 자산이 이미 들어 있습니다.
 
-### Backend assets
+### Backend 자산
 
 - Spring Boot 4.0.5 + Java 21 + Gradle
-- MariaDB + MyBatis based persistence structure
-- Kakao Local API integration
+- MariaDB + MyBatis 기반 적재 구조
+- Kakao Local API 연동
 - `GET /api/cafes/search`
 - `GET /api/cafes/{placeId}`
 - `GET /api/cafes/map`
 - `GET /api/cafes/map/search`
 - `POST /api/cafes`
-- place upsert flow keyed by `kakao_place_id`
-- freshness-based refresh flow for persisted place data
+- `kakao_place_id` 기준 장소 upsert 흐름
+- 저장된 장소 데이터를 freshness 기준으로 다시 조회하는 흐름
 
-### Frontend assets
+### Frontend 자산
 
-- Next.js based UI
-- header + sidebar + main content layout
-- Kakao Map based exploration screen
-- keyword search and current-area search flow
-- locale selection UI
-- local state patterns and existing UI groundwork that can be reused
+- Next.js 기반 UI
+- 헤더 + 사이드바 + 메인 컨텐츠 레이아웃
+- Kakao Map 기반 탐색 화면
+- 키워드 검색과 현재 영역 검색 흐름
+- locale 선택 UI
+- 재사용 가능한 로컬 상태 패턴과 현재 UI 기반
 
-### Collaboration assets
+### Collaboration 자산
 
 - [AGENTS.md](./AGENTS.md)
-- implementation constraints, product framing, and AI collaboration rules
-- written records of what was validated, what changed, and why
+- 구현 제약, 제품 기준, AI 협업 원칙
+- 무엇이 검증되었고 무엇이 바뀌었는지에 대한 기록
 
-## Current Product Direction
+## 현재 제품 방향
 
-The repository is now being refocused toward a smaller and more durable product.
+이 저장소는 이제 더 작고 더 오래 가는 제품 쪽으로 다시 초점을 맞추고 있습니다.
 
-### Primary value
+### 핵심 가치
 
-- store meaningful coffee records
-- make brewing history easy to revisit
-- preserve context about beans, places, and impressions
-- support later reflection on personal preference patterns
+- 의미 있는 커피 기록을 저장한다
+- 브루잉 히스토리를 다시 보기 쉽게 만든다
+- 원두, 장소, 인상에 대한 맥락을 함께 남긴다
+- 시간이 지나며 쌓이는 개인 취향 패턴을 돌아볼 수 있게 한다
 
-### Product center
+### 제품의 중심
 
-The center of the product is no longer recommendation logic.
+이제 제품의 중심은 추천 로직이 아닙니다.
 
-The center is:
+중심은 아래와 같습니다.
 
-- bean records
-- brew records
-- place context
-- tasting notes
-- satisfaction and mood
-- personal history
+- 원두 기록
+- 브루 기록
+- 장소 맥락
+- 테이스팅 노트
+- 만족도와 무드
+- 개인 히스토리
 
-### Role of Kakao assets now
+### 이제 Kakao 자산이 맡는 역할
 
-Kakao integration still matters, but for different reasons.
+Kakao 연동은 여전히 중요하지만 이유가 달라졌습니다.
 
-- Kakao login supports personal identity and archive continuity across devices
-- Kakao Map supports selecting where a bean was purchased or where a coffee was consumed
-- Kakao place data should be treated as reference data connected to personal records
+- Kakao 로그인은 개인 계정 식별과 아카이브 연속성을 돕습니다
+- Kakao Map은 원두를 산 곳, 커피를 마신 곳을 선택하는 데 쓰입니다
+- Kakao 장소 데이터는 개인 기록에 연결되는 참조 데이터로 다뤄져야 합니다
 
-It is no longer the main basis for recommendation candidate discovery.
+더 이상 추천 후보를 모으는 중심 수단으로 보는 것이 아닙니다.
 
-## Early MVP Direction
+## 초기 MVP 방향
 
-The MVP should stay small and useful.
+MVP는 작고 실제로 유용해야 합니다.
 
-It should focus on:
+우선 아래에 집중해야 합니다.
 
-- practical user identity flow
-- bean record creation
-- brewing record creation
-- purchase place selection
-- drink place selection
-- record history view
-- bean detail view
-- record detail view
-- editable tasting notes
-- one mood color per record
-- basic filtering and sorting
+- 실용적인 사용자 식별 흐름
+- 원두 기록 생성
+- 브루 기록 생성
+- 구매 장소 선택
+- 음용 장소 선택
+- 기록 히스토리 보기
+- 원두 상세 보기
+- 기록 상세 보기
+- 수정 가능한 테이스팅 노트
+- 기록당 하나의 무드 컬러
+- 기본 필터링과 정렬
 
-It should avoid early expansion into:
+반대로 초기에 과하게 확장하지 말아야 할 것은 아래와 같습니다.
 
-- public sharing
-- social/community features
-- recommendation engines
-- scraping-heavy data collection
-- AI-first product behavior
+- 공개 공유
+- 소셜/커뮤니티 기능
+- 추천 엔진
+- 스크래핑 중심 데이터 수집
+- AI 우선 제품 동작
 
-## Data Shape That Fits The New Direction
+## 새 방향에 맞는 데이터의 모양
 
-The current direction combines three kinds of information.
+현재 방향은 세 종류의 정보를 함께 다루는 쪽이 자연스럽습니다.
 
-### 1. Objective bean data
+### 1. 객관적인 원두 데이터
 
-- bean name
-- roastery or shop
-- origin
-- region
-- process
-- roast date
-- purchase date
+- 원두명
+- 로스터리 또는 판매처
+- 원산지
+- 지역
+- 프로세스
+- 로스팅 날짜
+- 구매 날짜
 
-### 2. Objective brewing data
+### 2. 객관적인 브루 데이터
 
-- brewer
-- dose
-- water amount
-- water temperature
-- total brew time
-- grind setting
-- brewed timestamp
+- 브루어
+- 도징량
+- 물 사용량
+- 물 온도
+- 총 추출 시간
+- 분쇄도
+- 브루 시각
 
-### 3. Subjective impression data
+### 3. 주관적인 인상 데이터
 
-- aroma notes
-- taste notes
-- memo
-- satisfaction rating
-- mood color
+- 향 노트
+- 맛 노트
+- 메모
+- 만족도
+- 무드 컬러
 
-This balance matters. The project should preserve real facts and real impressions without pretending one can replace the other.
+이 균형이 중요합니다. 사실 데이터와 주관적 인상을 함께 보존하되, 어느 한쪽이 다른 한쪽을 대체하는 것처럼 다루지 않아야 합니다.
 
 ## Mood Color
 
-The mood color feature is part of the new identity of Coffeebara.
+무드 컬러는 Coffeebara의 새 방향에서 정체성을 만드는 요소 중 하나입니다.
 
-The UI may feel expressive and freeform, but stored values should still map to a limited meaningful palette so the data remains useful later. The point is not decoration alone. The point is to capture something about the coffee that plain text does not capture as well.
+이 기능의 포인트는 단순한 장식이 아닙니다. 텍스트만으로는 다 담기지 않는 커피의 느낌을 같이 기록할 수 있게 하는 데 의미가 있습니다.
 
-## AI Policy
+그래서 UI는 자유롭게 느껴질 수 있어도, 저장 값은 나중에도 활용 가능한 제한된 의미 팔레트에 매핑되는 쪽이 맞습니다.
 
-AI is not the core product.
+## AI 정책
 
-If added later, it should act as a lightweight reflection layer over accumulated records. Good uses include summarizing recurring preferences or identifying brewing conditions that often lead to higher satisfaction. It should not generate fake notes, replace real records, or become the main reason the product exists.
+AI는 이 제품의 중심이 아닙니다.
 
-The archive must remain useful even without AI.
+나중에 붙는다면, 쌓인 기록을 바탕으로 가벼운 회고를 돕는 역할이 가장 적절합니다. 예를 들어 반복되는 취향 경향을 요약하거나, 만족도가 높았던 브루 조건을 정리하는 식입니다. 반대로 AI가 테이스팅 노트를 대신 만들거나, 실제 기록을 대체하거나, 제품의 존재 이유가 되어서는 안 됩니다.
 
-## Technical Stack
+아카이브 자체는 AI 없이도 충분히 유용해야 합니다.
+
+## 기술 스택
 
 ### Backend
 
@@ -191,7 +193,7 @@ The archive must remain useful even without AI.
 - Tailwind CSS 4
 - ESLint 9
 
-## Project Structure
+## 프로젝트 구조
 
 ```text
 coffeebara/
@@ -210,11 +212,11 @@ coffeebara/
 └─ README.md
 ```
 
-## Run Notes
+## 실행 메모
 
 ### Backend
 
-Run from the repository root:
+저장소 루트에서 실행:
 
 ```bash
 ./gradlew bootRun
@@ -222,7 +224,7 @@ Run from the repository root:
 
 ### Frontend
 
-Run inside `frontend/`:
+`frontend/` 안에서 실행:
 
 ```bash
 cd frontend
@@ -230,8 +232,8 @@ npm install
 npm run dev
 ```
 
-## Summary
+## 정리
 
-This repository still contains the earlier Kakao-based cafe exploration and persistence work, and that work remains useful. But the project is no longer being framed primarily as a recommendation platform.
+이 저장소에는 여전히 Kakao 기반 카페 탐색과 장소 적재 흐름이 구현 자산으로 남아 있고, 그 자산은 계속 의미가 있습니다. 다만 이제 이 프로젝트를 추천 플랫폼으로 규정하지는 않습니다.
 
-The direction now is quieter and more personal: turning the existing Coffeebara codebase into a meaningful coffee archive where beans, brews, places, notes, and mood can be recorded and revisited over time.
+지금의 방향은 더 조용하고 더 개인적입니다. 기존 Coffeebara 코드베이스를 바탕으로 원두, 브루, 장소, 노트, 무드를 시간이 지나도 다시 꺼내 볼 수 있는 커피 아카이브로 바꾸어 가는 쪽입니다.

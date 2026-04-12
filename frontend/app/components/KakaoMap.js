@@ -1072,11 +1072,11 @@ export default function KakaoMap({
           return;
         }
 
+        setSearchPlaces([]);
         setErrorMessage(
           error instanceof Error ? error.message : "Unknown error",
         );
         setErrorCode(error instanceof Error ? (error.code ?? "") : "");
-        setSearchPlaces([]);
         setStatus("error");
       }
     }

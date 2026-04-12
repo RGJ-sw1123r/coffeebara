@@ -121,13 +121,14 @@ export default function useHomePageState() {
     }
 
     if (searchState.status === "ready") {
-      handledSearchNoticeVersionRef.current = searchRequestVersion;
-
-      if (searchState.totalCount >= 45) {
-        window.setTimeout(() => {
-          showToast("searchTooMany");
-        }, 0);
+      if (searchState.totalCount < 45) {
+        return;
       }
+
+      handledSearchNoticeVersionRef.current = searchRequestVersion;
+      window.setTimeout(() => {
+        showToast("searchTooMany");
+      }, 0);
       return;
     }
 

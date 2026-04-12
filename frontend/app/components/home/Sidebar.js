@@ -1,44 +1,5 @@
 "use client";
 
-const MIN_RECOMMENDATION_READY_COUNT = 3;
-
-function SimilarTasteSection({ favoriteCount, messages }) {
-  const isReady = favoriteCount >= MIN_RECOMMENDATION_READY_COUNT;
-
-  return (
-    <section className="mt-4 rounded-[24px] border border-white/10 bg-[rgba(255,255,255,0.08)] p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d8b89f]">
-            {messages.similarTasteLabel}
-          </p>
-          <p className="mt-2 text-sm text-[#f7ede4]">
-            {messages.similarTasteDescription}
-          </p>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        disabled={!isReady}
-        className={`mt-4 w-full rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-          isReady
-            ? "bg-[#f3d6b6] text-[#2f221b] shadow-[0_12px_24px_rgba(27,15,8,0.18)] hover:bg-[#f0ccb0]"
-            : "cursor-not-allowed bg-[#675249] text-[#d9c3b4]"
-        }`}
-      >
-        {messages.similarTasteButton}
-      </button>
-
-      <p className="mt-3 text-xs leading-5 text-[#d9c3b4]">
-        {isReady
-          ? messages.similarTasteReady
-          : messages.similarTasteNeedMore(MIN_RECOMMENDATION_READY_COUNT)}
-      </p>
-    </section>
-  );
-}
-
 function SidebarPolicySection({ messages }) {
   const privacyNoticeTitle = messages.privacyNoticeTitle ?? "개인정보 처리 안내";
   const privacyNoticeBody =
@@ -90,10 +51,10 @@ function SidebarMapLink({ kakaoMapUrl }) {
 }
 
 function SidebarContent({
-  favoriteCafes,
+  savedPlaces,
   onClose,
   onHomeClick,
-  onRemoveFavorite,
+  onRemoveSavedPlace,
   kakaoMapUrl,
   isDesktop = false,
   messages,
@@ -134,20 +95,20 @@ function SidebarContent({
         ) : null}
 
         <div className="mt-4 space-y-3">
-          {favoriteCafes.length > 0 ? (
-            favoriteCafes.map((cafe) => (
-              <div key={cafe.id} className="rounded-2xl bg-white/8 px-3 py-3">
+          {savedPlaces.length > 0 ? (
+            savedPlaces.map((place) => (
+              <div key={place.id} className="rounded-2xl bg-white/8 px-3 py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{cafe.name}</p>
+                    <p className="truncate text-sm font-medium">{place.name}</p>
                     <p className="mt-1 text-xs text-[#d9c3b4]">
-                      {cafe.roadAddress || cafe.address || messages.noAddress}
+                      {place.roadAddress || place.address || messages.noAddress}
                     </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => onRemoveFavorite(cafe.id)}
-                    aria-label={messages.removeFavoriteAriaLabel(cafe.name)}
+                    onClick={() => onRemoveSavedPlace(place.id)}
+                    aria-label={messages.removeFavoriteAriaLabel(place.name)}
                     className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2f221b] text-base leading-none text-[#f3c76d]"
                   >
                     ×
@@ -161,8 +122,6 @@ function SidebarContent({
             </div>
           )}
         </div>
-
-        <SimilarTasteSection favoriteCount={favoriteCafes.length} messages={messages} />
         <SidebarMapLink kakaoMapUrl={kakaoMapUrl} />
         <SidebarPolicySection messages={messages} />
       </section>
@@ -171,11 +130,11 @@ function SidebarContent({
 }
 
 export function Sidebar({
-  favoriteCafes,
+  savedPlaces,
   isOpen,
   onClose,
   onHomeClick,
-  onRemoveFavorite,
+  onRemoveSavedPlace,
   kakaoMapUrl,
   messages,
 }) {
@@ -193,10 +152,10 @@ export function Sidebar({
 
       <aside className="fixed left-0 top-[76px] z-40 h-[calc(100vh-76px)] w-[312px] max-w-[85vw] border-r border-[#e7dccf] bg-[#fbf7f2] shadow-[0_24px_60px_rgba(84,52,27,0.18)] md:top-[88px] md:h-[calc(100vh-88px)] xl:hidden">
         <SidebarContent
-          favoriteCafes={favoriteCafes}
+          savedPlaces={savedPlaces}
           onClose={onClose}
           onHomeClick={onHomeClick}
-          onRemoveFavorite={onRemoveFavorite}
+          onRemoveSavedPlace={onRemoveSavedPlace}
           kakaoMapUrl={kakaoMapUrl}
           messages={messages}
         />
@@ -206,10 +165,10 @@ export function Sidebar({
 }
 
 export function DesktopSidebar({
-  favoriteCafes,
+  savedPlaces,
   isOpen,
   onHomeClick,
-  onRemoveFavorite,
+  onRemoveSavedPlace,
   kakaoMapUrl,
   messages,
 }) {
@@ -221,9 +180,9 @@ export function DesktopSidebar({
     <div className="hidden xl:block xl:w-[312px] xl:shrink-0" aria-hidden={!isOpen}>
       <div className="pointer-events-auto sticky top-[104px] h-[calc(100vh-128px)] overflow-y-auto pr-2 -mr-2 [scrollbar-gutter:stable]">
         <SidebarContent
-          favoriteCafes={favoriteCafes}
+          savedPlaces={savedPlaces}
           onHomeClick={onHomeClick}
-          onRemoveFavorite={onRemoveFavorite}
+          onRemoveSavedPlace={onRemoveSavedPlace}
           kakaoMapUrl={kakaoMapUrl}
           isDesktop
           messages={messages}

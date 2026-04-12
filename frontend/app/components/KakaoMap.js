@@ -148,7 +148,7 @@ function loadKakaoMapSdk(appKey) {
   return kakaoMapSdkPromise;
 }
 
-function toFavoriteCafe(place) {
+function toSavedPlace(place) {
   return {
     id: String(place.id),
     name: place.place_name,
@@ -266,7 +266,7 @@ function isRelevantSearchResult(place, query) {
   return false;
 }
 
-function createInfoContent(place, isFavorite, onToggleFavorite, messages) {
+function createInfoContent(place, isSavedPlace, onToggleSavedPlace, messages) {
   const wrap = document.createElement("div");
   wrap.style.width = "296px";
   wrap.style.overflow = "hidden";
@@ -304,7 +304,7 @@ function createInfoContent(place, isFavorite, onToggleFavorite, messages) {
 
   const favoriteButton = document.createElement("button");
   favoriteButton.type = "button";
-  favoriteButton.textContent = isFavorite ? "★" : "+";
+  favoriteButton.textContent = isSavedPlace ? "★" : "+";
   favoriteButton.setAttribute(
     "aria-label",
     messages?.favoriteAriaLabel || "내 취향 카페에 추가",
@@ -313,11 +313,11 @@ function createInfoContent(place, isFavorite, onToggleFavorite, messages) {
   favoriteButton.style.height = "34px";
   favoriteButton.style.border = "none";
   favoriteButton.style.borderRadius = "999px";
-  favoriteButton.style.background = isFavorite ? "#2f221b" : "#efe3d5";
-  favoriteButton.style.color = isFavorite ? "#f3c76d" : "#5d473b";
+  favoriteButton.style.background = isSavedPlace ? "#2f221b" : "#efe3d5";
+  favoriteButton.style.color = isSavedPlace ? "#f3c76d" : "#5d473b";
   favoriteButton.style.fontSize = "18px";
   favoriteButton.style.cursor = "pointer";
-  favoriteButton.addEventListener("click", onToggleFavorite);
+  favoriteButton.addEventListener("click", onToggleSavedPlace);
 
   header.appendChild(titleWrap);
   header.appendChild(favoriteButton);
@@ -528,9 +528,9 @@ function clearCurrentAreaCache(responseCache) {
 function MarkerList({
   places,
   selectedPlaceId,
-  favoriteCafeIds,
+  savedPlaceIds,
   onSelectPlace,
-  onToggleFavorite,
+  onToggleSavedPlace,
   searchQuery,
   hiddenResultCount,
   messages,
@@ -565,7 +565,7 @@ function MarkerList({
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
           {places.map((place) => {
             const isSelected = selectedPlaceId === String(place.id);
-            const isFavorite = favoriteCafeIds.has(String(place.id));
+            const isSavedPlace = savedPlaceIds.has(String(place.id));
 
             return (
               <div
@@ -599,15 +599,15 @@ function MarkerList({
                     aria-label={messages?.favoriteAriaLabel || "내 취향 카페에 추가"}
                     onClick={(event) => {
                       event.stopPropagation();
-                      onToggleFavorite(place);
+                      onToggleSavedPlace(place);
                     }}
                     className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                      isFavorite
+                      isSavedPlace
                         ? "bg-[#2f221b] text-[#f3c76d]"
                         : "bg-[#efe3d5] text-[#5d473b]"
                     }`}
                   >
-                    {isFavorite ? "★" : "+"}
+                    {isSavedPlace ? "★" : "+"}
                   </button>
                 </div>
                 <p className="mt-2 text-xs text-[#8f725d]">{getPlaceAddress(place)}</p>
@@ -622,8 +622,8 @@ function MarkerList({
 
 export default function KakaoMap({
   appKey,
-  favoriteCafes,
-  onToggleFavorite,
+  savedPlaces,
+  onToggleSavedPlace,
   searchQuery,
   searchRequestVersion,
   resetViewVersion,
@@ -643,8 +643,8 @@ export default function KakaoMap({
   const mapClickListenerRef = useRef(null);
   const dragStartListenerRef = useRef(null);
   const selectedPlaceRef = useRef(null);
-  const favoriteCafeIdsRef = useRef(new Set());
-  const onToggleFavoriteRef = useRef(onToggleFavorite);
+  const savedPlaceIdsRef = useRef(new Set());
+  const onToggleSavedPlaceRef = useRef(onToggleSavedPlace);
   const onSelectPlaceRef = useRef(onSelectPlace);
   const normalizedSearchQueryRef = useRef("");
   const isCurrentAreaModeRef = useRef(false);
@@ -659,9 +659,9 @@ export default function KakaoMap({
   const [searchPlaces, setSearchPlaces] = useState([]);
   const [selectedPlaceId, setSelectedPlaceId] = useState("");
 
-  const favoriteCafeIds = useMemo(
-    () => new Set(favoriteCafes.map((cafe) => cafe.id)),
-    [favoriteCafes],
+  const savedPlaceIds = useMemo(
+    () => new Set(savedPlaces.map((place) => place.id)),
+    [savedPlaces],
   );
   const normalizedSearchQuery = useMemo(
     () => normalizeSearchQuery(searchQuery),
@@ -735,10 +735,10 @@ export default function KakaoMap({
   };
 
   useEffect(() => {
-    favoriteCafeIdsRef.current = favoriteCafeIds;
-    onToggleFavoriteRef.current = onToggleFavorite;
+    savedPlaceIdsRef.current = savedPlaceIds;
+    onToggleSavedPlaceRef.current = onToggleSavedPlace;
     onSelectPlaceRef.current = onSelectPlace;
-  }, [favoriteCafeIds, onToggleFavorite, onSelectPlace]);
+  }, [onSelectPlace, onToggleSavedPlace, savedPlaceIds]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) {
@@ -750,7 +750,7 @@ export default function KakaoMap({
 
   useEffect(() => {
     onSearchResultsChange?.({
-      results: (normalizedSearchQuery ? sortedSearchPlaces : sortedMapPlaces).map(toFavoriteCafe),
+      results: (normalizedSearchQuery ? sortedSearchPlaces : sortedMapPlaces).map(toSavedPlace),
       visibleCount: displayedPlaces.length,
       totalCount: normalizedSearchQuery ? sortedSearchPlaces.length : sortedMapPlaces.length,
       hiddenCount: hiddenSearchResultCount,
@@ -1068,14 +1068,14 @@ export default function KakaoMap({
 
         selectedPlaceRef.current = place;
         setSelectedPlaceId(String(place.id));
-        onSelectPlaceRef.current?.(toFavoriteCafe(place));
+        onSelectPlaceRef.current?.(toSavedPlace(place));
         applyMarkerPriority(markerEntriesRef.current, place.id);
 
         const content = createInfoContent(
           place,
-          favoriteCafeIdsRef.current.has(String(place.id)),
+          savedPlaceIdsRef.current.has(String(place.id)),
           () => {
-            onToggleFavoriteRef.current(toFavoriteCafe(place));
+            onToggleSavedPlaceRef.current(toSavedPlace(place));
           },
           messages,
         );
@@ -1115,9 +1115,9 @@ export default function KakaoMap({
 
     const content = createInfoContent(
       selectedEntry.place,
-      favoriteCafeIds.has(String(selectedEntry.place.id)),
+      savedPlaceIds.has(String(selectedEntry.place.id)),
       () => {
-        onToggleFavoriteRef.current(toFavoriteCafe(selectedEntry.place));
+        onToggleSavedPlaceRef.current(toSavedPlace(selectedEntry.place));
       },
       messages,
     );
@@ -1125,7 +1125,7 @@ export default function KakaoMap({
     infoWindow?.setContent(content);
     infoWindow?.open(map, selectedEntry.marker);
     applyMarkerPriority(markerEntriesRef.current, selectedEntry.place.id);
-  }, [displayedPlaces, favoriteCafeIds, messages, normalizedSearchQuery, selectedPlaceId]);
+  }, [displayedPlaces, messages, normalizedSearchQuery, savedPlaceIds, selectedPlaceId]);
 
   const handleSelectPlace = (place) => {
     if (!window.kakao?.maps || !mapInstanceRef.current) {
@@ -1148,14 +1148,14 @@ export default function KakaoMap({
     currentViewModeRef.current = normalizedSearchQuery ? "search" : "map";
     selectedPlaceRef.current = targetEntry.place;
     setSelectedPlaceId(String(targetEntry.place.id));
-    onSelectPlaceRef.current?.(toFavoriteCafe(targetEntry.place));
+    onSelectPlaceRef.current?.(toSavedPlace(targetEntry.place));
     applyMarkerPriority(markerEntriesRef.current, targetEntry.place.id);
 
     const content = createInfoContent(
       targetEntry.place,
-      favoriteCafeIdsRef.current.has(String(targetEntry.place.id)),
+      savedPlaceIdsRef.current.has(String(targetEntry.place.id)),
       () => {
-        onToggleFavoriteRef.current(toFavoriteCafe(targetEntry.place));
+        onToggleSavedPlaceRef.current(toSavedPlace(targetEntry.place));
       },
       messages,
     );
@@ -1189,14 +1189,14 @@ export default function KakaoMap({
     currentViewModeRef.current = normalizedSearchQuery ? "search" : "map";
     selectedPlaceRef.current = targetEntry.place;
     setSelectedPlaceId(String(targetEntry.place.id));
-    onSelectPlaceRef.current?.(toFavoriteCafe(targetEntry.place));
+    onSelectPlaceRef.current?.(toSavedPlace(targetEntry.place));
     applyMarkerPriority(markerEntriesRef.current, targetEntry.place.id);
 
     const content = createInfoContent(
       targetEntry.place,
-      favoriteCafeIdsRef.current.has(String(targetEntry.place.id)),
+      savedPlaceIdsRef.current.has(String(targetEntry.place.id)),
       () => {
-        onToggleFavoriteRef.current(toFavoriteCafe(targetEntry.place));
+        onToggleSavedPlaceRef.current(toSavedPlace(targetEntry.place));
       },
       messages,
     );

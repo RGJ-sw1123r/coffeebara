@@ -7,8 +7,8 @@ import SearchResultNotice from "./SearchResultNotice";
 
 function MapPanel({
   kakaoMapKey,
-  favoriteCafes,
-  onToggleFavorite,
+  savedPlaces,
+  onToggleSavedPlace,
   searchQuery,
   searchRequestVersion,
   resetViewVersion,
@@ -52,8 +52,8 @@ function MapPanel({
       <div className="h-[420px] bg-[radial-gradient(circle_at_top_left,_rgba(214,184,153,0.28),_transparent_28%),linear-gradient(180deg,_#f8f2ea_0%,_#f2e7da_100%)] sm:h-[520px]">
         <KakaoMap
           appKey={kakaoMapKey}
-          favoriteCafes={favoriteCafes}
-          onToggleFavorite={onToggleFavorite}
+          savedPlaces={savedPlaces}
+          onToggleSavedPlace={onToggleSavedPlace}
           searchQuery={searchQuery}
           searchRequestVersion={searchRequestVersion}
           resetViewVersion={resetViewVersion}

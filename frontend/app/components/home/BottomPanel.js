@@ -23,9 +23,9 @@ function SectionCard({ title, description, children, className = "" }) {
 export default function BottomPanel({
   searchQuery,
   searchState,
-  selectedCafe,
-  favoriteCafeIds,
-  onToggleFavorite,
+  selectedPlace,
+  savedPlaceIds,
+  onToggleSavedPlace,
   onSelectSearchResult,
   messages,
 }) {
@@ -60,20 +60,20 @@ export default function BottomPanel({
             </div>
 
             <div className="grid gap-3 xl:grid-cols-2">
-              {visibleSearchResults.map((cafe) => {
-                const isFavorite = favoriteCafeIds.has(cafe.id);
-                const isSelected = selectedCafe?.id === cafe.id;
+              {visibleSearchResults.map((place) => {
+                const isSaved = savedPlaceIds.has(place.id);
+                const isSelected = selectedPlace?.id === place.id;
 
                 return (
                   <div
-                    key={cafe.id}
+                    key={place.id}
                     role="button"
                     tabIndex={0}
-                    onClick={() => onSelectSearchResult(cafe)}
+                    onClick={() => onSelectSearchResult(place)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        onSelectSearchResult(cafe);
+                        onSelectSearchResult(place);
                       }
                     }}
                     className={`rounded-[22px] border px-4 py-4 text-left transition ${
@@ -85,35 +85,35 @@ export default function BottomPanel({
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-[#241813]">
-                          {cafe.name}
+                          {place.name}
                         </p>
                         <p className="mt-1 text-xs text-[#8f725d]">
-                          {cafe.categoryName || messages.cafeCategoryFallback}
+                          {place.categoryName || messages.cafeCategoryFallback}
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
-                          onToggleFavorite(cafe);
+                          onToggleSavedPlace(place);
                         }}
                         aria-label={messages.favoriteAriaLabel}
                         className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-                          isFavorite
+                          isSaved
                             ? "bg-[#2f221b] text-[#f3c76d]"
                             : "bg-[#efe3d5] text-[#5d473b]"
                         }`}
                       >
-                        {isFavorite ? "★" : "+"}
+                        {isSaved ? "★" : "+"}
                       </button>
                     </div>
 
                     <p className="mt-3 text-sm text-[#5f4b3f]">
-                      {cafe.roadAddress || cafe.address || messages.noAddress}
+                      {place.roadAddress || place.address || messages.noAddress}
                     </p>
 
-                    {cafe.phone ? (
-                      <p className="mt-2 text-xs text-[#8f725d]">{cafe.phone}</p>
+                    {place.phone ? (
+                      <p className="mt-2 text-xs text-[#8f725d]">{place.phone}</p>
                     ) : null}
                   </div>
                 );
@@ -134,46 +134,46 @@ export default function BottomPanel({
   return (
     <SectionCard title={messages.cafeInfoTitle}>
       <div className="rounded-[24px] border border-[#eadfd3] bg-[#fcfaf7] px-4 py-4">
-        {selectedCafe ? (
+        {selectedPlace ? (
           <div className="space-y-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-lg font-semibold text-[#241813]">
-                  {selectedCafe.name}
+                  {selectedPlace.name}
                 </p>
                 <p className="mt-1 text-sm text-[#8f725d]">
-                  {selectedCafe.categoryName || messages.cafeCategoryFallback}
+                  {selectedPlace.categoryName || messages.cafeCategoryFallback}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => onToggleFavorite(selectedCafe)}
+                onClick={() => onToggleSavedPlace(selectedPlace)}
                 aria-label={messages.favoriteAriaLabel}
                 className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-                  favoriteCafeIds.has(selectedCafe.id)
+                  savedPlaceIds.has(selectedPlace.id)
                     ? "bg-[#2f221b] text-[#f3c76d]"
                     : "bg-[#efe3d5] text-[#5d473b]"
                 }`}
               >
-                {favoriteCafeIds.has(selectedCafe.id) ? "★" : "+"}
+                {savedPlaceIds.has(selectedPlace.id) ? "★" : "+"}
               </button>
             </div>
 
             <p className="text-sm text-[#5f4b3f]">
-              {selectedCafe.roadAddress ||
-                selectedCafe.address ||
+              {selectedPlace.roadAddress ||
+                selectedPlace.address ||
                 messages.noAddress}
             </p>
 
-            {selectedCafe.phone ? (
+            {selectedPlace.phone ? (
               <p className="text-sm text-[#5f4b3f]">
-                {messages.phoneLabel}: {selectedCafe.phone}
+                {messages.phoneLabel}: {selectedPlace.phone}
               </p>
             ) : null}
 
-            {selectedCafe.placeUrl ? (
+            {selectedPlace.placeUrl ? (
               <a
-                href={selectedCafe.placeUrl}
+                href={selectedPlace.placeUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex rounded-full bg-[#2f221b] px-4 py-2 text-sm font-medium text-white visited:text-white hover:text-white"

@@ -16,18 +16,18 @@ export default function Home() {
   const {
     activePlaceId,
     authStatus,
-    backendFavoriteFetch,
+    backendSavedPlaceFetch,
     closeSidebar,
     closeNotice,
-    favoriteCafeIds,
-    favoriteCafes,
+    savedPlaceIds,
+    savedPlaces,
     handleLogout,
-    handleRemoveFavorite,
+    handleRemoveSavedPlace,
     handleResetHomeView,
     handleSearchSubmit,
-    handleSelectCafe,
+    handleSelectPlace,
     handleStartCurrentAreaSearch,
-    handleToggleFavorite,
+    handleToggleSavedPlace,
     isGuestModeToastVisible,
     isSidebarOpen,
     kakaoMapUrl,
@@ -39,7 +39,7 @@ export default function Home() {
     searchQuery,
     searchRequestVersion,
     searchState,
-    selectedCafe,
+    selectedPlace,
     setLocale,
     setMapViewport,
     setNoticeState,
@@ -79,11 +79,11 @@ export default function Home() {
       />
 
       <Sidebar
-        favoriteCafes={favoriteCafes}
+        savedPlaces={savedPlaces}
         isOpen={isSidebarOpen}
         onClose={closeSidebar}
         onHomeClick={handleResetHomeView}
-        onRemoveFavorite={handleRemoveFavorite}
+        onRemoveSavedPlace={handleRemoveSavedPlace}
         kakaoMapUrl={kakaoMapUrl}
         messages={messages}
       />
@@ -91,29 +91,29 @@ export default function Home() {
       <div className="mx-auto w-full max-w-[2200px] px-4 py-6 sm:px-6 xl:px-8">
         <main className="relative flex min-w-0 gap-6">
           <DesktopSidebar
-            favoriteCafes={favoriteCafes}
+            savedPlaces={savedPlaces}
             isOpen={isSidebarOpen}
             onHomeClick={handleResetHomeView}
-            onRemoveFavorite={handleRemoveFavorite}
+            onRemoveSavedPlace={handleRemoveSavedPlace}
             kakaoMapUrl={kakaoMapUrl}
             messages={messages}
           />
 
           <div className="min-w-0 flex-1 space-y-6">
             <BackendSyncBanner
-              status={backendFavoriteFetch.status}
-              errorMessage={backendFavoriteFetch.errorMessage}
+              status={backendSavedPlaceFetch.status}
+              errorMessage={backendSavedPlaceFetch.errorMessage}
               messages={messages}
             />
 
             <MapPanel
               kakaoMapKey={kakaoMapKey}
-              favoriteCafes={favoriteCafes}
-              onToggleFavorite={handleToggleFavorite}
+              savedPlaces={savedPlaces}
+              onToggleSavedPlace={handleToggleSavedPlace}
               searchQuery={searchQuery}
               searchRequestVersion={searchRequestVersion}
               resetViewVersion={resetViewVersion}
-              onSelectPlace={handleSelectCafe}
+              onSelectPlace={handleSelectPlace}
               activePlaceId={activePlaceId}
               onSearchResultsChange={setSearchState}
               onViewportChange={setMapViewport}
@@ -127,10 +127,10 @@ export default function Home() {
             <BottomPanel
               searchQuery={searchQuery}
               searchState={searchState}
-              selectedCafe={selectedCafe}
-              favoriteCafeIds={favoriteCafeIds}
-              onToggleFavorite={handleToggleFavorite}
-              onSelectSearchResult={handleSelectCafe}
+              selectedPlace={selectedPlace}
+              savedPlaceIds={savedPlaceIds}
+              onToggleSavedPlace={handleToggleSavedPlace}
+              onSelectSearchResult={handleSelectPlace}
               messages={messages}
             />
           </div>

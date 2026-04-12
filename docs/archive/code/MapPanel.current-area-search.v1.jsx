@@ -1,14 +1,18 @@
 "use client";
 
+// v1 reference snapshot:
+// This file preserves the map panel contract before the current-area
+// search trigger was removed from the active product path.
+
 import { memo } from "react";
 
-import KakaoMap from "../KakaoMap";
-import SearchResultNotice from "./SearchResultNotice";
+import KakaoMap from "../../../frontend/app/components/KakaoMap";
+import SearchResultNotice from "../../../frontend/app/components/home/SearchResultNotice";
 
-function MapPanel({
+function MapPanelCurrentAreaSearchV1({
   kakaoMapKey,
-  savedPlaces,
-  onToggleSavedPlace,
+  favoriteCafes,
+  onToggleFavorite,
   searchQuery,
   searchRequestVersion,
   resetViewVersion,
@@ -19,6 +23,7 @@ function MapPanel({
   isSidebarOpen,
   noticeState,
   onCloseNotice,
+  onStartCurrentAreaSearch,
   messages,
 }) {
   return (
@@ -32,6 +37,7 @@ function MapPanel({
           />
         </div>
       </div>
+
       <div className="flex flex-col gap-4 border-b border-[#f0e6dc] px-5 py-5 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -51,8 +57,8 @@ function MapPanel({
       <div className="h-[420px] bg-[radial-gradient(circle_at_top_left,_rgba(214,184,153,0.28),_transparent_28%),linear-gradient(180deg,_#f8f2ea_0%,_#f2e7da_100%)] sm:h-[520px]">
         <KakaoMap
           appKey={kakaoMapKey}
-          savedPlaces={savedPlaces}
-          onToggleSavedPlace={onToggleSavedPlace}
+          favoriteCafes={favoriteCafes}
+          onToggleFavorite={onToggleFavorite}
           searchQuery={searchQuery}
           searchRequestVersion={searchRequestVersion}
           resetViewVersion={resetViewVersion}
@@ -61,6 +67,7 @@ function MapPanel({
           onSearchResultsChange={onSearchResultsChange}
           onViewportChange={onViewportChange}
           isSidebarOpen={isSidebarOpen}
+          onStartCurrentAreaSearch={onStartCurrentAreaSearch}
           messages={messages}
         />
       </div>
@@ -68,4 +75,4 @@ function MapPanel({
   );
 }
 
-export default memo(MapPanel);
+export default memo(MapPanelCurrentAreaSearchV1);

@@ -632,7 +632,6 @@ export default function KakaoMap({
   onSearchResultsChange,
   onViewportChange,
   isSidebarOpen,
-  onStartCurrentAreaSearch,
   messages,
 }) {
   const mapRef = useRef(null);
@@ -709,7 +708,6 @@ export default function KakaoMap({
     shouldFocusSearchResultsRef.current = false;
     isCurrentAreaModeRef.current = true;
     currentViewModeRef.current = "map";
-    onStartCurrentAreaSearch?.();
     setStatus("loading");
     setErrorMessage("");
     setErrorCode("");
@@ -1228,25 +1226,6 @@ export default function KakaoMap({
             : messages.mapLoadingArea}
         </div>
       ) : null}
-
-      <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-32px)] flex-col items-start gap-2">
-        {!normalizeAppKey(appKey) ||
-        normalizeAppKey(appKey) === "MOCK_KAKAO_MAP_KEY" ? null : (
-          <button
-            type="button"
-            onClick={handleSearchCurrentView}
-            disabled={status === "loading"}
-            className={`rounded-full border border-[#5d4334] bg-[linear-gradient(160deg,rgba(56,39,30,0.96)_0%,rgba(38,26,21,0.94)_100%)] px-4 py-2 text-xs font-semibold text-[#fff7f0] shadow-[0_16px_32px_rgba(47,34,27,0.24)] backdrop-blur transition ${
-              status === "loading"
-                ? "cursor-not-allowed opacity-60"
-                : "hover:border-[#7b5a46] hover:brightness-110"
-            }`}
-          >
-            {messages.searchCurrentAreaButton}
-          </button>
-        )}
-
-      </div>
 
       {status === "error" ? (
         <div className="absolute inset-x-4 bottom-[260px] rounded-2xl border border-[#eadfd3] bg-white/95 px-4 py-3 text-sm text-[#5f4b3f] shadow-[0_14px_30px_rgba(84,52,27,0.1)]">

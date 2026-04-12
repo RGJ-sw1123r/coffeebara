@@ -26,7 +26,6 @@ export default function Home() {
     handleResetHomeView,
     handleSearchSubmit,
     handleSelectPlace,
-    handleStartCurrentAreaSearch,
     handleToggleSavedPlace,
     isGuestModeToastVisible,
     isSidebarOpen,
@@ -120,7 +119,6 @@ export default function Home() {
               isSidebarOpen={isSidebarOpen}
               noticeState={noticeState}
               onCloseNotice={closeNotice}
-              onStartCurrentAreaSearch={handleStartCurrentAreaSearch}
               messages={messages}
             />
 

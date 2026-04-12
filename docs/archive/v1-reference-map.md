@@ -91,6 +91,7 @@ They are not archive-only yet because the current app still depends on them.
 - guest favorite hydration and sync assumptions in `frontend/app/hooks/useHomePageState.js`
 - backend favorite fetch status handling in `frontend/app/hooks/useHomePageState.js`
 - favorite-centric button semantics in `frontend/app/components/KakaoMap.js`
+- current-area search trigger and button flow previously used in `frontend/app/components/KakaoMap.js`
 - favorite-centric selected-place actions in `frontend/app/components/home/BottomPanel.js`
 
 Reason:
@@ -121,6 +122,7 @@ The legacy saved-cafe sync slice becomes much easier to archive once it is isola
 Once no longer referenced by the live path, move legacy-only assets into archive locations such as:
 
 - `docs/archive/v1-*`
+- `docs/archive/code/*.v1.*`
 - `frontend/archive/v1/`
 - `src/archive/v1/` or another non-runtime reference area
 

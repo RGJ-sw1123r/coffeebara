@@ -158,7 +158,6 @@ public class KakaoCafeSearchService {
 
 			if (response.meta().isEnd() || page >= MAX_MAP_FETCH_PAGE_COUNT) {
 				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
-				saveCafeBatch(cafes);
 				KakaoPlaceDocumentsResponseVo result = new KakaoPlaceDocumentsResponseVo(cafes);
 				cacheMapResponse(cacheKey, result);
 				return result;
@@ -220,7 +219,6 @@ public class KakaoCafeSearchService {
 
 			if (response.meta().isEnd() || page >= MAX_MAP_FETCH_PAGE_COUNT) {
 				List<KakaoPlaceDocumentVo> cafes = List.copyOf(deduplicated.values());
-				saveCafeBatch(cafes);
 				KakaoPlaceDocumentsResponseVo result = new KakaoPlaceDocumentsResponseVo(cafes);
 				cacheMapResponse(cacheKey, result);
 				return result;
@@ -245,11 +243,6 @@ public class KakaoCafeSearchService {
 			"카페 조회 요청이 많습니다. 잠시 후 다시 시도해 주세요."
 		);
 
-		Map<String, Object> persistedCafe = findPersistedCafe(placeId);
-		if (persistedCafe != null && !isStale(persistedCafe)) {
-			return Optional.of(toKakaoPlaceDocument(persistedCafe));
-		}
-
 		int page = 1;
 
 		while (true) {
@@ -261,13 +254,11 @@ public class KakaoCafeSearchService {
 				.findFirst();
 
 			if (matchedCafe.isPresent()) {
-				upsertCafe(matchedCafe.get());
 				return matchedCafe;
 			}
 
 			if (response.meta().isEnd() || page >= MAX_FIND_BY_ID_FETCH_PAGE_COUNT) {
-				return Optional.ofNullable(persistedCafe)
-					.map(this::toKakaoPlaceDocument);
+				return Optional.empty();
 			}
 
 			page += 1;
@@ -275,14 +266,8 @@ public class KakaoCafeSearchService {
 	}
 
 	public void saveCafe(CafeUpsertRequest request) {
-		requestRateLimiter.checkLimit(
-			"cafes-save",
-			rateLimitProperties.saveMaxRequests(),
-			"카페 저장 요청이 많습니다. 잠시 후 다시 시도해 주세요."
-		);
 		validateCafeUpsertRequest(request);
-		upsertCafe(toCafeMap(request));
-		collectNearbyCandidates(request);
+		log.info("saveCafe no-op because cafe DB persistence is disabled. kakaoPlaceId='{}'", request.kakaoPlaceId());
 	}
 
 	private boolean isRelevantSearchResult(KakaoPlaceDocumentVo document, String query) {
@@ -365,7 +350,6 @@ public class KakaoCafeSearchService {
 				.filter(document -> isRelevantSearchResult(document, query))
 				.toList();
 			log.info("searchCafes paged query='{}' page={} size={} filteredCount={}", query, page, size, cafeDocuments.size());
-			saveCafeBatch(cafeDocuments);
 			return new KakaoKeywordSearchResponseVo(cafeDocuments, response.meta());
 		}
 
@@ -394,7 +378,6 @@ public class KakaoCafeSearchService {
 					List.copyOf(deduplicated.values()),
 					query
 				);
-				saveCafeBatch(cafes);
 				return new KakaoKeywordSearchResponseVo(cafes, lastResponse.meta());
 			}
 

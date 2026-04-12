@@ -78,7 +78,6 @@ export default function useHomePageState() {
     savedPlaces,
   } = useSavedPlacesState({
     authStatus,
-    messages,
   });
   const toastCatalog = useMemo(
     () => ({
@@ -296,16 +295,6 @@ export default function useHomePageState() {
     setActivePlaceId(place?.id ?? "");
   }, []);
 
-  const handleStartCurrentAreaSearch = useCallback(() => {
-    setSearchInput("");
-    setSearchQuery("");
-    setNoticeState(null);
-    setSearchState(createLoadingSearchState("map"));
-    queueToast("map-search-submit", "mapTooMany");
-    setSelectedPlace(null);
-    setActivePlaceId("");
-  }, [queueToast]);
-
   const closeNotice = useCallback(() => {
     setNoticeState(null);
   }, []);
@@ -384,7 +373,6 @@ export default function useHomePageState() {
     handleResetHomeView,
     handleSearchSubmit,
     handleSelectPlace,
-    handleStartCurrentAreaSearch,
     handleToggleSavedPlace,
     isGuestModeToastVisible,
     isSidebarOpen,

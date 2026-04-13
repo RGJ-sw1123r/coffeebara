@@ -1,236 +1,161 @@
 # Coffeebara Product Direction Notes
 
-## 1. Earlier Working Assumption
+> Korean version: [product-direction-notes.ko.md](./product-direction-notes.ko.md)
 
-The earlier product assumption was that Kakao Local API based place search, additional processing, and later LLM support could grow into a personal cafe recommendation product.
+## 1. Starting Point
 
-The rough idea was:
+Coffeebara began from a simple desire:
+while exploring and savoring coffee, I wanted to identify the kinds of cafes I personally prefer, and even in unfamiliar domestic areas, find the kind of cafe I would want without spending excessive effort.
 
-- collect cafes the user likes
-- store preference signals and reasons
-- build a preference profile
-- use that profile to drive recommendations
+That was the starting point of the earlier product direction.
 
-This was not an unreasonable place to start, but it turned out to be a weaker product center than expected.
+At the time, the product assumption was that place search, saved cafes, preference signals, and later LLM support could grow into a personal cafe recommendation product.
 
-## 2. What The Implementation Actually Validated
+Internally, we refer to that earlier phase as **v1**.
 
-The implementation work still validated several useful things.
+## 2. Why The Direction Changed
 
-- Kakao Local API works well for place search and place collection
-- map exploration is a practical and usable interaction model
-- place persistence keyed by `kakao_place_id` is a stable technical asset
-- user-side notes, reasons, and saved items can be structured to some extent
-- the repository already contains useful backend and frontend groundwork
+The direction changed because the recommendation idea was easier to imagine than to support well.
 
-So the earlier work was not wasted. It produced real technical assets and clarified what the product can support reliably.
+The main issues were:
 
-## 3. What Did Not Hold Up Well
+- Kakao place data was useful for search and reference, but too thin for durable recommendation quality
+- user preference input alone was not enough to make recommendations feel convincing
+- stronger recommendation quality would require additional item-side data that was not naturally available
+- crawling, scraping, or LLM enrichment could help later, but none of them justified the product on their own
 
-The weaker part was the leap from place collection to meaningful recommendation quality.
+In short, the recommendation direction depended too much on data that was weak, costly, or unstable.
 
-- Kakao place data is useful for discovery and reference, but too thin to compare cafes deeply and consistently
-- user preference input alone was not enough to make recommendation quality feel convincing
-- item-side data required for stronger recommendation logic was not naturally available from the current collection model
-- crawling, scraping, or LLM enrichment could add support later, but none of them justified the product on their own
+## 3. What Remains From v1
 
-In short:
+The earlier work was not wasted.
 
-the recommendation idea was easier to imagine than to support with durable data.
+Its results remain in the repository as preserved exploration-related implementation and archive material, and they still provide useful technical assets.
+Some of that earlier work also remains in `docs/archive/`.
 
-## 4. The More Reliable Product Center
-
-The more reliable center of the project is not public recommendation.
-
-It is personal record keeping.
-
-That means Coffeebara makes more sense as:
-
-- a personal coffee archive
-- a brewing record system
-- a place-aware coffee logbook
-- a product built around recall, reflection, and accumulated history
-
-This direction is more stable because it depends on data the user can actually provide and care about directly.
-
-## 5. Why This Direction Fits Better
-
-The personal archive direction has a clearer value proposition.
-
-- the user can record beans they used
-- the user can record brewing conditions
-- the user can attach purchase place and drink place context
-- the user can keep tasting notes and subjective impressions
-- the user can revisit patterns over time
-
-This is useful even without recommendation logic.
-It is also useful even without AI.
-
-That makes it a stronger foundation.
-
-## 6. What Still Carries Forward
-
-The earlier repository work remains important as an earlier phase of the project.
+That earlier phase is no longer the baseline of the current product, but its technical outcomes are still reusable when needed.
 
 What still carries forward:
 
-- Kakao login as a practical account identity option
-- Kakao Map as a place selection tool
-- place search and place persistence flow
-- `kakao_place_id` based place master handling
-- Spring Boot + MyBatis + MariaDB application structure
-- existing frontend groundwork and interaction patterns
+- Kakao login
+- place search and place persistence
+- `kakao_place_id` based place handling
+- Spring Boot + MyBatis + MariaDB structure
+- existing frontend interaction patterns
 - implementation notes and AI collaboration records
 
-The product direction changed, but the technical continuity remains valid.
+## 4. Current Product Center
 
-## 7. How Kakao Assets Should Be Reinterpreted
+The current product center is not public recommendation.
 
-Kakao integration is still useful, but its role is different now.
+Coffeebara now makes more sense as:
+
+- a personal coffee archive
+- a brewing record system
+- a place-aware coffee log
+- a product built around recall, reflection, and accumulated history
+
+This direction is more reliable because it depends on data the user can actually provide, review, and care about directly.
+
+## 5. What Kakao Now Means
+
+Kakao integration is still important, but its role has changed.
 
 ### Kakao login
-
 Its role is:
 
 - user identity
 - record ownership
-- archive continuity across devices
+- continuity across devices
 
-It is not primarily about public identity or social features.
-
-### Kakao Map and place data
-
+### Kakao place data
 Its role is:
 
 - selecting where beans were purchased
 - selecting where coffee was consumed
 - attaching place context to personal records
 
-It is not primarily about generating recommendation candidates.
+It is no longer the center of a recommendation product.
 
-## 8. What The Product Should Focus On Next
+## 6. Current Active Scope
 
-The next meaningful product slices are:
+The current active product scope should be understood as follows:
 
-- guest sample/demo record page
-- member text-note record flow entered from saved cafes
-- bean record creation
-- brewing record creation
-- place selection for purchase and drinking context
-- brewing history view
-- bean detail view
-- record detail view
-- tasting note editing
-- satisfaction input
-- one mood color per record
-- basic filtering and sorting
+- member saved cafes
+- guest saved cafes in local browser state
+- member cafe-linked text records
+- place-aware archive flow
+- archive-oriented account and profile structure
 
-These are small enough to build realistically and meaningful enough to make the product personally useful.
+The current persistence model is:
 
-## 9. What Has Already Been Reconnected
+- `cafe` as shared place cache/master data
+- `user_saved_cafe` as member-owned saved cafe state
+- guest saved cafes as temporary browser state
+- `cafe_record` as the parent layer for member-owned cafe-linked records
+- `cafe_note` as the current text-record payload layer
 
-The direction shift is no longer only conceptual. Several important pieces have already been reconnected in code.
+Future bean and brewing records should extend the same record-centered structure.
 
-- cafe search and map lookup remain active
-- `cafe` is now functioning again as a place cache / master table
-- search and map results are being upserted into `cafe`
-- cafe detail now prefers DB data first and refreshes from Kakao when stale
-- member saved cafes are now persisted through `user_saved_cafe`
-- guest saved cafes remain local-storage based
-- frontend saved-cafe behavior is now intentionally split by auth mode
-- member cafe-linked text notes are now persisted through `cafe_record` + `cafe_note`
-- saved-cafe deletion now checks linked member records before removal
-- account/profile UI is being reshaped around the personal archive direction
+## 7. Search, Map, and Guest Mode
 
-This matters because the repository is no longer merely "planning" to move away from the earlier recommendation framing.
-The implementation path has already started changing in concrete ways.
+Search and map-related code still exists in the repository, but the current product baseline is **not** map-centered discovery.
+The active baseline is the personal archive flow.
 
-## 10. How Current Persistence Should Be Understood
+Search and place lookup should stay modest:
 
-The current persistence model should be described carefully.
+- cache what the user actually searched or viewed
+- refresh details only when needed
+- avoid broad place harvesting for its own sake
 
-- `cafe` is shared place cache/master data
-- `user_saved_cafe` is member-owned saved cafe state
-- guest saved cafes are temporary local browser state
-- `cafe_record` is the current shared parent layer for member-owned cafe-linked records
-- `cafe_note` is the current text-record payload layer under `cafe_record`
-- future bean/brew record tables should follow the same parent-child record structure
+Guest mode should also be treated as intentional.
 
-This is an important distinction.
+Its role is:
 
-It means the app is not returning to the old "save every place because places are the product" interpretation.
-It is using place persistence to support archive flows more reliably and to reduce repeated Kakao API calls.
+- let a user try search and saving without immediate account commitment
+- preserve a lightweight local experience
+- preview the archive direction before durable member records are required
 
-## 11. Search And Map Scope Should Stay Modest
+But guest mode is still limited:
 
-The current direction also implies a different attitude toward Kakao API usage.
+- guest data is not durable account ownership
+- guest users are for preview/demo experience, not full archive ownership
 
-- search does not need recommendation-style deep page crawling
-- map lookup does not need broad candidate harvesting
-- it is enough to cache what the user actually searched or viewed
-- detail refresh should happen when needed, not through aggressive place accumulation
+## 8. AI Position
 
-This makes the system simpler and keeps the place layer aligned with the archive product goal.
+AI should remain secondary.
 
-## 12. Guest Mode Should Be Treated As Intentional
-
-Guest mode is not just a temporary workaround.
-
-Its current role is:
-
-- let a user explore cafe search and saving without immediate account commitment
-- preserve a lightweight local experience in the browser
-- preview the product direction before durable archive features are available
-
-But guest mode still has limits:
-
-- guest saved cafes are not durable account records
-- guest mode should not be treated as real record ownership
-- guest users should eventually be directed to sample/demo archive flows rather than full member record creation
-
-## 13. Mood Color As Product Identity
-
-One of the more distinctive parts of the new direction is the mood color feature.
-
-The point is not just visual styling.
-The point is to let the user capture the felt character of a coffee in a way that sits beside text rather than replacing it.
-
-That is why the feature should remain expressive in the UI, while still mapping internally to a limited meaningful palette.
-
-## 14. AI Should Remain Secondary
-
-AI still has a place in the product, but not as the foundation.
-
-The strongest use of AI here is later-stage reflection, for example:
+Useful AI roles are later-stage reflection, such as:
 
 - summarizing repeated preference tendencies
-- describing brewing conditions often associated with higher satisfaction
-- giving the user a readable summary of their own archive
+- highlighting brewing conditions linked to satisfaction
+- giving readable summaries of a user's own archive
 
-The weakest use of AI would be:
-
-- inventing tasting notes
-- replacing record keeping
-- turning the project back into an AI-first recommendation idea
+AI should not replace record keeping or turn the product back into an AI-first recommendation system.
 
 The archive must stand on its own without AI.
 
-## 15. Practical Conclusion
+## 9. Next Product Slices
 
-The important conclusion is not that the earlier direction failed completely.
+The next meaningful slices are:
 
-The more accurate conclusion is:
+- guest sample/demo record page
+- bean record creation
+- brewing record creation
+- purchase and drinking place selection
+- archive detail views
+- tasting note editing
+- satisfaction input
+- filtering and sorting
 
-- some assumptions were validated
-- some assumptions were too optimistic
-- the repository already contains useful assets
-- the strongest next step is to turn those assets toward a personal coffee archive
+These are small enough to build realistically and meaningful enough to make the product personally useful.
 
-That gives the project a calmer and more durable purpose.
+## 10. Final Framing
 
-## 16. Final Framing
+Coffeebara should continue in the same repository.
 
-Coffeebara should continue as the same repository, with the earlier work preserved as an implementation milestone and the next phase focused on a personal brewing record and coffee archive system.
+The earlier phase, internally called **v1**, should be treated as a preserved implementation milestone rather than the current product baseline.
+The current phase should stay focused on a personal brewing record and coffee archive system.
 
-The goal is not to throw away what exists.
-The goal is to make the existing codebase serve a better product center.
+The goal is not to erase earlier work.
+The goal is to make the existing codebase serve a stronger and more durable product center.

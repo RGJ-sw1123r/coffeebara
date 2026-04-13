@@ -71,7 +71,12 @@ async function readErrorMessage(response, fallbackMessage) {
   return payload?.message || fallbackMessage;
 }
 
-export default function useSavedPlacesState({ authStatus, authMode, messages }) {
+export default function useSavedPlacesState({
+  authStatus,
+  authMode,
+  messages,
+  onMemberDataChanged,
+}) {
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isGuestModeToastVisible, setIsGuestModeToastVisible] = useState(false);
@@ -389,6 +394,7 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
           status: "success",
           errorMessage: "",
         }));
+        onMemberDataChanged?.();
       } catch (error) {
         setBackendSavedPlaceFetch((current) => ({
           ...current,
@@ -400,7 +406,7 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
         }));
       }
     },
-    [authMode, messages, savedPlaces],
+    [authMode, messages, onMemberDataChanged, savedPlaces],
   );
 
   const deleteSavedPlace = useCallback(
@@ -436,12 +442,13 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
         status: "success",
         errorMessage: "",
       }));
+      onMemberDataChanged?.();
       setSavedPlaceActionToast({
         type: "success",
         message: messages.savedPlaceDeletedToast,
       });
     },
-    [messages],
+    [messages, onMemberDataChanged],
   );
 
   const handleRemoveSavedPlace = useCallback(

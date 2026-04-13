@@ -45,6 +45,56 @@ export default function useAppShellState() {
     }),
     [locale],
   );
+  const applyAuthSummary = useCallback((payload) => {
+    if (!payload?.authenticated) {
+      return payload;
+    }
+
+    setAuthUser((current) =>
+      current
+        ? {
+            ...current,
+            mode: payload.mode ?? current.mode,
+            userId: payload.userId ?? current.userId,
+            nickname: payload.nickname ?? current.nickname,
+            displayName: payload.displayName ?? payload.nickname ?? current.displayName,
+            provider: payload.provider ?? current.provider,
+            profileImageUrl: payload.profileImageUrl ?? current.profileImageUrl,
+            recordCount: Number(payload.recordCount ?? current.recordCount ?? 0),
+          }
+        : {
+            mode: payload.mode ?? "",
+            userId: payload.userId ?? "",
+            nickname: payload.nickname ?? "",
+            displayName: payload.displayName ?? payload.nickname ?? "",
+            provider: payload.provider ?? "",
+            profileImageUrl: payload.profileImageUrl ?? "",
+            recordCount: Number(payload.recordCount ?? 0),
+          },
+    );
+
+    return payload;
+  }, []);
+  const refreshAccountSummary = useCallback(async () => {
+    const response = await fetch(`${API_BASE_URL}/api/auth/status`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to verify auth status.");
+    }
+
+    const payload = await response.json();
+    return applyAuthSummary(payload);
+  }, [applyAuthSummary]);
+  const handleMemberDataChanged = useCallback(() => {
+    void refreshAccountSummary()
+      .then(() => {})
+      .catch(() => {
+        // Ignore background summary refresh failures.
+      });
+  }, [refreshAccountSummary]);
   const {
     backendSavedPlaceFetch,
     cancelRemoveSavedPlace,
@@ -63,6 +113,7 @@ export default function useAppShellState() {
     authStatus,
     authMode: authUser?.mode ?? "",
     messages,
+    onMemberDataChanged: handleMemberDataChanged,
   });
 
   useEffect(() => {
@@ -95,16 +146,7 @@ export default function useAppShellState() {
 
     async function fetchAuthStatus() {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/status`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to verify auth status.");
-        }
-
-        const payload = await response.json();
+        const payload = await refreshAccountSummary();
 
         if (cancelled) {
           return;
@@ -118,6 +160,7 @@ export default function useAppShellState() {
             displayName: payload.displayName ?? payload.nickname ?? "",
             provider: payload.provider ?? "",
             profileImageUrl: payload.profileImageUrl ?? "",
+            recordCount: Number(payload.recordCount ?? 0),
           });
           setAuthStatus("authenticated");
           return;
@@ -142,7 +185,7 @@ export default function useAppShellState() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [refreshAccountSummary, router]);
 
   useEffect(() => {
     if (!isSidebarOpen) {
@@ -213,6 +256,7 @@ export default function useAppShellState() {
               displayName: payload?.displayName ?? displayName,
               provider: payload?.provider ?? current.provider,
               profileImageUrl: payload?.profileImageUrl ?? current.profileImageUrl,
+              recordCount: Number(payload?.recordCount ?? current.recordCount ?? 0),
             }
           : current
       );
@@ -263,5 +307,6 @@ export default function useAppShellState() {
     setLocale,
     toggleSidebar,
     updateDisplayName,
+    refreshAccountSummary,
   };
 }

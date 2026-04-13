@@ -38,6 +38,12 @@
       AND kakao_place_id = #{kakaoPlaceId}
   </select>
 
+  <select id="countAllCafeRecordsByUserId" resultType="int">
+    SELECT COUNT(*)
+    FROM cafe_record
+    WHERE app_user_id = #{appUserId}
+  </select>
+
   <delete id="deleteCafeRecordsByUserIdAndPlaceId">
     DELETE FROM cafe_record
     WHERE app_user_id = #{appUserId}

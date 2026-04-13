@@ -96,7 +96,7 @@ export default function Home() {
         accountNotice={accountNotice}
         onUpdateDisplayName={updateDisplayName}
         savedCafeCount={savedPlaces.length}
-        recordCount={0}
+        recordCount={authUser?.recordCount ?? 0}
         messages={messages}
       />
 

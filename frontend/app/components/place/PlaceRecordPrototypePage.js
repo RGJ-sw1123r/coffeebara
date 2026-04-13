@@ -395,6 +395,7 @@ export default function PlaceRecordPrototypePage() {
     setLocale,
     toggleSidebar,
     updateDisplayName,
+    refreshAccountSummary,
   } = useAppShell();
   const recordCopy = useMemo(() => getRecordPageCopy(messages), [messages]);
   const [searchInput, setSearchInput] = useState("");
@@ -604,6 +605,7 @@ export default function PlaceRecordPrototypePage() {
         ),
       );
       setSelectedRecordId(savedRecord.id);
+      await refreshAccountSummary();
       setToast({
         type: "success",
         message: isEditingPersistedRecord ? recordCopy.updatedToast : recordCopy.createdToast,
@@ -680,6 +682,7 @@ export default function PlaceRecordPrototypePage() {
       if (selectedRecordId === record.id) {
         setSelectedRecordId("");
       }
+      await refreshAccountSummary();
       setToast({
         type: "success",
         message: recordCopy.deletedToast,
@@ -706,6 +709,7 @@ export default function PlaceRecordPrototypePage() {
       if (selectedRecordId === record.id) {
         setSelectedRecordId("");
       }
+      await refreshAccountSummary();
       setToast({
         type: "success",
         message: recordCopy.deletedToast,
@@ -777,7 +781,7 @@ export default function PlaceRecordPrototypePage() {
         accountNotice={accountNotice}
         onUpdateDisplayName={updateDisplayName}
         savedCafeCount={savedPlaces.length}
-        recordCount={records.length}
+        recordCount={authUser?.recordCount ?? 0}
         messages={messages}
       />
 

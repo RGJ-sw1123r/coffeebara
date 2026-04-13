@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.coffeebara.auth.mapper.UserAccountMapper;
+import com.coffeebara.cafe.mapper.UserSavedCafeMapper;
 import com.coffeebara.common.error.ApiException;
 import com.coffeebara.config.AuthProperties;
 import com.coffeebara.config.KakaoLocalProperties;
@@ -39,15 +40,18 @@ import java.nio.charset.StandardCharsets;
 public class AuthController {
 
 	private final UserAccountMapper userAccountMapper;
+	private final UserSavedCafeMapper userSavedCafeMapper;
 	private final AuthProperties authProperties;
 	private final KakaoLocalProperties kakaoLocalProperties;
 
 	public AuthController(
 		UserAccountMapper userAccountMapper,
+		UserSavedCafeMapper userSavedCafeMapper,
 		AuthProperties authProperties,
 		KakaoLocalProperties kakaoLocalProperties
 	) {
 		this.userAccountMapper = userAccountMapper;
+		this.userSavedCafeMapper = userSavedCafeMapper;
 		this.authProperties = authProperties;
 		this.kakaoLocalProperties = kakaoLocalProperties;
 	}
@@ -70,14 +74,14 @@ public class AuthController {
 			context
 		);
 
-		return ResponseEntity.ok(new AuthStatusResponse(true, "guest", "", "guest", "guest", "", ""));
+		return ResponseEntity.ok(new AuthStatusResponse(true, "guest", "", "guest", "guest", "", "", 0));
 	}
 
 	@PostMapping("/logout")
 	public ResponseEntity<AuthStatusResponse> logout(HttpServletRequest request) {
 		clearSession(request);
 
-		return ResponseEntity.ok(new AuthStatusResponse(false, "", "", "", "", "", ""));
+		return ResponseEntity.ok(new AuthStatusResponse(false, "", "", "", "", "", "", 0));
 	}
 
 	@GetMapping("/logout/kakao-account")
@@ -111,7 +115,7 @@ public class AuthController {
 			authentication instanceof AnonymousAuthenticationToken ||
 			!authentication.isAuthenticated()
 		) {
-			return ResponseEntity.ok(new AuthStatusResponse(false, "", "", "", "", "", ""));
+			return ResponseEntity.ok(new AuthStatusResponse(false, "", "", "", "", "", "", 0));
 		}
 
 		if (
@@ -131,6 +135,9 @@ public class AuthController {
 			String userId = userAccount == null
 				? asString(attributes.get("coffeebaraUserId"))
 				: asString(userAccount.get("id"));
+			int recordCount = parseUserId(userId) == null
+				? 0
+				: userSavedCafeMapper.countAllCafeRecordsByUserId(parseUserId(userId));
 
 			return ResponseEntity.ok(
 				new AuthStatusResponse(
@@ -140,7 +147,8 @@ public class AuthController {
 					nickname,
 					displayName,
 					oAuth2AuthenticationToken.getAuthorizedClientRegistrationId(),
-					profileImageUrl
+					profileImageUrl,
+					recordCount
 				)
 			);
 		}
@@ -153,7 +161,8 @@ public class AuthController {
 				String.valueOf(authentication.getName()),
 				String.valueOf(authentication.getName()),
 				"",
-				""
+				"",
+				0
 			)
 		);
 	}
@@ -206,7 +215,8 @@ public class AuthController {
 				asString(userAccount.get("nickname")),
 				firstNonBlank(asString(userAccount.get("displayName")), asString(userAccount.get("nickname"))),
 				"kakao",
-				asString(userAccount.get("profileImageUrl"))
+				asString(userAccount.get("profileImageUrl")),
+				userSavedCafeMapper.countAllCafeRecordsByUserId(userId)
 			)
 		);
 	}
@@ -279,7 +289,8 @@ public class AuthController {
 		String nickname,
 		String displayName,
 		String provider,
-		String profileImageUrl
+		String profileImageUrl,
+		int recordCount
 	) {
 	}
 

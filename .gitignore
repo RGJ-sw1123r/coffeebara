@@ -66,13 +66,12 @@ frontend/*.tsbuildinfo
 frontend/next-env.d.ts
 
 ### Frontend env ###
-frontend/.env
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.production.local
-frontend/.env.test.local
 frontend/.env*
 
 ### Spring local properties ###
 src/main/resources/application-*.properties
 !src/main/resources/application.properties
+
+### Codex CLI ###
+/private/
+/.codex/

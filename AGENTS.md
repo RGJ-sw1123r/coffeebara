@@ -73,7 +73,7 @@ Important:
 - keep repository continuity
 - reuse working technical assets when they still fit
 - do not rely on branches as the main preservation method
-- preserve continuity through documentation, commit history, README framing, and ongoing code reuse
+- preserve continuity through documentation, commit history, product-direction notes, internal working docs, and ongoing code reuse
 
 ---
 
@@ -97,6 +97,12 @@ Its role now is:
 - technical asset base
 - product-learning milestone
 - archived reference for what was kept, removed, or reinterpreted
+
+Documentation rule:
+
+- it is acceptable for internal working documents such as `AGENTS.md` to use the term `v1` explicitly
+- `product-direction-notes.md` may describe the earlier phase when helpful, but should keep the emphasis on the current product direction
+- `README.md` should primarily describe the current product direction and active runtime, and should not rely on `v1` framing as its main explanation
 
 ---
 

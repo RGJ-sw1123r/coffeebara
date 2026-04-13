@@ -43,3 +43,22 @@ export function GuestModeToast({ isVisible, messages }) {
     </div>
   );
 }
+
+export function ActionToast({ toast }) {
+  if (!toast?.message) {
+    return null;
+  }
+
+  const isSuccess = toast.type === "success";
+  const toneClass = isSuccess
+    ? "border-[#3d8f58] bg-[#2f9e55] text-white shadow-[0_18px_36px_rgba(29,92,50,0.22)]"
+    : "border-[#e7c9c2] bg-[#fff1ed] text-[#6f3126] shadow-[0_18px_36px_rgba(111,49,38,0.12)]";
+
+  return (
+    <div
+      className={`pointer-events-none fixed bottom-5 right-5 z-50 w-[min(384px,calc(100vw-2rem))] rounded-[24px] border px-5 py-4 ${toneClass}`}
+    >
+      <p className="text-sm font-medium leading-6">{toast.message}</p>
+    </div>
+  );
+}

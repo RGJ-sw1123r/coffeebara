@@ -12,14 +12,15 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.coffeebara.cafe.mapper.UserSavedCafeMapper;
 import com.coffeebara.cafe.vo.CafeUpsertRequest;
+import com.coffeebara.cafe.vo.UserSavedCafeDeleteCheckResponse;
 import com.coffeebara.cafe.vo.UserSavedCafeResponse;
 import com.coffeebara.cafe.vo.UserSavedCafeSaveRequest;
 import com.coffeebara.common.error.ApiException;
@@ -95,6 +96,22 @@ public class UserSavedCafeService {
 		}
 	}
 
+	public UserSavedCafeDeleteCheckResponse getDeleteCheck(Authentication authentication, String placeId) {
+		Long appUserId = requireMemberUserId(authentication);
+		if (!StringUtils.hasText(placeId)) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "PLACE_ID_REQUIRED", "삭제할 카페 ID가 필요합니다.");
+		}
+
+		try {
+			int recordCount = userSavedCafeMapper.countCafeRecordsByUserIdAndPlaceId(appUserId, placeId);
+			return new UserSavedCafeDeleteCheckResponse(placeId, recordCount, recordCount > 0);
+		} catch (CannotGetJdbcConnectionException exception) {
+			throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "DB_CONNECTION_FAILED", "삭제 전 기록 상태를 확인하지 못했습니다.");
+		} catch (DataAccessException exception) {
+			throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "USER_SAVED_CAFE_DELETE_CHECK_FAILED", "삭제 전 기록 상태를 확인하는 중 문제가 발생했습니다.");
+		}
+	}
+
 	public void delete(Authentication authentication, String placeId) {
 		Long appUserId = requireMemberUserId(authentication);
 		if (!StringUtils.hasText(placeId)) {
@@ -102,6 +119,7 @@ public class UserSavedCafeService {
 		}
 
 		try {
+			userSavedCafeMapper.deleteCafeRecordsByUserIdAndPlaceId(appUserId, placeId);
 			userSavedCafeMapper.deleteByUserIdAndPlaceId(appUserId, placeId);
 		} catch (CannotGetJdbcConnectionException exception) {
 			throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "DB_CONNECTION_FAILED", "카페를 삭제하지 못했습니다.");

@@ -3,19 +3,75 @@
 import Link from "next/link";
 import { useState } from "react";
 
+export function SavedPlaceDeleteConfirmModal({
+  pendingDelete,
+  onCancel,
+  onConfirm,
+  messages,
+}) {
+  if (!pendingDelete?.placeId) {
+    return null;
+  }
+
+  const recordCount = Number(pendingDelete.recordCount ?? 0);
+  const recordLabel =
+    Number.isFinite(recordCount) && recordCount > 0
+      ? `${recordCount}${messages.savedPlaceDeleteRecordCountSuffix ?? ""}`
+      : messages.savedPlaceDeleteRecordFallback;
+
+  return (
+    <div
+      onClick={onCancel}
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(36,24,19,0.45)] px-4"
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-[460px] rounded-[30px] border border-[#e7dccf] bg-[linear-gradient(180deg,#fffdfa_0%,#fbf5ee_100%)] p-6 shadow-[0_28px_70px_rgba(84,52,27,0.2)] sm:p-7"
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
+          {messages.savedPlaceDeleteModalEyebrow}
+        </p>
+        <h2 className="mt-3 text-[22px] font-semibold leading-8 text-[#241813]">
+          {messages.savedPlaceDeleteModalTitle}
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-[#5f4b3f]">
+          {messages.savedPlaceDeleteModalBody(recordLabel)}
+        </p>
+
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="rounded-full bg-[#6f3126] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#5d281f]"
+          >
+            {messages.savedPlaceDeleteConfirmButton}
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-full border border-[#dccfbe] bg-white px-5 py-2.5 text-sm font-medium text-[#5f4b3f] transition hover:bg-[#fcfaf7]"
+          >
+            {messages.savedPlaceDeleteCancelButton}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SidebarPolicySection({ messages }) {
-  const privacyNoticeTitle = messages.privacyNoticeTitle ?? "개인정보 처리 안내";
+  const privacyNoticeTitle = messages.privacyNoticeTitle ?? "Privacy Notice";
   const privacyNoticeBody =
     messages.privacyNoticeBody ??
-    "커피바라는 사용자를 직접 식별할 수 있는 정보와 사용자 동선, 검색 이력, 검색 지역, 사용자 좌표를 서버에 저장하지 않습니다.";
-  const guestNoticeTitle = messages.guestNoticeTitle ?? "게스트 이용 안내";
+    "Coffeebara does not store directly identifiable personal information, movement paths, search history, searched areas, or user coordinates on the server.";
+  const guestNoticeTitle = messages.guestNoticeTitle ?? "Guest Mode Notice";
   const guestNoticeBody =
     messages.guestNoticeBody ??
-    "게스트로 이용하는 동안 생성한 정보는 브라우저 환경이나 운영 정책에 따라 초기화될 수 있습니다.";
-  const dataPolicyTitle = messages.dataPolicyTitle ?? "데이터 수집 안내";
+    "Guest information may be reset depending on browser conditions or operating policy changes.";
+  const dataPolicyTitle = messages.dataPolicyTitle ?? "Data Collection Notice";
   const dataPolicyBody =
     messages.dataPolicyBody ??
-    "카페 정보는 공식 API를 우선 사용하고, 추가 수집이 필요할 경우 공개 범위와 이용 정책을 확인한 최소 정보만 처리합니다.";
+    "Cafe data is collected from official APIs first. If additional collection is needed, only the minimum necessary public information is handled after checking scope and policy.";
 
   return (
     <div className="mt-4 border-t border-white/10 pt-4">
@@ -58,6 +114,7 @@ function SidebarContent({
   onClose,
   onHomeClick,
   onRemoveSavedPlace,
+  getPlaceHref,
   kakaoMapUrl,
   isDesktop = false,
   lockedPlaceId = "",
@@ -112,7 +169,11 @@ function SidebarContent({
             type="button"
             onClick={() => setIsSavedPlacesCollapsed((current) => !current)}
             aria-expanded={!isSavedPlacesCollapsed}
-            aria-label={isSavedPlacesCollapsed ? "Expand saved cafes" : "Collapse saved cafes"}
+            aria-label={
+              isSavedPlacesCollapsed
+                ? messages.expandSavedCafesAriaLabel
+                : messages.collapseSavedCafesAriaLabel
+            }
             className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#f7ede4] transition hover:bg-white/14"
           >
             <svg
@@ -151,28 +212,28 @@ function SidebarContent({
             {savedPlaces.length > 0 ? (
               savedPlaces.map((place) => {
                 const isLockedPlace = lockedPlaceId === place.id;
+                const placeHref = getPlaceHref
+                  ? getPlaceHref(place)
+                  : `/places/${encodeURIComponent(place.id)}`;
 
                 return (
                   <div key={place.id} className="rounded-2xl bg-white/8 px-3 py-3">
                     <div className="flex items-start justify-between gap-3">
                       <Link
-                        href={`/places/${encodeURIComponent(place.id)}`}
+                        href={placeHref}
                         onClick={onClose}
                         className="min-w-0 flex-1 rounded-xl outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#f3d2b4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#2f221b]"
                       >
-                        <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-medium">{place.name}</p>
-                          {isLockedPlace ? (
-                            <span className="shrink-0 rounded-full bg-[rgba(243,210,180,0.16)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#f3d2b4]">
-                              {messages.savedPlaceLockedBadge}
-                            </span>
-                          ) : null}
-                        </div>
+                        <p className="truncate text-sm font-medium">{place.name}</p>
                         <p className="mt-1 text-xs text-[#d9c3b4]">
                           {place.roadAddress || place.address || messages.noAddress}
                         </p>
                       </Link>
-                      {isLockedPlace ? null : (
+                      {isLockedPlace ? (
+                        <span className="inline-flex h-8 shrink-0 items-center justify-center rounded-full bg-[rgba(243,210,180,0.16)] px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#f3d2b4]">
+                          {messages.savedPlaceLockedBadge}
+                        </span>
+                      ) : (
                         <button
                           type="button"
                           onClick={() => onRemoveSavedPlace(place.id)}
@@ -207,6 +268,7 @@ export function Sidebar({
   onClose,
   onHomeClick,
   onRemoveSavedPlace,
+  getPlaceHref,
   kakaoMapUrl,
   lockedPlaceId,
   messages,
@@ -229,6 +291,7 @@ export function Sidebar({
           onClose={onClose}
           onHomeClick={onHomeClick}
           onRemoveSavedPlace={onRemoveSavedPlace}
+          getPlaceHref={getPlaceHref}
           kakaoMapUrl={kakaoMapUrl}
           lockedPlaceId={lockedPlaceId}
           messages={messages}
@@ -243,6 +306,7 @@ export function DesktopSidebar({
   isOpen,
   onHomeClick,
   onRemoveSavedPlace,
+  getPlaceHref,
   kakaoMapUrl,
   lockedPlaceId,
   messages,
@@ -258,6 +322,7 @@ export function DesktopSidebar({
           savedPlaces={savedPlaces}
           onHomeClick={onHomeClick}
           onRemoveSavedPlace={onRemoveSavedPlace}
+          getPlaceHref={getPlaceHref}
           kakaoMapUrl={kakaoMapUrl}
           lockedPlaceId={lockedPlaceId}
           isDesktop

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.coffeebara.cafe.mapper.CafeNoteMapper">
+
+  <select id="findByPlaceId" resultType="map">
+    SELECT
+      cr.id,
+      cr.kakao_place_id AS kakaoPlaceId,
+      cr.record_type AS recordType,
+      cr.display_order AS displayOrder,
+      cr.created_at AS createdAt,
+      cr.updated_at AS updatedAt,
+      cn.title,
+      cn.note_text AS noteText
+    FROM cafe_record cr
+    INNER JOIN cafe_note cn
+      ON cn.cafe_record_id = cr.id
+    WHERE cr.app_user_id = #{appUserId}
+      AND cr.kakao_place_id = #{kakaoPlaceId}
+      AND cr.record_type = 'TEXT'
+    ORDER BY cr.display_order ASC, cr.id ASC
+  </select>
+
+  <select id="findByRecordId" resultType="map">
+    SELECT
+      cr.id,
+      cr.app_user_id AS appUserId,
+      cr.kakao_place_id AS kakaoPlaceId,
+      cr.record_type AS recordType,
+      cr.display_order AS displayOrder,
+      cr.created_at AS createdAt,
+      cr.updated_at AS updatedAt,
+      cn.title,
+      cn.note_text AS noteText
+    FROM cafe_record cr
+    INNER JOIN cafe_note cn
+      ON cn.cafe_record_id = cr.id
+    WHERE cr.app_user_id = #{appUserId}
+      AND cr.id = #{recordId}
+      AND cr.record_type = 'TEXT'
+  </select>
+
+  <insert id="insertRecord" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO cafe_record (
+      app_user_id,
+      kakao_place_id,
+      record_type,
+      display_order
+    ) VALUES (
+      #{appUserId},
+      #{kakaoPlaceId},
+      #{recordType},
+      #{displayOrder}
+    )
+  </insert>
+
+  <insert id="insertNote" parameterType="map">
+    INSERT INTO cafe_note (
+      cafe_record_id,
+      title,
+      note_text
+    ) VALUES (
+      #{recordId},
+      #{title},
+      #{noteText}
+    )
+  </insert>
+
+  <update id="updateRecord" parameterType="map">
+    UPDATE cafe_record
+    SET
+      display_order = #{displayOrder},
+      updated_at = NOW()
+    WHERE id = #{recordId}
+  </update>
+
+  <update id="updateNote" parameterType="map">
+    UPDATE cafe_note
+    SET
+      title = #{title},
+      note_text = #{noteText},
+      updated_at = NOW()
+    WHERE cafe_record_id = #{recordId}
+  </update>
+
+  <delete id="deleteNoteByRecordId">
+    DELETE FROM cafe_note
+    WHERE cafe_record_id = #{recordId}
+  </delete>
+
+  <delete id="deleteRecordById">
+    DELETE FROM cafe_record
+    WHERE id = #{recordId}
+  </delete>
+
+</mapper>

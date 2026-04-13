@@ -477,6 +477,242 @@ const messages = {
   },
 };
 
+const extraMessages = {
+  ko: {
+    savedPlaceDeleteModalEyebrow:
+      "\uC800\uC7A5\uD55C \uCE74\uD398 \uC0AD\uC81C",
+    savedPlaceDeleteModalTitle:
+      "\uB4F1\uB85D\uB41C \uAE30\uB85D\uB3C4 \uD568\uAED8 \uC0AD\uC81C\uB429\uB2C8\uB2E4",
+    savedPlaceDeleteModalBody: (recordLabel) =>
+      `\uC774 \uCE74\uD398\uC5D0\uB294 ${recordLabel}\uC774 \uC788\uC2B5\uB2C8\uB2E4. \uC800\uC7A5\uD55C \uCE74\uD398\uB97C \uC0AD\uC81C\uD558\uBA74 \uAD00\uB828 \uAE30\uB85D\uB3C4 \uBAA8\uB450 \uC0AD\uC81C\uB429\uB2C8\uB2E4. \uACC4\uC18D\uD560\uAE4C\uC694?`,
+    savedPlaceDeleteRecordCountSuffix: "\uAC74",
+    savedPlaceDeleteRecordFallback: "\uB4F1\uB85D\uB41C \uAE30\uB85D",
+    savedPlaceDeleteConfirmButton: "\uC0AD\uC81C",
+    savedPlaceDeleteCancelButton: "\uCDE8\uC18C",
+    savedPlaceDeletedToast:
+      "\uC800\uC7A5\uD55C \uCE74\uD398\uB97C \uC0AD\uC81C\uD588\uC2B5\uB2C8\uB2E4.",
+    expandSavedCafesAriaLabel:
+      "\uC800\uC7A5\uD55C \uCE74\uD398 \uD3BC\uCE58\uAE30",
+    collapseSavedCafesAriaLabel:
+      "\uC800\uC7A5\uD55C \uCE74\uD398 \uC811\uAE30",
+    recordListTitle: "Records",
+    recordListDescription:
+      "\uB4DC\uB798\uADF8 \uC564 \uB4DC\uB86D\uC73C\uB85C \uC21C\uC11C\uB97C \uBCC0\uACBD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+    recordUntitledPlaceholder: "\uAE30\uB85D \uC81C\uBAA9",
+    recordEmptyPreview:
+      "\uB0B4\uC6A9\uC744 \uC544\uC9C1 \uC785\uB825\uD558\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.",
+    recordTypeTextLabel: "Text",
+    recordMenuAriaLabel:
+      "\uAE30\uB85D \uBA54\uB274 \uC5F4\uAE30",
+    recordDeleteActionLabel: "\uC0AD\uC81C",
+    recordEmptyState:
+      "\uC544\uC9C1 \uB4F1\uB85D\uB41C \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    recordNewModalEyebrow: "New Record",
+    recordNewModalTitle:
+      "\uC5B4\uB5A4 \uAE30\uB85D\uC744 \uB9CC\uB4E4\uAE4C\uC694?",
+    recordNewModalBody:
+      "\uC9C0\uAE08\uC740 \uD14D\uC2A4\uD2B8 \uAE30\uB85D\uB9CC \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+    recordNewModalCloseAriaLabel:
+      "\uD31D\uC5C5 \uB2EB\uAE30",
+    recordNewTextOptionTitle: "\uD14D\uC2A4\uD2B8",
+    recordNewTextOptionBody:
+      "\uAC04\uB2E8\uD55C \uBA54\uBAA8 \uD615\uD0DC\uB85C \uAE30\uB85D\uC744 \uC2DC\uC791\uD569\uB2C8\uB2E4.",
+    recordLoadFailed:
+      "\uAE30\uB85D\uC744 \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    recordContentRequired:
+      "\uAE30\uB85D \uB0B4\uC6A9\uC744 \uC785\uB825\uD55C \uB4A4 \uB4F1\uB85D\uD574 \uC8FC\uC138\uC694.",
+    recordSaveFailed:
+      "\uAE30\uB85D\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    recordReloadFailed:
+      "\uC800\uC7A5\uD55C \uAE30\uB85D\uC744 \uB2E4\uC2DC \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    recordCreatedToast:
+      "\uAE30\uB85D\uC744 \uB4F1\uB85D\uD588\uC2B5\uB2C8\uB2E4.",
+    recordUpdatedToast:
+      "\uAE30\uB85D\uC744 \uC218\uC815\uD588\uC2B5\uB2C8\uB2E4.",
+    recordOrderSaveFailed:
+      "\uAE30\uB85D \uC21C\uC11C\uB97C \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    recordDeletedToast:
+      "\uAE30\uB85D\uC744 \uC0AD\uC81C\uD588\uC2B5\uB2C8\uB2E4.",
+    recordDeleteFailed:
+      "\uAE30\uB85D\uC744 \uC0AD\uC81C\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    recordAddActionLabel: "+ \uC0C8 \uAE30\uB85D",
+    recordAddActionCompactLabel: "+ \uAE30\uB85D",
+    recordEditorTitle: "Record Editor",
+    recordEditorCreatePendingLabel:
+      "\uB4F1\uB85D \uC911...",
+    recordEditorUpdatePendingLabel:
+      "\uC218\uC815 \uC911...",
+    recordEditorCreateLabel: "\uB4F1\uB85D",
+    recordEditorUpdateLabel: "\uC218\uC815",
+    recordEditorCancelLabel: "\uCDE8\uC18C",
+    recordTitleFieldLabel: "\uAE30\uB85D \uC774\uB984",
+    recordTitlePlaceholder:
+      "\uAE30\uB85D \uC774\uB984\uC744 \uC785\uB825\uD574 \uC8FC\uC138\uC694",
+    recordContentFieldLabel: "\uAE30\uB85D \uB0B4\uC6A9",
+    recordContentPlaceholder:
+      "\uC774 \uCE74\uD398\uC5D0\uC11C \uB0A8\uAE30\uACE0 \uC2F6\uC740 \uBA54\uBAA8\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694",
+    recordLoadingLabel:
+      "\uAE30\uB85D\uC744 \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4.",
+    recordEmptyEditorTitle:
+      "\uC544\uC9C1 \uB4F1\uB85D\uB41C \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    recordEmptyEditorBody:
+      "\uC0C1\uB2E8\uC758 \uC0C8 \uAE30\uB85D \uBC84\uD2BC\uC73C\uB85C \uBE48 \uAE30\uB85D\uC744 \uB9CC\uB4E0 \uB4A4 \uB0B4\uC6A9\uC744 \uC785\uB825\uD558\uACE0 \uB4F1\uB85D\uD574 \uC8FC\uC138\uC694.",
+    accountDisplayNameEditAriaLabel:
+      "\uD45C\uC2DC \uC774\uB984 \uC218\uC815",
+    accountDisplayNamePlaceholder:
+      "\uD45C\uC2DC \uC774\uB984",
+    accountDisplayNameSaveLabel: "\uC800\uC7A5",
+  },
+  en: {
+    savedPlaceDeleteModalEyebrow: "Delete Saved Cafe",
+    savedPlaceDeleteModalTitle: "Saved records will also be deleted",
+    savedPlaceDeleteModalBody: (recordLabel) =>
+      `This cafe has ${recordLabel}. Deleting the saved cafe will also remove every related record. Continue?`,
+    savedPlaceDeleteRecordCountSuffix: "",
+    savedPlaceDeleteRecordFallback: "saved records",
+    savedPlaceDeleteConfirmButton: "Delete",
+    savedPlaceDeleteCancelButton: "Cancel",
+    savedPlaceDeletedToast: "Saved cafe deleted.",
+    expandSavedCafesAriaLabel: "Expand saved cafes",
+    collapseSavedCafesAriaLabel: "Collapse saved cafes",
+    recordListTitle: "Records",
+    recordListDescription: "You can change the order with drag and drop.",
+    recordUntitledPlaceholder: "Record title",
+    recordEmptyPreview: "No content has been entered yet.",
+    recordTypeTextLabel: "Text",
+    recordMenuAriaLabel: "Open record menu",
+    recordDeleteActionLabel: "Delete",
+    recordEmptyState: "No records have been added yet.",
+    recordNewModalEyebrow: "New Record",
+    recordNewModalTitle: "What kind of record would you like to create?",
+    recordNewModalBody: "Only text records can be selected right now.",
+    recordNewModalCloseAriaLabel: "Close dialog",
+    recordNewTextOptionTitle: "Text",
+    recordNewTextOptionBody: "Start with a simple note-style record.",
+    recordLoadFailed: "Failed to load records.",
+    recordContentRequired: "Enter record content before saving.",
+    recordSaveFailed: "Failed to save the record.",
+    recordReloadFailed: "Failed to reload the saved record.",
+    recordCreatedToast: "Record created.",
+    recordUpdatedToast: "Record updated.",
+    recordOrderSaveFailed: "Failed to save record order.",
+    recordDeletedToast: "Record deleted.",
+    recordDeleteFailed: "Failed to delete the record.",
+    recordAddActionLabel: "+ New Record",
+    recordAddActionCompactLabel: "+ Record",
+    recordEditorTitle: "Record Editor",
+    recordEditorCreatePendingLabel: "Saving...",
+    recordEditorUpdatePendingLabel: "Updating...",
+    recordEditorCreateLabel: "Save",
+    recordEditorUpdateLabel: "Update",
+    recordEditorCancelLabel: "Cancel",
+    recordTitleFieldLabel: "Record title",
+    recordTitlePlaceholder: "Enter a record title",
+    recordContentFieldLabel: "Record content",
+    recordContentPlaceholder: "Enter the memo you want to keep for this cafe",
+    recordLoadingLabel: "Loading records.",
+    recordEmptyEditorTitle: "No records have been added yet.",
+    recordEmptyEditorBody:
+      "Create a blank record with the button above, then enter content and save it.",
+    accountDisplayNameEditAriaLabel: "Edit display name",
+    accountDisplayNamePlaceholder: "Display name",
+    accountDisplayNameSaveLabel: "Save",
+  },
+  ja: {
+    savedPlaceDeleteModalEyebrow:
+      "\u4FDD\u5B58\u3057\u305F\u30AB\u30D5\u30A7\u3092\u524A\u9664",
+    savedPlaceDeleteModalTitle:
+      "\u767B\u9332\u3057\u305F\u8A18\u9332\u3082\u4E00\u7DD2\u306B\u524A\u9664\u3055\u308C\u307E\u3059",
+    savedPlaceDeleteModalBody: (recordLabel) =>
+      `\u3053\u306E\u30AB\u30D5\u30A7\u306B\u306F${recordLabel}\u304C\u3042\u308A\u307E\u3059\u3002\u4FDD\u5B58\u3057\u305F\u30AB\u30D5\u30A7\u3092\u524A\u9664\u3059\u308B\u3068\u3001\u95A2\u9023\u3059\u308B\u8A18\u9332\u3082\u3059\u3079\u3066\u524A\u9664\u3055\u308C\u307E\u3059\u3002\u7D9A\u884C\u3057\u307E\u3059\u304B\uFF1F`,
+    savedPlaceDeleteRecordCountSuffix: "\u4EF6",
+    savedPlaceDeleteRecordFallback:
+      "\u767B\u9332\u6E08\u307F\u306E\u8A18\u9332",
+    savedPlaceDeleteConfirmButton: "\u524A\u9664",
+    savedPlaceDeleteCancelButton: "\u30AD\u30E3\u30F3\u30BB\u30EB",
+    savedPlaceDeletedToast:
+      "\u4FDD\u5B58\u3057\u305F\u30AB\u30D5\u30A7\u3092\u524A\u9664\u3057\u307E\u3057\u305F\u3002",
+    expandSavedCafesAriaLabel:
+      "\u4FDD\u5B58\u3057\u305F\u30AB\u30D5\u30A7\u3092\u958B\u304F",
+    collapseSavedCafesAriaLabel:
+      "\u4FDD\u5B58\u3057\u305F\u30AB\u30D5\u30A7\u3092\u9589\u3058\u308B",
+    recordListTitle: "Records",
+    recordListDescription:
+      "\u30C9\u30E9\u30C3\u30B0\u30A2\u30F3\u30C9\u30C9\u30ED\u30C3\u30D7\u3067\u9806\u5E8F\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002",
+    recordUntitledPlaceholder:
+      "\u8A18\u9332\u30BF\u30A4\u30C8\u30EB",
+    recordEmptyPreview:
+      "\u5185\u5BB9\u306F\u307E\u3060\u5165\u529B\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002",
+    recordTypeTextLabel: "Text",
+    recordMenuAriaLabel:
+      "\u8A18\u9332\u30E1\u30CB\u30E5\u30FC\u3092\u958B\u304F",
+    recordDeleteActionLabel: "\u524A\u9664",
+    recordEmptyState:
+      "\u307E\u3060\u767B\u9332\u3055\u308C\u305F\u8A18\u9332\u304C\u3042\u308A\u307E\u305B\u3093\u3002",
+    recordNewModalEyebrow: "New Record",
+    recordNewModalTitle:
+      "\u3069\u306E\u8A18\u9332\u3092\u4F5C\u6210\u3057\u307E\u3059\u304B\uFF1F",
+    recordNewModalBody:
+      "\u4ECA\u306F\u30C6\u30AD\u30B9\u30C8\u8A18\u9332\u306E\u307F\u9078\u629E\u3067\u304D\u307E\u3059\u3002",
+    recordNewModalCloseAriaLabel:
+      "\u30C0\u30A4\u30A2\u30ED\u30B0\u3092\u9589\u3058\u308B",
+    recordNewTextOptionTitle: "\u30C6\u30AD\u30B9\u30C8",
+    recordNewTextOptionBody:
+      "\u30B7\u30F3\u30D7\u30EB\u306A\u30E1\u30E2\u5F62\u5F0F\u3067\u8A18\u9332\u3092\u59CB\u3081\u307E\u3059\u3002",
+    recordLoadFailed:
+      "\u8A18\u9332\u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3067\u3057\u305F\u3002",
+    recordContentRequired:
+      "\u8A18\u9332\u5185\u5BB9\u3092\u5165\u529B\u3057\u3066\u304B\u3089\u4FDD\u5B58\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+    recordSaveFailed:
+      "\u8A18\u9332\u3092\u4FDD\u5B58\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002",
+    recordReloadFailed:
+      "\u4FDD\u5B58\u3057\u305F\u8A18\u9332\u3092\u518D\u8AAD\u307F\u8FBC\u307F\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002",
+    recordCreatedToast:
+      "\u8A18\u9332\u3092\u767B\u9332\u3057\u307E\u3057\u305F\u3002",
+    recordUpdatedToast:
+      "\u8A18\u9332\u3092\u4FEE\u6B63\u3057\u307E\u3057\u305F\u3002",
+    recordOrderSaveFailed:
+      "\u8A18\u9332\u306E\u9806\u5E8F\u3092\u4FDD\u5B58\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002",
+    recordDeletedToast:
+      "\u8A18\u9332\u3092\u524A\u9664\u3057\u307E\u3057\u305F\u3002",
+    recordDeleteFailed:
+      "\u8A18\u9332\u3092\u524A\u9664\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002",
+    recordAddActionLabel:
+      "+ \u65B0\u3057\u3044\u8A18\u9332",
+    recordAddActionCompactLabel: "+ \u8A18\u9332",
+    recordEditorTitle: "Record Editor",
+    recordEditorCreatePendingLabel:
+      "\u4FDD\u5B58\u4E2D...",
+    recordEditorUpdatePendingLabel:
+      "\u4FEE\u6B63\u4E2D...",
+    recordEditorCreateLabel: "\u4FDD\u5B58",
+    recordEditorUpdateLabel: "\u4FEE\u6B63",
+    recordEditorCancelLabel: "\u30AD\u30E3\u30F3\u30BB\u30EB",
+    recordTitleFieldLabel: "\u8A18\u9332\u540D",
+    recordTitlePlaceholder:
+      "\u8A18\u9332\u540D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044",
+    recordContentFieldLabel: "\u8A18\u9332\u5185\u5BB9",
+    recordContentPlaceholder:
+      "\u3053\u306E\u30AB\u30D5\u30A7\u3067\u6B8B\u3057\u305F\u3044\u30E1\u30E2\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044",
+    recordLoadingLabel:
+      "\u8A18\u9332\u3092\u8AAD\u307F\u8FBC\u307F\u4E2D\u3067\u3059\u3002",
+    recordEmptyEditorTitle:
+      "\u307E\u3060\u767B\u9332\u3055\u308C\u305F\u8A18\u9332\u304C\u3042\u308A\u307E\u305B\u3093\u3002",
+    recordEmptyEditorBody:
+      "\u4E0A\u306E\u65B0\u3057\u3044\u8A18\u9332\u30DC\u30BF\u30F3\u3067\u7A7A\u306E\u8A18\u9332\u3092\u4F5C\u6210\u3057\u3001\u5185\u5BB9\u3092\u5165\u529B\u3057\u3066\u4FDD\u5B58\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+    accountDisplayNameEditAriaLabel:
+      "\u8868\u793A\u540D\u3092\u4FEE\u6B63",
+    accountDisplayNamePlaceholder:
+      "\u8868\u793A\u540D",
+    accountDisplayNameSaveLabel: "\u4FDD\u5B58",
+  },
+};
+
 export function getMessages(locale = "ko") {
-  return messages[locale] ?? messages.ko;
+  const base = messages[locale] ?? messages.ko;
+  const extra = extraMessages[locale] ?? extraMessages.ko;
+  return {
+    ...base,
+    ...extra,
+  };
 }

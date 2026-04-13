@@ -118,6 +118,9 @@ The currently active backend scope is centered on:
 - single-row or search-result cafe upsert into `cafe`
 - DB-first cafe detail lookup with stale Kakao refresh
 - member saved-cafe CRUD through `user_saved_cafe`
+- member cafe-scoped text note CRUD through `cafe_note`
+- member text-note parent record management through `cafe_record`
+- member cafe-note `display_order` persistence
 - caching and rate limiting around search flows
 - v1-origin cafe cache logic partially reused as the active place-cache runtime
 
@@ -131,6 +134,10 @@ The currently active frontend scope is centered on:
 - map-based browsing
 - member saved-cafe UI flow backed by backend APIs
 - guest saved-cafe UI flow backed by local state / local storage
+- member place detail page text-note flow backed by `cafe_note`
+- text-note create / edit / delete / reorder interactions in the place detail page
+- save-cafe delete-confirm modal instead of native browser confirm
+- UI copy for the active shell / note flow should be interpreted through the locale message layer in `frontend/app/messages.js`
 - lightweight place-profile tagging in the frontend state
 - account menu summary UI for saved cafe count
 
@@ -143,6 +150,7 @@ Do **not** present these as active product-complete features:
 - recommendation engine behavior
 - bean record CRUD
 - brew record CRUD
+- complete multi-record coffee archive domain
 - completed personal archive flows
 
 If legacy schema, mapper, or compatibility paths still exist in the repository, do not confuse their presence with active product scope.
@@ -157,8 +165,13 @@ The current agreed implementation direction is:
 - use the `cafe` table as a Kakao place cache / master layer to reduce repeated API calls
 - load cafe detail from DB first, and refresh from Kakao only when the cached row is stale
 - persist member saved-cafe relationships in `user_saved_cafe` connected to `app_user`
+- allow members to manage cafe-linked text notes as an early record prototype through:
+  - `cafe_record` as the parent record layer
+  - `cafe_note` as the text payload layer
+  - `record_type` and `display_order` owned by `cafe_record`
 - keep guest saved-cafe storage in local storage
 - allow guests to save cafes locally, but do not allow guests to create real archive records
+- use the member note flow as the source implementation, then derive the guest sample screen from that completed note experience later
 - when a guest selects a saved cafe from the left menu, route them to a sample/demo-style page instead of a real record flow
 - build the sample page frontend first, then attach real archive features incrementally
 
@@ -167,6 +180,9 @@ Important interpretation:
 - `cafe` is not the user-owned record itself
 - `cafe` is the shared place cache / master data layer
 - user ownership and save state belong in a separate table linked to `app_user`
+- `cafe_record` is the member-owned parent record layer for cafe-linked archive items
+- `cafe_note` is an early member-owned text record layer, not the final archive model
+- text-note ordering and deletion should be interpreted through `cafe_record`, not as `cafe_note`-local concerns
 - guest demo behavior is an intentional product decision, not a temporary bug
 
 ---
@@ -186,6 +202,8 @@ Rules:
 - distinguish clearly between:
   - `cafe` as place cache / master data
   - `user_saved_cafe`-style relations as member-owned saved cafes
+  - `cafe_record` as the shared parent layer for member-owned cafe-linked records
+  - `cafe_note` as member-owned cafe-linked text notes
   - guest local-storage behavior as guest-only temporary storage
 
 A leftover endpoint, schema file, mapper, or helper method does **not** automatically mean the feature is active.
@@ -281,6 +299,7 @@ When discussing data modeling, use this distinction:
 
 - `cafe`: shared place cache / master table
 - `user_saved_cafe`: member-specific saved cafe relation
+- `cafe_note`: member-specific text note prototype linked to a cafe
 - future record tables: user-owned archive data linked to cafes as context
 - guest saved cafes: local-only convenience state, not durable account data
 
@@ -354,6 +373,8 @@ Right now, the repository is closer to:
 - archive-oriented product reframing
 - active cafe cache/master persistence
 - active member saved-cafe persistence
+- active member cafe text-note prototype persistence
+- future guest sample-page work that should be derived from the member note flow rather than designed as a disconnected mock
 - guest sample/demo record-page groundwork
 
 ### Future MVP should include

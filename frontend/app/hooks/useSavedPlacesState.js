@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "coffeebara.guestFavorites.v1";
 const LEGACY_STORAGE_KEY = "coffeebara.preferred-cafes";
@@ -75,7 +75,9 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isGuestModeToastVisible, setIsGuestModeToastVisible] = useState(false);
+  const [savedPlaceActionToast, setSavedPlaceActionToast] = useState(null);
   const [placeProfiles, setPlaceProfiles] = useState({});
+  const [pendingSavedPlaceDelete, setPendingSavedPlaceDelete] = useState(null);
   const [backendSavedPlaceFetch, setBackendSavedPlaceFetch] = useState({
     status: "idle",
     fetchedCount: 0,
@@ -97,6 +99,20 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
       window.clearTimeout(timerId);
     };
   }, [authMode, authStatus]);
+
+  useEffect(() => {
+    if (!savedPlaceActionToast?.message) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setSavedPlaceActionToast(null);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [savedPlaceActionToast]);
 
   useEffect(() => {
     if (authStatus !== "authenticated") {
@@ -387,6 +403,47 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
     [authMode, messages, savedPlaces],
   );
 
+  const deleteSavedPlace = useCallback(
+    async (placeId) => {
+      const response = await fetch(
+        `${API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(placeId)}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          await readErrorMessage(
+            response,
+            messages?.saveUnexpectedError || "Failed to delete saved cafe.",
+          ),
+        );
+      }
+
+      setSavedPlaces((current) => current.filter((item) => item.id !== placeId));
+      setPlaceProfiles((currentProfiles) => {
+        if (!(placeId in currentProfiles)) {
+          return currentProfiles;
+        }
+
+        const { [placeId]: _removed, ...rest } = currentProfiles;
+        return rest;
+      });
+      setBackendSavedPlaceFetch((current) => ({
+        ...current,
+        status: "success",
+        errorMessage: "",
+      }));
+      setSavedPlaceActionToast({
+        type: "success",
+        message: messages.savedPlaceDeletedToast,
+      });
+    },
+    [messages],
+  );
+
   const handleRemoveSavedPlace = useCallback(
     async (placeId) => {
       if (authMode === "guest") {
@@ -403,37 +460,36 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
       }
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(placeId)}`,
+        const deleteCheckResponse = await fetch(
+          `${API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(placeId)}/delete-check`,
           {
-            method: "DELETE",
+            method: "GET",
             credentials: "include",
           },
         );
 
-        if (!response.ok) {
+        if (!deleteCheckResponse.ok) {
           throw new Error(
             await readErrorMessage(
-              response,
-              messages?.saveUnexpectedError || "Failed to delete saved cafe.",
+              deleteCheckResponse,
+              messages?.saveUnexpectedError || "Failed to check saved cafe records.",
             ),
           );
         }
 
-        setSavedPlaces((current) => current.filter((item) => item.id !== placeId));
-        setPlaceProfiles((currentProfiles) => {
-          if (!(placeId in currentProfiles)) {
-            return currentProfiles;
-          }
+        const deleteCheck = await deleteCheckResponse.json().catch(() => null);
+        const hasRecords = Boolean(deleteCheck?.hasRecords);
+        const recordCount = Number(deleteCheck?.recordCount ?? 0);
 
-          const { [placeId]: _removed, ...rest } = currentProfiles;
-          return rest;
-        });
-        setBackendSavedPlaceFetch((current) => ({
-          ...current,
-          status: "success",
-          errorMessage: "",
-        }));
+        if (hasRecords) {
+          setPendingSavedPlaceDelete({
+            placeId,
+            recordCount,
+          });
+          return;
+        }
+
+        await deleteSavedPlace(placeId);
       } catch (error) {
         setBackendSavedPlaceFetch((current) => ({
           ...current,
@@ -445,8 +501,32 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
         }));
       }
     },
-    [authMode, messages],
+    [authMode, deleteSavedPlace, messages],
   );
+
+  const confirmRemoveSavedPlace = useCallback(async () => {
+    if (!pendingSavedPlaceDelete?.placeId) {
+      return;
+    }
+
+    try {
+      await deleteSavedPlace(pendingSavedPlaceDelete.placeId);
+      setPendingSavedPlaceDelete(null);
+    } catch (error) {
+      setBackendSavedPlaceFetch((current) => ({
+        ...current,
+        status: "error",
+        errorMessage:
+          error instanceof Error
+            ? error.message
+            : messages?.backendBannerFallback || "",
+      }));
+    }
+  }, [deleteSavedPlace, messages, pendingSavedPlaceDelete]);
+
+  const cancelRemoveSavedPlace = useCallback(() => {
+    setPendingSavedPlaceDelete(null);
+  }, []);
 
   const clearSavedPlaces = useCallback(() => {
     window.localStorage.removeItem(STORAGE_KEY);
@@ -454,7 +534,9 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
     window.localStorage.removeItem(PLACE_PROFILE_STORAGE_KEY);
     setSavedPlaces([]);
     setPlaceProfiles({});
+    setPendingSavedPlaceDelete(null);
     setIsGuestModeToastVisible(false);
+    setSavedPlaceActionToast(null);
     setBackendSavedPlaceFetch({
       status: "idle",
       fetchedCount: 0,
@@ -475,11 +557,15 @@ export default function useSavedPlacesState({ authStatus, authMode, messages }) 
 
   return {
     backendSavedPlaceFetch,
+    cancelRemoveSavedPlace,
     clearSavedPlaces,
+    confirmRemoveSavedPlace,
     handleRemoveSavedPlace,
     handleToggleSavedPlace,
     isGuestModeToastVisible,
+    pendingSavedPlaceDelete,
     placeProfiles,
+    savedPlaceActionToast,
     savedPlaceIds,
     savedPlaces,
     savePlaceProfile,

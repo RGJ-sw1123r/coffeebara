@@ -22,5 +22,15 @@ public interface UserSavedCafeMapper {
 		@Param("kakaoPlaceId") String kakaoPlaceId
 	);
 
+	int countCafeRecordsByUserIdAndPlaceId(
+		@Param("appUserId") Long appUserId,
+		@Param("kakaoPlaceId") String kakaoPlaceId
+	);
+
+	int deleteCafeRecordsByUserIdAndPlaceId(
+		@Param("appUserId") Long appUserId,
+		@Param("kakaoPlaceId") String kakaoPlaceId
+	);
+
 	List<Map<String, Object>> findSavedCafesByUserId(@Param("appUserId") Long appUserId);
 }

@@ -113,7 +113,7 @@ It is not primarily about generating recommendation candidates.
 The next meaningful product slices are:
 
 - guest sample/demo record page
-- member record hub entered from saved cafes
+- member text-note record flow entered from saved cafes
 - bean record creation
 - brewing record creation
 - place selection for purchase and drinking context
@@ -138,6 +138,8 @@ The direction shift is no longer only conceptual. Several important pieces have 
 - member saved cafes are now persisted through `user_saved_cafe`
 - guest saved cafes remain local-storage based
 - frontend saved-cafe behavior is now intentionally split by auth mode
+- member cafe-linked text notes are now persisted through `cafe_record` + `cafe_note`
+- saved-cafe deletion now checks linked member records before removal
 - account/profile UI is being reshaped around the personal archive direction
 
 This matters because the repository is no longer merely "planning" to move away from the earlier recommendation framing.
@@ -150,7 +152,9 @@ The current persistence model should be described carefully.
 - `cafe` is shared place cache/master data
 - `user_saved_cafe` is member-owned saved cafe state
 - guest saved cafes are temporary local browser state
-- future bean/brew/record tables will be the actual archive core
+- `cafe_record` is the current shared parent layer for member-owned cafe-linked records
+- `cafe_note` is the current text-record payload layer under `cafe_record`
+- future bean/brew record tables should follow the same parent-child record structure
 
 This is an important distinction.
 

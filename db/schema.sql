@@ -46,3 +46,32 @@ CREATE TABLE IF NOT EXISTS user_saved_cafe (
     CONSTRAINT fk_user_saved_cafe_cafe
         FOREIGN KEY (kakao_place_id) REFERENCES cafe (kakao_place_id)
 ) COMMENT='Member-owned saved cafe relations';
+
+CREATE TABLE IF NOT EXISTS cafe_record (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Cafe record primary key',
+    app_user_id BIGINT NOT NULL COMMENT 'Owner app_user id',
+    kakao_place_id VARCHAR(64) NOT NULL COMMENT 'Related Kakao place id',
+    record_type VARCHAR(40) NOT NULL COMMENT 'Cafe record type',
+    display_order INT NOT NULL DEFAULT 0 COMMENT 'Display order across mixed cafe records',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created timestamp',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated timestamp',
+    PRIMARY KEY (id),
+    KEY idx_cafe_record_user_place_order (app_user_id, kakao_place_id, display_order, id),
+    KEY idx_cafe_record_place (kakao_place_id),
+    CONSTRAINT fk_cafe_record_app_user
+        FOREIGN KEY (app_user_id) REFERENCES app_user (id),
+    CONSTRAINT fk_cafe_record_cafe
+        FOREIGN KEY (kakao_place_id) REFERENCES cafe (kakao_place_id)
+) COMMENT='Member-owned cafe record header for mixed record ordering';
+
+CREATE TABLE IF NOT EXISTS cafe_note (
+    cafe_record_id BIGINT NOT NULL COMMENT 'Parent cafe_record id',
+    title VARCHAR(255) NULL COMMENT 'Optional note title shown in the record list',
+    note_text VARCHAR(1000) NOT NULL COMMENT 'Text note content',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created timestamp',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated timestamp',
+    PRIMARY KEY (cafe_record_id),
+    CONSTRAINT fk_cafe_note_cafe_record
+        FOREIGN KEY (cafe_record_id) REFERENCES cafe_record (id)
+        ON DELETE CASCADE
+) COMMENT='Text record payload linked to cafe_record';

@@ -4,8 +4,16 @@ import BottomPanel from "../components/home/BottomPanel";
 import HeaderBar from "../components/home/HeaderBar";
 import MapPanel from "../components/home/MapPanel";
 import SearchLoadingOverlay from "../components/home/SearchLoadingOverlay";
-import { DesktopSidebar, Sidebar } from "../components/home/Sidebar";
-import { BackendSyncBanner, GuestModeToast } from "../components/home/StatusNotice";
+import {
+  DesktopSidebar,
+  SavedPlaceDeleteConfirmModal,
+  Sidebar,
+} from "../components/home/Sidebar";
+import {
+  ActionToast,
+  BackendSyncBanner,
+  GuestModeToast,
+} from "../components/home/StatusNotice";
 import { useAppShell } from "../components/app/AppShellContext";
 import useHomePageState from "../hooks/useHomePageState";
 
@@ -18,7 +26,9 @@ export default function Home() {
     accountNotice,
     authUser,
     backendSavedPlaceFetch,
+    cancelRemoveSavedPlace,
     closeSidebar,
+    confirmRemoveSavedPlace,
     handleLogout,
     handleLogoutWithKakaoAccount,
     handleRemoveSavedPlace,
@@ -27,12 +37,26 @@ export default function Home() {
     isSidebarOpen,
     locale,
     messages,
+    pendingSavedPlaceDelete,
+    savedPlaceActionToast,
     savedPlaceIds,
     savedPlaces,
     setLocale,
     toggleSidebar,
     updateDisplayName,
   } = useAppShell();
+  const getPlaceHref = (place) => {
+    const targetId = place?.id ? String(place.id) : "";
+    if (!targetId) {
+      return "/";
+    }
+
+    if (authUser?.mode === "guest") {
+      return `/places/${encodeURIComponent(targetId)}/sample`;
+    }
+
+    return `/places/${encodeURIComponent(targetId)}`;
+  };
   const {
     activePlaceId,
     closeNotice,
@@ -55,6 +79,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#fffaf5] text-[#241813] xl:h-screen xl:overflow-hidden">
       <GuestModeToast isVisible={isGuestModeToastVisible} messages={messages} />
+      <ActionToast toast={savedPlaceActionToast} />
 
       <HeaderBar
         searchInput={searchInput}
@@ -81,12 +106,20 @@ export default function Home() {
         messages={messages}
       />
 
+      <SavedPlaceDeleteConfirmModal
+        pendingDelete={pendingSavedPlaceDelete}
+        onCancel={cancelRemoveSavedPlace}
+        onConfirm={confirmRemoveSavedPlace}
+        messages={messages}
+      />
+
       <Sidebar
         savedPlaces={savedPlaces}
         isOpen={isSidebarOpen}
         onClose={closeSidebar}
         onHomeClick={handleResetHomeView}
         onRemoveSavedPlace={handleRemoveSavedPlace}
+        getPlaceHref={getPlaceHref}
         kakaoMapUrl={kakaoMapUrl}
         messages={messages}
       />
@@ -98,6 +131,7 @@ export default function Home() {
             isOpen={isSidebarOpen}
             onHomeClick={handleResetHomeView}
             onRemoveSavedPlace={handleRemoveSavedPlace}
+            getPlaceHref={getPlaceHref}
             kakaoMapUrl={kakaoMapUrl}
             messages={messages}
           />

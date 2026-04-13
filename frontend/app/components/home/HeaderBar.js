@@ -141,7 +141,7 @@ function AccountMenu({
                       );
                       setIsEditingDisplayName((current) => !current);
                     }}
-                    aria-label="Edit display name"
+                    aria-label={messages.accountDisplayNameEditAriaLabel}
                     className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#dccfbe] bg-[#fcf7f2] text-[#5f4b3f] transition hover:bg-[#f5ede4]"
                   >
                     <svg
@@ -170,7 +170,7 @@ function AccountMenu({
                       value={draftDisplayName}
                       onChange={(event) => setDraftDisplayName(event.target.value)}
                       maxLength={100}
-                      placeholder="Display name"
+                      placeholder={messages.accountDisplayNamePlaceholder}
                       onKeyDown={async (event) => {
                         if (event.key !== "Enter") {
                           return;
@@ -203,7 +203,7 @@ function AccountMenu({
                           : "bg-[#2f221b] text-white hover:bg-[#241813]"
                       }`}
                     >
-                      Save
+                      {messages.accountDisplayNameSaveLabel}
                     </button>
                   </div>
                 ) : null}
@@ -264,6 +264,11 @@ export default function HeaderBar({
   searchInput,
   onSearchInputChange,
   onSearchSubmit,
+  searchInputReadOnly = false,
+  searchInputDisabled = false,
+  actionButtonLabel,
+  actionButtonCompactLabel,
+  actionButtonDisabled = false,
   onHomeClick,
   isSidebarOpen,
   onToggleSidebar,
@@ -392,22 +397,35 @@ export default function HeaderBar({
             onSubmit={handleSubmit}
             className="min-w-[280px] max-w-[620px] flex-1 items-center gap-3 md:flex"
           >
-            <label className="flex flex-1 items-center rounded-full border border-[#dccfbe] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(84,52,27,0.06)]">
+            <label
+              className={`flex flex-1 items-center rounded-full border px-4 py-3 shadow-[0_10px_24px_rgba(84,52,27,0.06)] ${
+                searchInputReadOnly || searchInputDisabled
+                  ? "border-[#e2cf9d] bg-[#f3e2a3]"
+                  : "border-[#dccfbe] bg-white"
+              }`}
+            >
               <span className="sr-only">{messages.searchInputLabel}</span>
               <input
                 type="search"
                 value={searchInput}
                 onChange={(event) => onSearchInputChange(event.target.value)}
                 placeholder={messages.searchInputPlaceholder}
-                className="w-full bg-transparent text-sm text-[#352720] outline-none placeholder:text-[#a38b79]"
+                readOnly={searchInputReadOnly}
+                disabled={searchInputDisabled}
+                className="w-full bg-transparent text-sm text-[#352720] outline-none placeholder:text-[#8f725d]"
               />
             </label>
 
             <button
               type="submit"
-              className="shrink-0 rounded-full bg-[#2f221b] px-4 py-3 text-sm font-medium text-white"
+              disabled={actionButtonDisabled}
+              className={`shrink-0 rounded-full px-4 py-3 text-sm font-medium ${
+                actionButtonDisabled
+                  ? "cursor-not-allowed bg-[#b8a79b] text-white/80"
+                  : "bg-[#2f221b] text-white"
+              }`}
             >
-              {messages.searchButton}
+              {actionButtonLabel ?? messages.searchButton}
             </button>
             <AccountMenu
               authUser={authUser}
@@ -427,21 +445,34 @@ export default function HeaderBar({
           onSubmit={handleSubmit}
           className="mx-auto flex w-full max-w-[2200px] items-center gap-3 xl:px-8"
         >
-          <label className="flex flex-1 items-center rounded-full border border-[#dccfbe] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(84,52,27,0.06)]">
+          <label
+            className={`flex flex-1 items-center rounded-full border px-4 py-3 shadow-[0_10px_24px_rgba(84,52,27,0.06)] ${
+              searchInputReadOnly || searchInputDisabled
+                ? "border-[#e2cf9d] bg-[#f3e2a3]"
+                : "border-[#dccfbe] bg-white"
+            }`}
+          >
             <span className="sr-only">{messages.searchInputLabel}</span>
             <input
               type="search"
               value={searchInput}
               onChange={(event) => onSearchInputChange(event.target.value)}
               placeholder={messages.searchInputPlaceholder}
-              className="w-full bg-transparent text-sm text-[#352720] outline-none placeholder:text-[#a38b79]"
+              readOnly={searchInputReadOnly}
+              disabled={searchInputDisabled}
+              className="w-full bg-transparent text-sm text-[#352720] outline-none placeholder:text-[#8f725d]"
             />
           </label>
           <button
             type="submit"
-            className="shrink-0 rounded-full bg-[#2f221b] px-4 py-3 text-sm font-medium text-white"
+            disabled={actionButtonDisabled}
+            className={`shrink-0 rounded-full px-4 py-3 text-sm font-medium ${
+              actionButtonDisabled
+                ? "cursor-not-allowed bg-[#b8a79b] text-white/80"
+                : "bg-[#2f221b] text-white"
+            }`}
           >
-            {messages.searchButtonCompact}
+            {actionButtonCompactLabel ?? actionButtonLabel ?? messages.searchButtonCompact}
           </button>
           <AccountMenu
             authUser={authUser}

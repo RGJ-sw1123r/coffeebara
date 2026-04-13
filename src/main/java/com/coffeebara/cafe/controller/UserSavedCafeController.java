@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.coffeebara.cafe.service.UserSavedCafeService;
+import com.coffeebara.cafe.vo.UserSavedCafeDeleteCheckResponse;
 import com.coffeebara.cafe.vo.UserSavedCafeResponse;
 import com.coffeebara.cafe.vo.UserSavedCafeSaveRequest;
 
@@ -38,6 +39,14 @@ public class UserSavedCafeController {
 		@RequestBody UserSavedCafeSaveRequest request
 	) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(userSavedCafeService.save(authentication, request));
+	}
+
+	@GetMapping("/{placeId}/delete-check")
+	public ResponseEntity<UserSavedCafeDeleteCheckResponse> getDeleteCheck(
+		Authentication authentication,
+		@PathVariable("placeId") String placeId
+	) {
+		return ResponseEntity.ok(userSavedCafeService.getDeleteCheck(authentication, placeId));
 	}
 
 	@DeleteMapping("/{placeId}")

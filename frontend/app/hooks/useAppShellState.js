@@ -38,14 +38,24 @@ export default function useAppShellState() {
     message: "",
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const messages = useMemo(() => getMessages(locale), [locale]);
+  const messages = useMemo(
+    () => ({
+      ...getMessages(locale),
+      localeCode: locale,
+    }),
+    [locale],
+  );
   const {
     backendSavedPlaceFetch,
+    cancelRemoveSavedPlace,
     clearSavedPlaces,
+    confirmRemoveSavedPlace,
     handleRemoveSavedPlace,
     handleToggleSavedPlace,
     isGuestModeToastVisible,
+    pendingSavedPlaceDelete,
     placeProfiles,
+    savedPlaceActionToast,
     savedPlaceIds,
     savedPlaces,
     savePlaceProfile,
@@ -233,7 +243,9 @@ export default function useAppShellState() {
     authStatus,
     authUser,
     backendSavedPlaceFetch,
+    cancelRemoveSavedPlace,
     closeSidebar,
+    confirmRemoveSavedPlace,
     handleLogout,
     handleLogoutWithKakaoAccount,
     handleRemoveSavedPlace,
@@ -242,7 +254,9 @@ export default function useAppShellState() {
     isSidebarOpen,
     locale,
     messages,
+    pendingSavedPlaceDelete,
     placeProfiles,
+    savedPlaceActionToast,
     savePlaceProfile,
     savedPlaceIds,
     savedPlaces,

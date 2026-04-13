@@ -535,6 +535,38 @@ If the answer is no, do not prioritize it.
 
 ---
 
+## Encoding and multilingual text handling
+
+- Never judge Korean or Japanese text corruption from terminal rendering alone.
+- When editing files that contain non-ASCII text, read and write them only with UTF-8-safe tooling.
+- Assume NFC normalization for all text files.
+- Before editing any file containing Korean or Japanese text, verify the file is valid UTF-8 and preserve its existing normalization form unless explicitly asked to normalize.
+- If a patch fails on a non-ASCII file, do not retry with broad text replacement; inspect the file with Python and make a minimal exact edit.
+- Never rewrite an entire multilingual file just to change one line.
+- For multilingual content, prefer line-precise edits based on exact file contents read via Python.
+
+---
+
+## Commit message policy
+
+When I ask you to commit or push, generate the commit message in Korean in this exact structure:
+
+<type>: <short Korean summary>
+
+- <detail 1>
+- <detail 2>
+- <detail 3>
+- <detail 4>
+
+Rules:
+- Use conventional commit types such as feat, fix, refactor, docs, style, test, chore.
+- Write the subject line in Korean.
+- Add 1 to 4 concise bullet points in Korean describing the concrete changes.
+- Keep the summary and bullet points specific and ready to use without further editing.
+- Do not add extra explanations outside the commit message.
+
+---
+
 ## Final rule
 
 This project should continue by transforming the existing Coffeebara codebase into a meaningful personal coffee archive.

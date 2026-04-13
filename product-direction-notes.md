@@ -68,9 +68,9 @@ It is also useful even without AI.
 
 That makes it a stronger foundation.
 
-## 6. What Still Carries Forward From v1
+## 6. What Still Carries Forward
 
-The earlier repository work remains important as v1.
+The earlier repository work remains important as an earlier phase of the project.
 
 What still carries forward:
 
@@ -230,7 +230,7 @@ That gives the project a calmer and more durable purpose.
 
 ## 16. Final Framing
 
-Coffeebara should continue as the same repository, with the earlier work preserved as v1 and the next phase focused on a personal brewing record and coffee archive system.
+Coffeebara should continue as the same repository, with the earlier work preserved as an implementation milestone and the next phase focused on a personal brewing record and coffee archive system.
 
 The goal is not to throw away what exists.
 The goal is to make the existing codebase serve a better product center.

@@ -152,6 +152,7 @@ The currently active frontend scope is centered on:
 - login and locale flow
 - app shell and current shell UI
 - keyword search
+- home search/map shared state managed through a narrow Zustand store
 - member saved-cafe UI flow backed by backend APIs
 - guest saved-cafe UI flow backed by local state / local storage
 - member place detail page text-note flow backed by `cafe_note`
@@ -160,6 +161,13 @@ The currently active frontend scope is centered on:
 - UI copy for the active shell / note flow should be interpreted through the locale message layer in `frontend/app/messages.js`
 - lightweight place-profile tagging in the frontend state
 - account menu summary UI for saved cafe count
+
+Important interpretation:
+
+- the current Zustand usage is intentionally narrow
+- Zustand is currently for home search/map shared state, not for every frontend domain
+- `savedPlaces`, auth/account state, and broader AppShell concerns should not be moved into the home search/map store without a concrete reason
+- page-local input UX state, timer refs, DOM refs, SDK refs, and map-internal rendering refs should remain local unless a real shared-ownership problem appears
 
 Map UI, map browsing assets, and related place exploration code may still remain in the repository.
 Do **not** treat them as the current primary UX baseline unless the active user flow clearly depends on them.
@@ -493,6 +501,7 @@ Their **role** changes, but their **technical value** remains.
 - Keep the codebase understandable.
 - Avoid over-abstraction too early.
 - Do not introduce unnecessary libraries.
+- Do not widen Zustand usage unless it clearly reduces split ownership or prop drilling in an active user flow.
 - Build useful slices end-to-end.
 
 When in doubt, ask:

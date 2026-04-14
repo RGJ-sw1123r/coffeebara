@@ -2,19 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppShell } from "../components/app/AppShellContext";
-
-const DEFAULT_MAP_VIEW = { lat: 37.566826, lng: 126.9786567 };
-const INITIAL_SEARCH_STATE = {
-  results: [],
-  visibleCount: 0,
-  totalCount: 0,
-  hiddenCount: 0,
-  isSearching: false,
-  source: "idle",
-  status: "idle",
-  errorMessage: "",
-  errorCode: "",
-};
+import {
+  INITIAL_SEARCH_STATE,
+  useHomeSearchMapStore,
+} from "../stores/useHomeSearchMapStore";
 
 function createLoadingSearchState(source) {
   return {
@@ -27,14 +18,27 @@ function createLoadingSearchState(source) {
 export default function useHomePageState() {
   const { messages } = useAppShell();
   const [searchInput, setSearchInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchRequestVersion, setSearchRequestVersion] = useState(0);
-  const [resetViewVersion, setResetViewVersion] = useState(0);
-  const [mapViewport, setMapViewport] = useState(DEFAULT_MAP_VIEW);
-  const [selectedPlace, setSelectedPlace] = useState(null);
-  const [activePlaceId, setActivePlaceId] = useState("");
-  const [searchState, setSearchState] = useState(INITIAL_SEARCH_STATE);
-  const [noticeState, setNoticeState] = useState(null);
+  const searchQuery = useHomeSearchMapStore((state) => state.searchQuery);
+  const searchRequestVersion = useHomeSearchMapStore(
+    (state) => state.searchRequestVersion,
+  );
+  const mapViewport = useHomeSearchMapStore((state) => state.mapViewport);
+  const selectedPlace = useHomeSearchMapStore((state) => state.selectedPlace);
+  const activePlaceId = useHomeSearchMapStore((state) => state.activePlaceId);
+  const searchState = useHomeSearchMapStore((state) => state.searchState);
+  const noticeState = useHomeSearchMapStore((state) => state.noticeState);
+  const setSearchQuery = useHomeSearchMapStore((state) => state.setSearchQuery);
+  const incrementSearchRequestVersion = useHomeSearchMapStore(
+    (state) => state.incrementSearchRequestVersion,
+  );
+  const clearSelectedPlace = useHomeSearchMapStore(
+    (state) => state.clearSelectedPlace,
+  );
+  const setSearchState = useHomeSearchMapStore((state) => state.setSearchState);
+  const setNoticeState = useHomeSearchMapStore((state) => state.setNoticeState);
+  const resetHomeSearchMapState = useHomeSearchMapStore(
+    (state) => state.resetHomeSearchMapState,
+  );
   const handledSearchNoticeVersionRef = useRef(0);
   const activeSearchNoticeVersionRef = useRef(0);
   const noticeTokenRef = useRef(0);
@@ -79,7 +83,7 @@ export default function useHomePageState() {
         key: `${toastDefinition.type}:${noticeTokenRef.current}`,
       });
     },
-    [toastCatalog],
+    [setNoticeState, toastCatalog],
   );
 
   useEffect(() => {
@@ -88,15 +92,15 @@ export default function useHomePageState() {
     }
 
     const timerId = window.setTimeout(() => {
-      setNoticeState((current) =>
-        current?.key === noticeState.key ? null : current,
-      );
+      if (useHomeSearchMapStore.getState().noticeState?.key === noticeState.key) {
+        setNoticeState(null);
+      }
     }, 2500);
 
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [noticeState]);
+  }, [noticeState, setNoticeState]);
 
   useEffect(() => {
     if (searchRequestVersion <= 0) {
@@ -156,38 +160,22 @@ export default function useHomePageState() {
     if (!nextQuery) {
       setSearchQuery("");
       showToast("searchEmptyInput");
-      setSelectedPlace(null);
-      setActivePlaceId("");
+      clearSelectedPlace();
       return;
     }
 
     setNoticeState(null);
     setSearchState(createLoadingSearchState("search"));
     setSearchQuery(nextQuery);
-    setSearchRequestVersion((current) => current + 1);
+    incrementSearchRequestVersion();
   };
-
-  const handleSelectPlace = useCallback((place) => {
-    setSelectedPlace(place);
-    setActivePlaceId(place?.id ?? "");
-  }, []);
-
-  const closeNotice = useCallback(() => {
-    setNoticeState(null);
-  }, []);
 
   const handleResetHomeView = (event) => {
     event?.preventDefault?.();
     setSearchInput("");
-    setSearchQuery("");
-    setSelectedPlace(null);
-    setActivePlaceId("");
-    setNoticeState(null);
     activeSearchNoticeVersionRef.current = 0;
     handledSearchNoticeVersionRef.current = 0;
-    setMapViewport(DEFAULT_MAP_VIEW);
-    setSearchState(INITIAL_SEARCH_STATE);
-    setResetViewVersion((current) => current + 1);
+    resetHomeSearchMapState();
   };
 
   const kakaoMapUrl = useMemo(() => {
@@ -214,22 +202,10 @@ export default function useHomePageState() {
   }, [activePlaceId, mapViewport, searchQuery, searchState.source, selectedPlace]);
 
   return {
-    activePlaceId,
-    closeNotice,
     handleResetHomeView,
     handleSearchSubmit,
-    handleSelectPlace,
     kakaoMapUrl,
-    noticeState,
-    resetViewVersion,
     searchInput,
-    searchQuery,
-    searchRequestVersion,
-    searchState,
-    selectedPlace,
-    setMapViewport,
-    setNoticeState,
     setSearchInput,
-    setSearchState,
   };
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { useHomeSearchMapStore } from "../../stores/useHomeSearchMapStore";
+
 const SEARCH_RESULT_PANEL_LIMIT = 10;
 const PANEL_CLASS_NAME =
   "w-full xl:sticky xl:top-[104px] xl:h-[calc(100vh-128px)] xl:w-[400px] xl:self-start";
@@ -42,14 +44,14 @@ function SaveButton({ isSaved, onClick, label }) {
 }
 
 export default function BottomPanel({
-  searchQuery,
-  searchState,
-  selectedPlace,
   savedPlaceIds,
   onToggleSavedPlace,
-  onSelectSearchResult,
   messages,
 }) {
+  const searchQuery = useHomeSearchMapStore((state) => state.searchQuery);
+  const searchState = useHomeSearchMapStore((state) => state.searchState);
+  const selectedPlace = useHomeSearchMapStore((state) => state.selectedPlace);
+  const selectPlace = useHomeSearchMapStore((state) => state.selectPlace);
   const isSearching = Boolean(searchQuery.trim());
   const isResultPanelVisible = isSearching || searchState.source === "map";
   const visibleSearchResults = searchState.results.slice(0, SEARCH_RESULT_PANEL_LIMIT);
@@ -91,11 +93,11 @@ export default function BottomPanel({
                     key={place.id}
                     role="button"
                     tabIndex={0}
-                    onClick={() => onSelectSearchResult(place)}
+                    onClick={() => selectPlace(place)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        onSelectSearchResult(place);
+                        selectPlace(place);
                       }
                     }}
                     className={`rounded-[22px] border px-4 py-4 text-left transition ${

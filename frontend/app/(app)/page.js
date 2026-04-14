@@ -58,22 +58,11 @@ export default function Home() {
     return `/places/${encodeURIComponent(targetId)}`;
   };
   const {
-    activePlaceId,
-    closeNotice,
     handleResetHomeView,
     handleSearchSubmit,
-    handleSelectPlace,
     kakaoMapUrl,
-    noticeState,
-    resetViewVersion,
     searchInput,
-    searchQuery,
-    searchRequestVersion,
-    searchState,
-    selectedPlace,
-    setMapViewport,
     setSearchInput,
-    setSearchState,
   } = useHomePageState();
 
   return (
@@ -100,11 +89,7 @@ export default function Home() {
         messages={messages}
       />
 
-      <SearchLoadingOverlay
-        isVisible={searchState.status === "loading" && Boolean(searchQuery.trim())}
-        searchQuery={searchQuery}
-        messages={messages}
-      />
+      <SearchLoadingOverlay messages={messages} />
 
       <SavedPlaceDeleteConfirmModal
         pendingDelete={pendingSavedPlaceDelete}
@@ -149,27 +134,14 @@ export default function Home() {
                   kakaoMapKey={kakaoMapKey}
                   savedPlaces={savedPlaces}
                   onToggleSavedPlace={handleToggleSavedPlace}
-                  searchQuery={searchQuery}
-                  searchRequestVersion={searchRequestVersion}
-                  resetViewVersion={resetViewVersion}
-                  onSelectPlace={handleSelectPlace}
-                  activePlaceId={activePlaceId}
-                  onSearchResultsChange={setSearchState}
-                  onViewportChange={setMapViewport}
                   isSidebarOpen={isSidebarOpen}
-                  noticeState={noticeState}
-                  onCloseNotice={closeNotice}
                   messages={messages}
                 />
               </div>
 
               <BottomPanel
-                searchQuery={searchQuery}
-                searchState={searchState}
-                selectedPlace={selectedPlace}
                 savedPlaceIds={savedPlaceIds}
                 onToggleSavedPlace={handleToggleSavedPlace}
-                onSelectSearchResult={handleSelectPlace}
                 messages={messages}
               />
             </div>

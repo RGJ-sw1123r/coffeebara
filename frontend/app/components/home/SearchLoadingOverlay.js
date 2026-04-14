@@ -1,6 +1,13 @@
 "use client";
 
-export default function SearchLoadingOverlay({ isVisible, searchQuery, messages }) {
+import { useHomeSearchMapStore } from "../../stores/useHomeSearchMapStore";
+
+export default function SearchLoadingOverlay({ messages }) {
+  const searchQuery = useHomeSearchMapStore((state) => state.searchQuery);
+  const searchState = useHomeSearchMapStore((state) => state.searchState);
+  const isVisible =
+    searchState.status === "loading" && Boolean(searchQuery.trim());
+
   if (!isVisible) {
     return null;
   }

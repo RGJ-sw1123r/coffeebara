@@ -3,31 +3,37 @@
 import { memo } from "react";
 
 import KakaoMap from "../KakaoMap";
+import { useHomeSearchMapStore } from "../../stores/useHomeSearchMapStore";
 import SearchResultNotice from "./SearchResultNotice";
 
 function MapPanel({
   kakaoMapKey,
   savedPlaces,
   onToggleSavedPlace,
-  searchQuery,
-  searchRequestVersion,
-  resetViewVersion,
-  onSelectPlace,
-  activePlaceId,
-  onSearchResultsChange,
-  onViewportChange,
   isSidebarOpen,
-  noticeState,
-  onCloseNotice,
   messages,
 }) {
+  const searchQuery = useHomeSearchMapStore((state) => state.searchQuery);
+  const searchRequestVersion = useHomeSearchMapStore(
+    (state) => state.searchRequestVersion,
+  );
+  const resetViewVersion = useHomeSearchMapStore(
+    (state) => state.resetViewVersion,
+  );
+  const activePlaceId = useHomeSearchMapStore((state) => state.activePlaceId);
+  const noticeState = useHomeSearchMapStore((state) => state.noticeState);
+  const selectPlace = useHomeSearchMapStore((state) => state.selectPlace);
+  const setSearchState = useHomeSearchMapStore((state) => state.setSearchState);
+  const setMapViewport = useHomeSearchMapStore((state) => state.setMapViewport);
+  const setNoticeState = useHomeSearchMapStore((state) => state.setNoticeState);
+
   return (
     <section className="relative flex h-full flex-col overflow-hidden rounded-[32px] border border-[#e7dccf] bg-white shadow-[0_24px_60px_rgba(84,52,27,0.08)]">
       <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-4">
         <div className="pointer-events-auto w-full max-w-[380px]">
           <SearchResultNotice
             notice={noticeState}
-            onClose={onCloseNotice}
+            onClose={() => setNoticeState(null)}
             messages={messages}
           />
         </div>
@@ -56,10 +62,10 @@ function MapPanel({
           searchQuery={searchQuery}
           searchRequestVersion={searchRequestVersion}
           resetViewVersion={resetViewVersion}
-          onSelectPlace={onSelectPlace}
+          onSelectPlace={selectPlace}
           activePlaceId={activePlaceId}
-          onSearchResultsChange={onSearchResultsChange}
-          onViewportChange={onViewportChange}
+          onSearchResultsChange={setSearchState}
+          onViewportChange={setMapViewport}
           isSidebarOpen={isSidebarOpen}
           messages={messages}
         />

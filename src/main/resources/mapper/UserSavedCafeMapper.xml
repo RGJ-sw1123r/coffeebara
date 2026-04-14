@@ -72,7 +72,6 @@
     INNER JOIN cafe c
       ON c.kakao_place_id = usc.kakao_place_id
     WHERE usc.app_user_id = #{appUserId}
-    ORDER BY usc.created_at DESC, usc.id DESC
   </select>
 
 </mapper>

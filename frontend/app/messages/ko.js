@@ -37,11 +37,14 @@ const ko = {
     mapSectionTitle: "기록에 남길 카페를 찾아보세요. 구매처나 음용 카페로 저장할 수 있습니다.",
     mapSectionDescription: "지금은 카페를 모아 두고, 이후 원두 기록과 브루잉 기록에 연결할 수 있습니다.",
     searchCurrentAreaButton: "현재 위치에서 검색",
+    savedPlacesMapButton: "저장한 카페 보기",
     searchResultsTitle: "검색 결과",
     mapResultsTitle: "현재 지도 카페",
+    savedPlacesMapResultsTitle: "저장한 카페",
     totalSearchResults: (count, hasMore = false) =>
       `총 검색 결과 ${count}곳${hasMore ? " 이상" : ""}`,
     totalMapResults: (count) => `현재 지도 카페 ${count}곳`,
+    totalSavedPlacesOnMap: (count) => `저장한 카페 ${count}곳`,
     searchLoading: "검색 결과를 불러오고 있습니다.",
     searchLoadingWithQuery: (query) => `"${query}" 검색 결과를 불러오는 중입니다.`,
     searchLoadingWithoutQuery: "검색 결과를 불러오는 중입니다.",
@@ -71,6 +74,13 @@ const ko = {
       "카카오 개발자 콘솔에 `http://localhost:3000` 이 허용 도메인으로 등록되어 있는지도 확인해 주세요.",
     mapEmptySearch: "검색한 카페가 없습니다.",
     mapEmptyArea: "현재 지도 범위에서 카페를 찾지 못했습니다.",
+    mapEmptySavedPlaces: "지도에 표시할 저장한 카페가 없습니다.",
+    savedPlacesMapReadyTitle: "저장한 카페 보기를 완료했어요",
+    savedPlacesMapReadyNotice:
+      "저장한 카페를 불러왔습니다. 실제 카페 위치는 결과 목록에서 저장한 카페를 직접 선택해 확인해 주세요.",
+    savedPlacesMapEmptyTitle: "저장한 카페가 없습니다",
+    savedPlacesMapEmptyNotice:
+      "먼저 카페를 저장한 뒤 이 버튼으로 저장한 카페만 지도에서 볼 수 있습니다.",
     cafeInfoTitle: "카페 정보",
     cafeCategoryFallback: "카페",
     noAddress: "주소 정보 없음",

@@ -63,6 +63,24 @@ export const useHomeSearchMapStore = create((set) => ({
   setNoticeState: (noticeState) => {
     set({ noticeState });
   },
+  clearSavedPlacesMapState: () => {
+    set((state) => {
+      if (state.searchState.source !== "saved") {
+        return {};
+      }
+
+      return {
+        selectedPlace: null,
+        activePlaceId: "",
+        searchState: cloneSearchState(),
+        noticeState:
+          state.noticeState?.type === "saved-places-empty" ||
+          state.noticeState?.type === "saved-places-ready"
+            ? null
+            : state.noticeState,
+      };
+    });
+  },
   resetHomeSearchMapState: () => {
     set((state) => ({
       searchQuery: "",

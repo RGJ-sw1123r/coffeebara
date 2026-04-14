@@ -8,6 +8,73 @@ const PLACE_PROFILE_STORAGE_KEY = "coffeebara.placeProfiles.v1";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
 
+function toSortableTimestamp(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return Number.NaN;
+  }
+
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : Number.NaN;
+}
+
+function sortSavedPlaces(places) {
+  if (!Array.isArray(places) || places.length <= 1) {
+    return Array.isArray(places) ? places : [];
+  }
+
+  return [...places].sort((left, right) => {
+    const rightCreatedAt = toSortableTimestamp(right?.createdAt);
+    const leftCreatedAt = toSortableTimestamp(left?.createdAt);
+
+    if (Number.isFinite(rightCreatedAt) && Number.isFinite(leftCreatedAt)) {
+      if (rightCreatedAt !== leftCreatedAt) {
+        return rightCreatedAt - leftCreatedAt;
+      }
+    } else if (Number.isFinite(rightCreatedAt)) {
+      return 1;
+    } else if (Number.isFinite(leftCreatedAt)) {
+      return -1;
+    }
+
+    const rightUpdatedAt = toSortableTimestamp(right?.updatedAt);
+    const leftUpdatedAt = toSortableTimestamp(left?.updatedAt);
+
+    if (Number.isFinite(rightUpdatedAt) && Number.isFinite(leftUpdatedAt)) {
+      if (rightUpdatedAt !== leftUpdatedAt) {
+        return rightUpdatedAt - leftUpdatedAt;
+      }
+    } else if (Number.isFinite(rightUpdatedAt)) {
+      return 1;
+    } else if (Number.isFinite(leftUpdatedAt)) {
+      return -1;
+    }
+
+    return 0;
+  });
+}
+
+function toSortedSavedPlaces(places) {
+  if (!Array.isArray(places)) {
+    return [];
+  }
+
+  return sortSavedPlaces(places.map(normalizeSavedPlace).filter(Boolean));
+}
+
+function mergeSavedPlace(currentPlaces, nextPlace) {
+  const normalizedPlace = normalizeSavedPlace(nextPlace);
+
+  if (!normalizedPlace) {
+    return Array.isArray(currentPlaces) ? currentPlaces : [];
+  }
+
+  const filteredPlaces = Array.isArray(currentPlaces)
+    ? currentPlaces.filter((item) => item.id !== normalizedPlace.id)
+    : [];
+
+  return toSortedSavedPlaces([...filteredPlaces, normalizedPlace]);
+}
+
 function normalizeSavedPlace(place) {
   if (!place || typeof place !== "object") {
     return null;
@@ -55,15 +122,14 @@ function normalizeSavedPlace(place) {
         : typeof place.longitude === "number" && Number.isFinite(place.longitude)
           ? place.longitude
           : Number(place.lng ?? place.longitude) || 0,
+    createdAt:
+      typeof place.createdAt === "string"
+        ? place.createdAt
+        : typeof place.savedAt === "string"
+          ? place.savedAt
+          : "",
+    updatedAt: typeof place.updatedAt === "string" ? place.updatedAt : "",
   };
-}
-
-function normalizeSavedPlaces(places) {
-  if (!Array.isArray(places)) {
-    return [];
-  }
-
-  return places.map(normalizeSavedPlace).filter(Boolean);
 }
 
 async function readErrorMessage(response, fallbackMessage) {
@@ -140,7 +206,7 @@ export default function useSavedPlacesState({
 
           const parsed = JSON.parse(stored);
           const normalizedPlaces = Array.isArray(parsed)
-            ? normalizeSavedPlaces(parsed)
+            ? toSortedSavedPlaces(parsed)
             : [];
 
           if (cancelled) {
@@ -198,7 +264,7 @@ export default function useSavedPlacesState({
         }
 
         const payload = await response.json().catch(() => []);
-        const normalizedPlaces = normalizeSavedPlaces(payload);
+        const normalizedPlaces = toSortedSavedPlaces(payload);
 
         if (cancelled) {
           return;
@@ -313,7 +379,12 @@ export default function useSavedPlacesState({
             return current.filter((item) => item.id !== nextPlace.id);
           }
 
-          return [...current, nextPlace];
+          const now = new Date().toISOString();
+          return mergeSavedPlace(current, {
+            ...nextPlace,
+            createdAt: nextPlace.createdAt || now,
+            updatedAt: nextPlace.updatedAt || now,
+          });
         });
         return;
       }
@@ -381,12 +452,8 @@ export default function useSavedPlacesState({
           }
 
           const payload = await response.json().catch(() => null);
-          const normalizedPlace = normalizeSavedPlace(payload) ?? nextPlace;
 
-          setSavedPlaces((current) => {
-            const filtered = current.filter((item) => item.id !== normalizedPlace.id);
-            return [...filtered, normalizedPlace];
-          });
+          setSavedPlaces((current) => mergeSavedPlace(current, payload ?? nextPlace));
         }
 
         setBackendSavedPlaceFetch((current) => ({

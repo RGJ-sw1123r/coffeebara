@@ -37,11 +37,14 @@ const en = {
     mapSectionTitle: "Search for cafes to keep in your records. Save them as purchase or drink cafes.",
     mapSectionDescription: "For now, you can collect cafes and connect them to bean records and brewing records later.",
     searchCurrentAreaButton: "Search This Area",
+    savedPlacesMapButton: "Show Saved Cafes",
     searchResultsTitle: "Search Results",
     mapResultsTitle: "Cafes In View",
+    savedPlacesMapResultsTitle: "Saved Cafes",
     totalSearchResults: (count, hasMore = false) =>
       `Total search results ${count}${hasMore ? "+" : ""}`,
     totalMapResults: (count) => `Cafes in current map ${count}`,
+    totalSavedPlacesOnMap: (count) => `Saved cafes ${count}`,
     searchLoading: "Loading search results.",
     searchLoadingWithQuery: (query) => `Loading results for "${query}".`,
     searchLoadingWithoutQuery: "Loading search results.",
@@ -71,6 +74,13 @@ const en = {
       "Also verify that `http://localhost:3000` is registered as an allowed domain in the Kakao developer console.",
     mapEmptySearch: "No matching cafes were found.",
     mapEmptyArea: "No cafes were found in the current map area.",
+    mapEmptySavedPlaces: "No saved cafes are available to show on the map.",
+    savedPlacesMapReadyTitle: "Saved cafes are ready",
+    savedPlacesMapReadyNotice:
+      "Showing your saved cafes now. To check an exact cafe location, select a saved cafe from the result list.",
+    savedPlacesMapEmptyTitle: "No saved cafes yet",
+    savedPlacesMapEmptyNotice:
+      "Save a cafe first, then use this button to show only your saved cafes on the map.",
     cafeInfoTitle: "Cafe Info",
     cafeCategoryFallback: "Cafe",
     noAddress: "No address available",

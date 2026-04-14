@@ -163,6 +163,28 @@ function toSavedPlace(place) {
   };
 }
 
+function hasValidSavedPlaceCoordinates(place) {
+  return (
+    Number.isFinite(Number(place?.lat)) &&
+    Number.isFinite(Number(place?.lng)) &&
+    !(Number(place?.lat) === 0 && Number(place?.lng) === 0)
+  );
+}
+
+function toMapPlaceFromSavedPlace(place) {
+  return {
+    id: String(place.id),
+    place_name: place.name,
+    address_name: place.address || "",
+    road_address_name: place.roadAddress || "",
+    phone: place.phone || "",
+    place_url: place.placeUrl || "",
+    category_name: place.categoryName || "",
+    x: Number(place.lng),
+    y: Number(place.lat),
+  };
+}
+
 function getPlaceAddress(place) {
   return place.road_address_name || place.address_name || "주소 정보 없음";
 }
@@ -678,6 +700,10 @@ export default function KakaoMap({
   activePlaceId,
   onSearchResultsChange,
   onViewportChange,
+  onClearSearchQuery,
+  onShowSavedPlacesReadyNotice,
+  onShowSavedPlacesEmptyNotice,
+  searchSource,
   isSidebarOpen,
   messages,
 }) {
@@ -717,13 +743,22 @@ export default function KakaoMap({
     () => [...mapPlaces].sort(sortPlacesByAddress),
     [mapPlaces],
   );
+  const savedPlacesForMap = useMemo(
+    () =>
+      savedPlaces
+        .filter(hasValidSavedPlaceCoordinates)
+        .map(toMapPlaceFromSavedPlace),
+    [savedPlaces],
+  );
   const sortedSearchPlaces = useMemo(
     () => rankKeywordResults(searchPlaces, normalizedSearchQuery),
     [normalizedSearchQuery, searchPlaces],
   );
   const displayedPlaces = normalizedSearchQuery
     ? sortedSearchPlaces
-    : sortedMapPlaces;
+    : searchSource === "saved"
+      ? savedPlacesForMap
+      : sortedMapPlaces;
   const hiddenSearchResultCount = normalizedSearchQuery
     ? Math.max(searchPlaces.length - sortedSearchPlaces.length, 0)
     : 0;
@@ -779,6 +814,34 @@ export default function KakaoMap({
     }
   };
 
+  const handleShowSavedPlaces = () => {
+    if (!mapInstanceRef.current || !window.kakao?.maps) {
+      return;
+    }
+
+    const map = mapInstanceRef.current;
+
+    clearSelection();
+    onClearSearchQuery?.();
+    shouldFocusSearchResultsRef.current = false;
+    isCurrentAreaModeRef.current = false;
+    currentViewModeRef.current = "saved";
+    setSearchPlaces([]);
+    setMapPlaces(savedPlacesForMap);
+    setStatus("ready");
+    setErrorMessage("");
+    setErrorCode("");
+
+    if (savedPlacesForMap.length === 0) {
+      onShowSavedPlacesEmptyNotice?.();
+      onViewportChange?.(getMapCenter(map));
+      return;
+    }
+
+    onShowSavedPlacesReadyNotice?.();
+    onViewportChange?.(getMapCenter(map));
+  };
+
   useEffect(() => {
     savedPlaceIdsRef.current = savedPlaceIds;
     onToggleSavedPlaceRef.current = onToggleSavedPlace;
@@ -795,9 +858,13 @@ export default function KakaoMap({
 
   useEffect(() => {
     onSearchResultsChange?.({
-      results: (normalizedSearchQuery ? sortedSearchPlaces : sortedMapPlaces).map(toSavedPlace),
+      results: displayedPlaces.map(toSavedPlace),
       visibleCount: displayedPlaces.length,
-      totalCount: normalizedSearchQuery ? searchPlaces.length : sortedMapPlaces.length,
+      totalCount: normalizedSearchQuery
+        ? searchPlaces.length
+        : searchSource === "saved"
+          ? savedPlacesForMap.length
+          : sortedMapPlaces.length,
       hiddenCount: hiddenSearchResultCount,
       isSearching: Boolean(normalizedSearchQuery),
       source:
@@ -805,19 +872,23 @@ export default function KakaoMap({
           ? "search"
           : currentViewModeRef.current === "map"
             ? "map"
+            : currentViewModeRef.current === "saved"
+              ? "saved"
             : "idle",
       status,
       errorMessage,
       errorCode,
     });
   }, [
-    displayedPlaces.length,
+    displayedPlaces,
     errorCode,
     errorMessage,
     hiddenSearchResultCount,
     normalizedSearchQuery,
     onSearchResultsChange,
+    savedPlacesForMap.length,
     searchPlaces.length,
+    searchSource,
     sortedMapPlaces,
     sortedSearchPlaces,
     status,
@@ -902,7 +973,11 @@ export default function KakaoMap({
         overlayRef.current = overlay;
 
         const searchVisibleCafes = async () => {
-          if (normalizedSearchQueryRef.current || isCurrentAreaModeRef.current) {
+          if (
+            normalizedSearchQueryRef.current ||
+            isCurrentAreaModeRef.current ||
+            currentViewModeRef.current === "saved"
+          ) {
             onViewportChange?.(getMapCenter(map));
             return;
           }
@@ -1035,6 +1110,11 @@ export default function KakaoMap({
     async function runSearch() {
       if (!normalizedSearchQuery) {
         setSearchPlaces([]);
+
+        if (currentViewModeRef.current === "saved") {
+          setStatus("ready");
+          return;
+        }
 
         if (!isCurrentAreaModeRef.current) {
           currentViewModeRef.current = "idle";
@@ -1199,7 +1279,12 @@ export default function KakaoMap({
       return;
     }
 
-    currentViewModeRef.current = normalizedSearchQuery ? "search" : "map";
+    currentViewModeRef.current =
+      currentViewModeRef.current === "saved"
+        ? "saved"
+        : normalizedSearchQuery
+          ? "search"
+          : "map";
     selectedPlaceRef.current = targetEntry.place;
     setSelectedPlaceId(String(targetEntry.place.id));
     onSelectPlaceRef.current?.(toSavedPlace(targetEntry.place));
@@ -1241,7 +1326,12 @@ export default function KakaoMap({
       return;
     }
 
-    currentViewModeRef.current = normalizedSearchQuery ? "search" : "map";
+    currentViewModeRef.current =
+      currentViewModeRef.current === "saved"
+        ? "saved"
+        : normalizedSearchQuery
+          ? "search"
+          : "map";
     selectedPlaceRef.current = targetEntry.place;
     setSelectedPlaceId(String(targetEntry.place.id));
     onSelectPlaceRef.current?.(toSavedPlace(targetEntry.place));
@@ -1270,6 +1360,23 @@ export default function KakaoMap({
     <div className="relative h-full min-h-[420px] w-full sm:min-h-[520px]">
       <div ref={mapRef} className="h-full w-full" />
 
+      <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-32px)] flex-col items-start gap-2">
+        {!normalizeAppKey(appKey) ||
+        normalizeAppKey(appKey) === "MOCK_KAKAO_MAP_KEY" ? null : (
+          <button
+            type="button"
+            onClick={handleShowSavedPlaces}
+            className={`rounded-full border px-4 py-2 text-xs font-semibold shadow-[0_16px_32px_rgba(47,34,27,0.24)] backdrop-blur transition ${
+              searchSource === "saved"
+                ? "border-[#5d4334] bg-[linear-gradient(160deg,rgba(56,39,30,0.96)_0%,rgba(38,26,21,0.94)_100%)] text-[#fff7f0]"
+                : "border-[#dccfbe] bg-white/96 text-[#2f221b] hover:border-[#cdb8a6] hover:bg-[#fffaf5]"
+            }`}
+          >
+            {messages.savedPlacesMapButton}
+          </button>
+        )}
+      </div>
+
       {!normalizeAppKey(appKey) ||
       normalizeAppKey(appKey) === "MOCK_KAKAO_MAP_KEY" ? (
         <div className="absolute left-4 top-4 rounded-full bg-[#2f221b]/90 px-3 py-2 text-xs font-medium text-white shadow-[0_16px_30px_rgba(47,34,27,0.24)]">
@@ -1279,7 +1386,9 @@ export default function KakaoMap({
 
       {status === "loading" ? (
         <div className="absolute bottom-[260px] right-4 rounded-full bg-white/92 px-3 py-2 text-xs font-medium text-[#5e493d] shadow-[0_10px_25px_rgba(84,52,27,0.08)]">
-          {normalizedSearchQuery
+          {searchSource === "saved"
+            ? messages.savedPlacesMapButton
+            : normalizedSearchQuery
             ? messages.mapLoadingSearch
             : messages.mapLoadingArea}
         </div>
@@ -1300,7 +1409,9 @@ export default function KakaoMap({
 
       {status === "ready" && displayedPlaces.length === 0 ? (
         <div className="absolute bottom-[260px] left-4 rounded-2xl border border-[#eadfd3] bg-white/95 px-4 py-3 text-sm text-[#5f4b3f] shadow-[0_14px_30px_rgba(84,52,27,0.1)]">
-          {normalizedSearchQuery
+          {searchSource === "saved"
+            ? messages.mapEmptySavedPlaces
+            : normalizedSearchQuery
             ? messages.mapEmptySearch
             : messages.mapEmptyArea}
         </div>

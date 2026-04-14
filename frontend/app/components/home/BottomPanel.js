@@ -1,8 +1,10 @@
 "use client";
 
+import { KEYWORD_SEARCH_RESULT_LIMIT } from "../../constants/search";
 import { useHomeSearchMapStore } from "../../stores/useHomeSearchMapStore";
 
 const SEARCH_RESULT_PANEL_LIMIT = 10;
+const SAVED_PLACE_RESULT_PANEL_LIMIT = 1000;
 const PANEL_CLASS_NAME =
   "w-full xl:sticky xl:top-[104px] xl:h-[calc(100vh-128px)] xl:w-[400px] xl:self-start";
 
@@ -53,15 +55,22 @@ export default function BottomPanel({
   const selectedPlace = useHomeSearchMapStore((state) => state.selectedPlace);
   const selectPlace = useHomeSearchMapStore((state) => state.selectPlace);
   const isSearching = Boolean(searchQuery.trim());
-  const isResultPanelVisible = isSearching || searchState.source === "map";
-  const visibleSearchResults = searchState.results.slice(0, SEARCH_RESULT_PANEL_LIMIT);
+  const isResultPanelVisible =
+    isSearching || searchState.source === "map" || searchState.source === "saved";
+  const searchResultPanelLimit =
+    searchState.source === "saved"
+      ? SAVED_PLACE_RESULT_PANEL_LIMIT
+      : SEARCH_RESULT_PANEL_LIMIT;
+  const visibleSearchResults = searchState.results.slice(0, searchResultPanelLimit);
 
   if (isResultPanelVisible) {
     return (
       <SectionCard
         className={PANEL_CLASS_NAME}
         title={
-          searchState.source === "map"
+          searchState.source === "saved"
+            ? messages.savedPlacesMapResultsTitle
+            : searchState.source === "map"
             ? messages.mapResultsTitle
             : messages.searchResultsTitle
         }
@@ -74,11 +83,13 @@ export default function BottomPanel({
           <div className="flex h-full min-h-0 flex-col space-y-3">
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-[#f5ecdf] px-3 py-2 text-xs font-medium text-[#6c5547]">
-                {searchState.source === "map"
+                {searchState.source === "saved"
+                  ? messages.totalSavedPlacesOnMap(searchState.totalCount)
+                  : searchState.source === "map"
                   ? messages.totalMapResults(searchState.totalCount)
                   : messages.totalSearchResults(
                       searchState.totalCount,
-                      searchState.totalCount >= 45,
+                      searchState.totalCount >= KEYWORD_SEARCH_RESULT_LIMIT,
                     )}
               </span>
             </div>
@@ -139,6 +150,8 @@ export default function BottomPanel({
           <div className="rounded-[24px] border border-dashed border-[#d8c8b7] bg-[#fcfaf7] px-4 py-6 text-sm text-[#7a6456]">
             {searchState.status === "loading"
               ? messages.searchLoading
+              : searchState.source === "saved"
+                ? messages.mapEmptySavedPlaces
               : messages.searchEmpty}
           </div>
         )}

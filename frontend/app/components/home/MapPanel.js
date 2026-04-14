@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useCallback, useRef } from "react";
 
 import KakaoMap from "../KakaoMap";
 import { useHomeSearchMapStore } from "../../stores/useHomeSearchMapStore";
@@ -14,6 +14,7 @@ function MapPanel({
   messages,
 }) {
   const searchQuery = useHomeSearchMapStore((state) => state.searchQuery);
+  const searchSource = useHomeSearchMapStore((state) => state.searchState.source);
   const searchRequestVersion = useHomeSearchMapStore(
     (state) => state.searchRequestVersion,
   );
@@ -25,7 +26,27 @@ function MapPanel({
   const selectPlace = useHomeSearchMapStore((state) => state.selectPlace);
   const setSearchState = useHomeSearchMapStore((state) => state.setSearchState);
   const setMapViewport = useHomeSearchMapStore((state) => state.setMapViewport);
+  const setSearchQuery = useHomeSearchMapStore((state) => state.setSearchQuery);
   const setNoticeState = useHomeSearchMapStore((state) => state.setNoticeState);
+  const noticeTokenRef = useRef(0);
+  const showSavedPlacesReadyNotice = useCallback(() => {
+    noticeTokenRef.current += 1;
+    setNoticeState({
+      type: "saved-places-ready",
+      title: messages.savedPlacesMapReadyTitle,
+      message: messages.savedPlacesMapReadyNotice,
+      key: `saved-places-ready:${noticeTokenRef.current}`,
+    });
+  }, [messages, setNoticeState]);
+  const showSavedPlacesEmptyNotice = useCallback(() => {
+    noticeTokenRef.current += 1;
+    setNoticeState({
+      type: "saved-places-empty",
+      title: messages.savedPlacesMapEmptyTitle,
+      message: messages.savedPlacesMapEmptyNotice,
+      key: `saved-places-empty:${noticeTokenRef.current}`,
+    });
+  }, [messages, setNoticeState]);
 
   return (
     <section className="relative flex h-full flex-col overflow-hidden rounded-[32px] border border-[#e7dccf] bg-white shadow-[0_24px_60px_rgba(84,52,27,0.08)]">
@@ -66,6 +87,10 @@ function MapPanel({
           activePlaceId={activePlaceId}
           onSearchResultsChange={setSearchState}
           onViewportChange={setMapViewport}
+          onClearSearchQuery={() => setSearchQuery("")}
+          onShowSavedPlacesReadyNotice={showSavedPlacesReadyNotice}
+          onShowSavedPlacesEmptyNotice={showSavedPlacesEmptyNotice}
+          searchSource={searchSource}
           isSidebarOpen={isSidebarOpen}
           messages={messages}
         />

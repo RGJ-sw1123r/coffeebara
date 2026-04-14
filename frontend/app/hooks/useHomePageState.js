@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppShell } from "../components/app/AppShellContext";
+import { KEYWORD_SEARCH_RESULT_LIMIT } from "../constants/search";
 import {
   INITIAL_SEARCH_STATE,
   useHomeSearchMapStore,
@@ -36,6 +37,9 @@ export default function useHomePageState() {
   );
   const setSearchState = useHomeSearchMapStore((state) => state.setSearchState);
   const setNoticeState = useHomeSearchMapStore((state) => state.setNoticeState);
+  const clearSavedPlacesMapState = useHomeSearchMapStore(
+    (state) => state.clearSavedPlacesMapState,
+  );
   const resetHomeSearchMapState = useHomeSearchMapStore(
     (state) => state.resetHomeSearchMapState,
   );
@@ -125,7 +129,7 @@ export default function useHomePageState() {
     }
 
     if (searchState.status === "ready") {
-      if (searchState.totalCount < 45) {
+      if (searchState.totalCount < KEYWORD_SEARCH_RESULT_LIMIT) {
         return;
       }
 
@@ -155,6 +159,8 @@ export default function useHomePageState() {
   ]);
 
   const handleSearchSubmit = () => {
+    clearSavedPlacesMapState();
+
     const nextQuery = searchInput.trim();
 
     if (!nextQuery) {
@@ -170,6 +176,12 @@ export default function useHomePageState() {
     incrementSearchRequestVersion();
   };
 
+  useEffect(() => {
+    return () => {
+      clearSavedPlacesMapState();
+    };
+  }, [clearSavedPlacesMapState]);
+
   const handleResetHomeView = (event) => {
     event?.preventDefault?.();
     setSearchInput("");
@@ -182,6 +194,7 @@ export default function useHomePageState() {
     const hasActiveMapContext =
       Boolean(searchQuery.trim()) ||
       searchState.source === "map" ||
+      searchState.source === "saved" ||
       Boolean(selectedPlace) ||
       Boolean(activePlaceId);
 

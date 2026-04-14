@@ -37,11 +37,14 @@ const ja = {
     mapSectionTitle: "記録に残したいカフェを探しましょう。購入先や飲んだカフェとして保存できます。",
     mapSectionDescription: "今はカフェを集めておき、あとで豆の記録やブリューイング記録に結び付けられます。",
     searchCurrentAreaButton: "このエリアで検索",
+    savedPlacesMapButton: "保存したカフェを見る",
     searchResultsTitle: "検索結果",
     mapResultsTitle: "現在の地図内のカフェ",
+    savedPlacesMapResultsTitle: "保存したカフェ",
     totalSearchResults: (count, hasMore = false) =>
       `検索結果 ${count}件${hasMore ? "以上" : ""}`,
     totalMapResults: (count) => `現在の地図内のカフェ ${count}件`,
+    totalSavedPlacesOnMap: (count) => `保存したカフェ ${count}件`,
     searchLoading: "検索結果を読み込んでいます。",
     searchLoadingWithQuery: (query) => `「${query}」の検索結果を読み込んでいます。`,
     searchLoadingWithoutQuery: "検索結果を読み込んでいます。",
@@ -71,6 +74,13 @@ const ja = {
       "Kakao 開発者コンソールに `http://localhost:3000` が許可ドメインとして登録されているかも確認してください。",
     mapEmptySearch: "検索したカフェがありません。",
     mapEmptyArea: "現在の地図範囲でカフェを見つけられませんでした。",
+    mapEmptySavedPlaces: "地図に表示できる保存済みカフェがありません。",
+    savedPlacesMapReadyTitle: "保存したカフェを表示しました",
+    savedPlacesMapReadyNotice:
+      "保存したカフェを読み込みました。実際の位置は結果リストで保存したカフェを直接選んで確認してください。",
+    savedPlacesMapEmptyTitle: "保存したカフェがありません",
+    savedPlacesMapEmptyNotice:
+      "先にカフェを保存すると、このボタンで保存したカフェだけを地図に表示できます。",
     cafeInfoTitle: "カフェ情報",
     cafeCategoryFallback: "カフェ",
     noAddress: "住所情報なし",

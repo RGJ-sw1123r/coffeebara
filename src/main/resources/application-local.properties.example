@@ -13,6 +13,12 @@ app.rate-limit.save-max-requests=6
 app.rate-limit.detail-max-requests=30
 app.rate-limit.max-tracked-keys=2000
 app.cors.allowed-origins=http://localhost:3000,http://127.0.0.1:3000
+app.media.storage-root=E:/storage
+app.media.upload.max-files-per-request=5
+app.media.upload.max-attachments-per-record=5
+app.media.upload.max-attachments-per-view-spot-record=30
+app.media.upload.max-file-size-bytes=15728640
+app.media.upload.max-request-size-bytes=104857600
 spring.datasource.url=jdbc:p6spy:mariadb://localhost:3306/coffeebara?sslMode=trust
 spring.datasource.username=YOUR_DB_USERNAME
 spring.datasource.password=YOUR_DB_PASSWORD

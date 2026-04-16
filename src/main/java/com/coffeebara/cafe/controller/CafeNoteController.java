@@ -21,9 +21,14 @@ import com.coffeebara.cafe.vo.CafeNoteSaveRequest;
 public class CafeNoteController {
 
 	private final CafeNoteService cafeNoteService;
+	private final RecordResponseHeaderSupport recordResponseHeaderSupport;
 
-	public CafeNoteController(CafeNoteService cafeNoteService) {
+	public CafeNoteController(
+		CafeNoteService cafeNoteService,
+		RecordResponseHeaderSupport recordResponseHeaderSupport
+	) {
 		this.cafeNoteService = cafeNoteService;
+		this.recordResponseHeaderSupport = recordResponseHeaderSupport;
 	}
 
 	@GetMapping("/{placeId}")
@@ -31,7 +36,7 @@ public class CafeNoteController {
 		Authentication authentication,
 		@PathVariable("placeId") String placeId
 	) {
-		return ResponseEntity.ok(cafeNoteService.getNotes(authentication, placeId));
+		return recordResponseHeaderSupport.ok(cafeNoteService.getNotes(authentication, placeId));
 	}
 
 	@PostMapping("/{placeId}")
@@ -40,7 +45,7 @@ public class CafeNoteController {
 		@PathVariable("placeId") String placeId,
 		@RequestBody CafeNoteSaveRequest request
 	) {
-		return ResponseEntity.ok(cafeNoteService.save(authentication, placeId, request));
+		return recordResponseHeaderSupport.ok(cafeNoteService.save(authentication, placeId, request));
 	}
 
 	@DeleteMapping("/{placeId}/{noteId}")
@@ -50,6 +55,6 @@ public class CafeNoteController {
 		@PathVariable("noteId") Long noteId
 	) {
 		cafeNoteService.delete(authentication, placeId, noteId);
-		return ResponseEntity.noContent().build();
+		return recordResponseHeaderSupport.noContent();
 	}
 }

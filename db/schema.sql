@@ -75,3 +75,36 @@ CREATE TABLE IF NOT EXISTS cafe_note (
         FOREIGN KEY (cafe_record_id) REFERENCES cafe_record (id)
         ON DELETE CASCADE
 ) COMMENT='Text record payload linked to cafe_record';
+
+CREATE TABLE IF NOT EXISTS media_asset (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Media asset primary key',
+    storage_key VARCHAR(500) NOT NULL COMMENT 'Future storage object key',
+    original_file_name VARCHAR(255) NOT NULL COMMENT 'Original uploaded file name',
+    content_type VARCHAR(100) NOT NULL COMMENT 'Media content type',
+    file_size BIGINT NOT NULL COMMENT 'File size in bytes',
+    width INT NULL COMMENT 'Image width in pixels',
+    height INT NULL COMMENT 'Image height in pixels',
+    checksum VARCHAR(128) NOT NULL COMMENT 'Asset checksum for deduplication or integrity checks',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created timestamp',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_media_asset_storage_key (storage_key),
+    KEY idx_media_asset_checksum (checksum)
+) COMMENT='Stored media asset metadata';
+
+CREATE TABLE IF NOT EXISTS media_attachment (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Media attachment primary key',
+    media_asset_id BIGINT NOT NULL COMMENT 'Attached media_asset id',
+    owner_type VARCHAR(40) NOT NULL COMMENT 'Attachment owner domain type',
+    owner_id BIGINT NOT NULL COMMENT 'Attachment owner id in the target domain',
+    attachment_role VARCHAR(40) NOT NULL COMMENT 'Attachment usage role within the owner',
+    sort_order INT NOT NULL DEFAULT 0 COMMENT 'Display order within the same attachment group',
+    is_cover TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Whether this attachment is the cover image',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created timestamp',
+    deleted_at DATETIME NULL COMMENT 'Soft delete timestamp',
+    PRIMARY KEY (id),
+    KEY idx_media_attachment_owner_lookup (owner_type, owner_id, deleted_at, sort_order, id),
+    KEY idx_media_attachment_asset (media_asset_id),
+    KEY idx_media_attachment_owner_role (owner_type, owner_id, attachment_role, deleted_at),
+    CONSTRAINT fk_media_attachment_media_asset
+        FOREIGN KEY (media_asset_id) REFERENCES media_asset (id)
+) COMMENT='Generic attachment link between media assets and domain owners';

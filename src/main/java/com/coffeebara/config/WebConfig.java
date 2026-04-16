@@ -11,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableConfigurationProperties(CorsProperties.class)
 public class WebConfig implements WebMvcConfigurer {
 
+	private static final String COFFEEBARA_WARNING_HEADER = "X-Coffeebara-Warning";
 	private final CorsProperties corsProperties;
 
 	public WebConfig(CorsProperties corsProperties) {
@@ -28,6 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
 		registry.addMapping("/api/**")
 			.allowedOrigins(allowedOrigins.toArray(String[]::new))
 			.allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+			.exposedHeaders(COFFEEBARA_WARNING_HEADER)
 			.allowCredentials(true);
 	}
 }

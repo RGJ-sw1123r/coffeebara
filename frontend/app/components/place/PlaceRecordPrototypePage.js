@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 
 import { useAppShell } from "../app/AppShellContext";
 import HeaderBar from "../home/HeaderBar";
+import { ActionToast } from "../home/StatusNotice";
 import {
   DesktopSidebar,
   SavedPlaceDeleteConfirmModal,
@@ -13,6 +14,8 @@ import {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
+const WARNING_HEADER_NAME = "X-Coffeebara-Warning";
+const MEDIA_TABLES_MISSING_WARNING = "MEDIA_TABLES_MISSING";
 
 function normalizeSavedPlace(place) {
   if (!place || typeof place !== "object") {
@@ -100,6 +103,24 @@ async function readErrorMessage(response, fallbackMessage) {
   return payload?.message || fallbackMessage;
 }
 
+function readWarningMessage(response) {
+  const warningHeader = response.headers.get(WARNING_HEADER_NAME);
+  if (!warningHeader) {
+    return "";
+  }
+
+  const warningCodes = warningHeader
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (warningCodes.includes(MEDIA_TABLES_MISSING_WARNING)) {
+    return "이미지 첨부 테이블이 아직 준비되지 않아 이미지 정보는 불러오지 못했습니다.";
+  }
+
+  return "";
+}
+
 function getRecordPageCopy(messages) {
   return {
     listTitle: messages.recordListTitle,
@@ -141,25 +162,6 @@ function getRecordPageCopy(messages) {
     emptyEditorTitle: messages.recordEmptyEditorTitle,
     emptyEditorBody: messages.recordEmptyEditorBody,
   };
-}
-
-function InlineToast({ toast }) {
-  if (!toast?.message) {
-    return null;
-  }
-
-  const isSuccess = toast.type === "success";
-  const toneClass = isSuccess
-    ? "border-[#3d8f58] bg-[#2f9e55] text-white shadow-[0_18px_36px_rgba(29,92,50,0.22)]"
-    : "border-[#e7c9c2] bg-[#fff1ed] text-[#6f3126] shadow-[0_18px_36px_rgba(111,49,38,0.12)]";
-
-  return (
-    <div
-      className={`pointer-events-none fixed bottom-5 right-5 z-50 w-[min(360px,calc(100vw-2rem))] rounded-[24px] border px-5 py-4 ${toneClass}`}
-    >
-      <p className="text-sm font-medium leading-6">{toast.message}</p>
-    </div>
-  );
 }
 
 function RecordListPanel({
@@ -403,6 +405,7 @@ export default function PlaceRecordPrototypePage() {
   const [selectedRecordId, setSelectedRecordId] = useState("");
   const [isRecordTypeModalOpen, setIsRecordTypeModalOpen] = useState(false);
   const [isNotesLoading, setIsNotesLoading] = useState(false);
+  const [recordLoadError, setRecordLoadError] = useState("");
   const [isSavingRecord, setIsSavingRecord] = useState(false);
   const [draggedRecordId, setDraggedRecordId] = useState("");
   const [toast, setToast] = useState(null);
@@ -443,6 +446,7 @@ export default function PlaceRecordPrototypePage() {
     if (!savedPlace?.id || authUser?.mode === "guest") {
       setRecords([]);
       setSelectedRecordId("");
+      setRecordLoadError("");
       return;
     }
 
@@ -450,6 +454,7 @@ export default function PlaceRecordPrototypePage() {
 
     async function loadNotes() {
       setIsNotesLoading(true);
+      setRecordLoadError("");
 
       try {
         const response = await fetch(
@@ -464,6 +469,8 @@ export default function PlaceRecordPrototypePage() {
           throw new Error(await readErrorMessage(response, recordCopy.loadFailed));
         }
 
+        const warningMessage = readWarningMessage(response);
+
         const payload = await response.json().catch(() => []);
         const nextRecords = Array.isArray(payload)
           ? payload.map(normalizeRecord).filter(Boolean)
@@ -475,17 +482,26 @@ export default function PlaceRecordPrototypePage() {
 
         setRecords(nextRecords);
         setSelectedRecordId(nextRecords[0]?.id ?? "");
+        setRecordLoadError("");
+        if (warningMessage) {
+          setToast({
+            type: "error",
+            message: warningMessage,
+          });
+        }
       } catch (error) {
         if (cancelled) {
           return;
         }
 
+        const nextMessage =
+          error instanceof Error ? error.message : recordCopy.loadFailed;
         setRecords([]);
         setSelectedRecordId("");
+        setRecordLoadError(nextMessage);
         setToast({
           type: "error",
-          message:
-            error instanceof Error ? error.message : recordCopy.loadFailed,
+          message: nextMessage,
         });
       } finally {
         if (!cancelled) {
@@ -745,7 +761,7 @@ export default function PlaceRecordPrototypePage() {
 
   return (
     <div className="min-h-screen bg-[#fffaf5] text-[#241813] xl:h-screen xl:overflow-hidden">
-      <InlineToast toast={toast} />
+      <ActionToast toast={toast} />
 
       {isRecordTypeModalOpen ? (
         <RecordTypeModal
@@ -828,6 +844,12 @@ export default function PlaceRecordPrototypePage() {
                       <p className="mt-2 text-sm text-[#7a6456]">{savedPlace.phone}</p>
                     ) : null}
                   </div>
+
+                  {recordLoadError ? (
+                    <section className="rounded-[24px] border border-[#e7c9c2] bg-[#fff1ed] px-5 py-4 text-sm text-[#6f3126] shadow-[0_12px_30px_rgba(111,49,38,0.08)]">
+                      {recordLoadError}
+                    </section>
+                  ) : null}
 
                   {isNotesLoading ? (
                     <section className="rounded-[28px] border border-[#eadfd3] bg-[#fcfaf7] p-5 text-sm text-[#6d584b]">

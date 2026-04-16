@@ -42,6 +42,24 @@
       AND cr.record_type = 'TEXT'
   </select>
 
+  <select id="findOwnedRecordById" resultType="map">
+    SELECT
+      cr.id,
+      cr.app_user_id AS appUserId,
+      cr.kakao_place_id AS kakaoPlaceId,
+      cr.record_type AS recordType,
+      cr.display_order AS displayOrder,
+      cr.created_at AS createdAt,
+      cr.updated_at AS updatedAt,
+      cn.title,
+      cn.note_text AS noteText
+    FROM cafe_record cr
+    LEFT JOIN cafe_note cn
+      ON cn.cafe_record_id = cr.id
+    WHERE cr.app_user_id = #{appUserId}
+      AND cr.id = #{recordId}
+  </select>
+
   <insert id="insertRecord" parameterType="map" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO cafe_record (
       app_user_id,

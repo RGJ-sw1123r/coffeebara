@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.coffeebara.media.mapper.MediaAttachmentMapper">
+
+  <select id="findActiveByOwnerTypeAndOwnerIds" resultType="map">
+    SELECT
+      ma.id AS attachmentId,
+      ma.media_asset_id AS mediaAssetId,
+      ma.owner_type AS ownerType,
+      ma.owner_id AS ownerId,
+      ma.attachment_role AS attachmentRole,
+      ma.sort_order AS sortOrder,
+      ma.is_cover AS isCover,
+      ma.created_at AS createdAt,
+      asset.storage_key AS storageKey,
+      asset.original_file_name AS originalFileName,
+      asset.content_type AS contentType,
+      asset.file_size AS fileSize,
+      asset.width,
+      asset.height,
+      asset.checksum
+    FROM media_attachment ma
+    INNER JOIN media_asset asset
+      ON asset.id = ma.media_asset_id
+    WHERE ma.owner_type = #{ownerType}
+      AND ma.deleted_at IS NULL
+      AND ma.owner_id IN
+      <foreach collection="ownerIds" item="ownerId" open="(" separator="," close=")">
+        #{ownerId}
+      </foreach>
+    ORDER BY ma.owner_id ASC, ma.sort_order ASC, ma.id ASC
+  </select>
+
+  <select id="countActiveByOwnerTypeAndOwnerId" resultType="int">
+    SELECT COUNT(*)
+    FROM media_attachment
+    WHERE owner_type = #{ownerType}
+      AND owner_id = #{ownerId}
+      AND deleted_at IS NULL
+  </select>
+
+  <select id="findMaxSortOrderByOwnerTypeAndOwnerId" resultType="int">
+    SELECT MAX(sort_order)
+    FROM media_attachment
+    WHERE owner_type = #{ownerType}
+      AND owner_id = #{ownerId}
+      AND deleted_at IS NULL
+  </select>
+
+  <insert id="insertMediaAsset" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO media_asset (
+      storage_key,
+      original_file_name,
+      content_type,
+      file_size,
+      width,
+      height,
+      checksum
+    ) VALUES (
+      #{storageKey},
+      #{originalFileName},
+      #{contentType},
+      #{fileSize},
+      #{width},
+      #{height},
+      #{checksum}
+    )
+  </insert>
+
+  <insert id="insertMediaAttachment" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO media_attachment (
+      media_asset_id,
+      owner_type,
+      owner_id,
+      attachment_role,
+      sort_order,
+      is_cover
+    ) VALUES (
+      #{mediaAssetId},
+      #{ownerType},
+      #{ownerId},
+      #{attachmentRole},
+      #{sortOrder},
+      #{isCover}
+    )
+  </insert>
+
+</mapper>

@@ -137,6 +137,9 @@ The currently active backend scope is centered on:
 - member saved-cafe CRUD through `user_saved_cafe`
 - member cafe-scoped text note CRUD through `cafe_note`
 - member text-note parent record management through `cafe_record`
+- local-file image attachment upload for `CAFE_RECORD`
+- `media_asset` metadata persistence and `media_attachment` owner-link persistence
+- record detail / list attachment lookup with warning fallback when media tables are not yet provisioned
 - member cafe-note `display_order` persistence
 - caching and rate limiting around search flows
 - place-cache logic reused to support the current cafe reference layer
@@ -180,6 +183,8 @@ When discussing data modeling, use this distinction:
 - `user_saved_cafe`: member-specific saved cafe relation
 - `cafe_record`: member-owned parent record layer for cafe-linked archive items
 - `cafe_note`: member-owned cafe-linked text note prototype
+- `media_asset`: local-file metadata table storing relative `storage_key`
+- `media_attachment`: generic owner-link table between a domain owner and `media_asset`
 - future record tables: user-owned archive data linked to cafes as context
 - guest saved cafes: local-only convenience state, not durable account data
 
@@ -190,6 +195,8 @@ Important interpretation:
 - user ownership and save state belong in a separate table linked to `app_user`
 - `cafe_record` is the member-owned parent record layer for cafe-linked archive items
 - `cafe_note` is an early member-owned text record layer, not the final archive model
+- current image upload is only for `CAFE_RECORD`, not for every future archive domain
+- local file storage should use `app.media.storage-root` and persist only relative `storage_key` values
 - text-note ordering and deletion should be interpreted through `cafe_record`, not as `cafe_note`-local concerns
 - guest demo behavior is an intentional product decision, not a temporary bug
 

@@ -19,6 +19,11 @@ public interface CafeNoteMapper {
 		@Param("recordId") Long recordId
 	);
 
+	Map<String, Object> findOwnedRecordById(
+		@Param("appUserId") Long appUserId,
+		@Param("recordId") Long recordId
+	);
+
 	int insertRecord(Map<String, Object> cafeRecord);
 
 	int insertNote(Map<String, Object> cafeNote);

@@ -124,10 +124,11 @@ function SidebarContent({
   const wrapperClassName = isDesktop
     ? "h-full rounded-[28px] border border-[#e7dccf] bg-[#fbf7f2] p-4 shadow-[0_24px_60px_rgba(84,52,27,0.1)]"
     : "h-full overflow-y-auto px-4 py-5";
+  const listClassName = "mt-4 space-y-3";
 
   return (
     <div className={wrapperClassName}>
-      <section className="h-full rounded-[24px] bg-[#2f221b] p-4 text-white shadow-[0_16px_40px_rgba(47,34,27,0.24)]">
+      <section className="rounded-[24px] bg-[#2f221b] p-4 text-white shadow-[0_16px_40px_rgba(47,34,27,0.24)]">
         <button
           type="button"
           onClick={onHomeClick}
@@ -208,7 +209,7 @@ function SidebarContent({
         ) : null}
 
         {!isSavedPlacesCollapsed ? (
-          <div className="mt-4 space-y-3">
+          <div className={listClassName}>
             {savedPlaces.length > 0 ? (
               savedPlaces.map((place) => {
                 const isLockedPlace = lockedPlaceId === place.id;
@@ -217,33 +218,43 @@ function SidebarContent({
                   : `/places/${encodeURIComponent(place.id)}`;
 
                 return (
-                  <div key={place.id} className="rounded-2xl bg-white/8 px-3 py-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <Link
-                        href={placeHref}
-                        onClick={onClose}
-                        className="min-w-0 flex-1 rounded-xl outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#f3d2b4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#2f221b]"
-                      >
+                  <div key={place.id} className="relative">
+                    <Link
+                      href={placeHref}
+                      onClick={onClose}
+                      className="block rounded-2xl bg-white/8 px-3 py-3 pr-14 outline-none transition hover:bg-white/12 focus-visible:ring-2 focus-visible:ring-[#f3d2b4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#2f221b]"
+                    >
+                      <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{place.name}</p>
                         <p className="mt-1 text-xs text-[#d9c3b4]">
                           {place.roadAddress || place.address || messages.noAddress}
                         </p>
-                      </Link>
-                      {isLockedPlace ? (
-                        <span className="inline-flex h-8 shrink-0 items-center justify-center rounded-full bg-[rgba(243,210,180,0.16)] px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#f3d2b4]">
-                          {messages.savedPlaceLockedBadge}
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => onRemoveSavedPlace(place.id)}
-                          aria-label={messages.removeFavoriteAriaLabel(place.name)}
-                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2f221b] text-base leading-none text-[#f3c76d]"
+                      </div>
+                    </Link>
+                    {isLockedPlace ? (
+                      <span className="pointer-events-none absolute right-3 top-3 inline-flex h-8 items-center justify-center rounded-full bg-[rgba(243,210,180,0.16)] px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#f3d2b4]">
+                        {messages.savedPlaceLockedBadge}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveSavedPlace(place.id)}
+                        aria-label={messages.removeFavoriteAriaLabel(place.name)}
+                        className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2f221b] text-base leading-none text-[#f3c76d]"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          className="h-4 w-4 fill-none stroke-current stroke-[2.2]"
                         >
-                          ×
-                        </button>
-                      )}
-                    </div>
+                          <path
+                            d="M7 7l10 10M17 7 7 17"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 );
               })

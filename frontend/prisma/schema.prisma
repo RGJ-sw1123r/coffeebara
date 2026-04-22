@@ -6,3 +6,73 @@ generator client {
 datasource db {
   provider = "mysql"
 }
+
+model AppUser {
+  id              BigInt          @id @default(autoincrement())
+  authProvider    String          @map("auth_provider") @db.VarChar(40)
+  providerUserId  String          @map("provider_user_id") @db.VarChar(100)
+  email           String?         @db.VarChar(255)
+  nickname        String          @db.VarChar(100)
+  displayName     String?         @map("display_name") @db.VarChar(100)
+  profileImageUrl String?         @map("profile_image_url") @db.VarChar(500)
+  role            String          @default("ROLE_USER") @db.VarChar(50)
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  lastLoginAt     DateTime        @default(now()) @map("last_login_at")
+  savedCafes      UserSavedCafe[]
+  cafeRecords     CafeRecord[]
+
+  @@unique([authProvider, providerUserId], map: "uk_app_user_provider")
+  @@map("app_user")
+}
+
+model Cafe {
+  kakaoPlaceId    String          @id @map("kakao_place_id") @db.VarChar(64)
+  placeName       String          @map("place_name") @db.VarChar(255)
+  categoryName    String?         @map("category_name") @db.VarChar(255)
+  phone           String?         @db.VarChar(64)
+  addressName     String?         @map("address_name") @db.VarChar(255)
+  roadAddressName String?         @map("road_address_name") @db.VarChar(255)
+  latitude        Decimal?        @db.Decimal(10, 7)
+  longitude       Decimal?        @db.Decimal(10, 7)
+  placeUrl        String?         @map("place_url") @db.VarChar(500)
+  lastFetchedAt   DateTime        @map("last_fetched_at")
+  nextRefreshAt   DateTime?       @map("next_refresh_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  savedCafes      UserSavedCafe[]
+  cafeRecords     CafeRecord[]
+
+  @@map("cafe")
+}
+
+model UserSavedCafe {
+  id           BigInt   @id @default(autoincrement())
+  appUserId    BigInt   @map("app_user_id")
+  kakaoPlaceId String   @map("kakao_place_id") @db.VarChar(64)
+  savedType    String   @default("GENERAL") @map("saved_type") @db.VarChar(40)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  appUser      AppUser  @relation(fields: [appUserId], references: [id])
+  cafe         Cafe     @relation(fields: [kakaoPlaceId], references: [kakaoPlaceId])
+
+  @@unique([appUserId, kakaoPlaceId], map: "uk_user_saved_cafe_user_place")
+  @@index([appUserId, createdAt], map: "idx_user_saved_cafe_user_created")
+  @@index([kakaoPlaceId], map: "idx_user_saved_cafe_place")
+  @@map("user_saved_cafe")
+}
+
+model CafeRecord {
+  id           BigInt   @id @default(autoincrement())
+  appUserId    BigInt   @map("app_user_id")
+  kakaoPlaceId String   @map("kakao_place_id") @db.VarChar(64)
+  recordType   String   @map("record_type") @db.VarChar(40)
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  appUser      AppUser  @relation(fields: [appUserId], references: [id])
+  cafe         Cafe     @relation(fields: [kakaoPlaceId], references: [kakaoPlaceId])
+
+  @@index([appUserId, kakaoPlaceId, displayOrder, id], map: "idx_cafe_record_user_place_order")
+  @@index([kakaoPlaceId], map: "idx_cafe_record_place")
+  @@map("cafe_record")
+}

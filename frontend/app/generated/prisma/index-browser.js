@@ -120,9 +120,100 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.AppUserScalarFieldEnum = {
+  id: 'id',
+  authProvider: 'authProvider',
+  providerUserId: 'providerUserId',
+  email: 'email',
+  nickname: 'nickname',
+  displayName: 'displayName',
+  profileImageUrl: 'profileImageUrl',
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastLoginAt: 'lastLoginAt'
+};
+
+exports.Prisma.CafeScalarFieldEnum = {
+  kakaoPlaceId: 'kakaoPlaceId',
+  placeName: 'placeName',
+  categoryName: 'categoryName',
+  phone: 'phone',
+  addressName: 'addressName',
+  roadAddressName: 'roadAddressName',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  placeUrl: 'placeUrl',
+  lastFetchedAt: 'lastFetchedAt',
+  nextRefreshAt: 'nextRefreshAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.UserSavedCafeScalarFieldEnum = {
+  id: 'id',
+  appUserId: 'appUserId',
+  kakaoPlaceId: 'kakaoPlaceId',
+  savedType: 'savedType',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CafeRecordScalarFieldEnum = {
+  id: 'id',
+  appUserId: 'appUserId',
+  kakaoPlaceId: 'kakaoPlaceId',
+  recordType: 'recordType',
+  displayOrder: 'displayOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.AppUserOrderByRelevanceFieldEnum = {
+  authProvider: 'authProvider',
+  providerUserId: 'providerUserId',
+  email: 'email',
+  nickname: 'nickname',
+  displayName: 'displayName',
+  profileImageUrl: 'profileImageUrl',
+  role: 'role'
+};
+
+exports.Prisma.CafeOrderByRelevanceFieldEnum = {
+  kakaoPlaceId: 'kakaoPlaceId',
+  placeName: 'placeName',
+  categoryName: 'categoryName',
+  phone: 'phone',
+  addressName: 'addressName',
+  roadAddressName: 'roadAddressName',
+  placeUrl: 'placeUrl'
+};
+
+exports.Prisma.UserSavedCafeOrderByRelevanceFieldEnum = {
+  kakaoPlaceId: 'kakaoPlaceId',
+  savedType: 'savedType'
+};
+
+exports.Prisma.CafeRecordOrderByRelevanceFieldEnum = {
+  kakaoPlaceId: 'kakaoPlaceId',
+  recordType: 'recordType'
+};
+
 
 exports.Prisma.ModelName = {
-
+  AppUser: 'AppUser',
+  Cafe: 'Cafe',
+  UserSavedCafe: 'UserSavedCafe',
+  CafeRecord: 'CafeRecord'
 };
 
 /**

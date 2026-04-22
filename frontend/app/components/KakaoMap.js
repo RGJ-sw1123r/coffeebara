@@ -707,6 +707,7 @@ export default function KakaoMap({
   isSidebarOpen,
   messages,
 }) {
+  const [isMapReady, setIsMapReady] = useState(false);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const overlayRef = useRef(null);
@@ -971,6 +972,7 @@ export default function KakaoMap({
 
         mapInstanceRef.current = map;
         overlayRef.current = overlay;
+        setIsMapReady(true);
 
         const searchVisibleCafes = async () => {
           if (
@@ -1057,6 +1059,7 @@ export default function KakaoMap({
       overlayRef.current?.setMap(null);
       mapInstanceRef.current = null;
       overlayRef.current = null;
+      setIsMapReady(false);
       idleListenerRef.current = null;
       mapClickListenerRef.current = null;
       dragStartListenerRef.current = null;
@@ -1099,7 +1102,7 @@ export default function KakaoMap({
   }, [onViewportChange, resetViewVersion]);
 
   useEffect(() => {
-    if (!mapInstanceRef.current || !window.kakao?.maps) {
+    if (!isMapReady || !mapInstanceRef.current || !window.kakao?.maps) {
       return;
     }
 
@@ -1172,7 +1175,7 @@ export default function KakaoMap({
     return () => {
       cancelled = true;
     };
-  }, [normalizedSearchQuery, searchRequestVersion]);
+  }, [isMapReady, normalizedSearchQuery, searchRequestVersion]);
 
   useEffect(() => {
     if (!window.kakao?.maps || !mapInstanceRef.current) {

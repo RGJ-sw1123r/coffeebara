@@ -5,8 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 const STORAGE_KEY = "coffeebara.guestFavorites.v1";
 const LEGACY_STORAGE_KEY = "coffeebara.preferred-cafes";
 const PLACE_PROFILE_STORAGE_KEY = "coffeebara.placeProfiles.v1";
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
+const MEMBER_SAVED_CAFE_API_BASE_URL = "";
 
 function toSortableTimestamp(value) {
   if (typeof value !== "string" || !value.trim()) {
@@ -249,7 +248,7 @@ export default function useSavedPlacesState({
       });
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/user-saved-cafes`, {
+        const response = await fetch(`${MEMBER_SAVED_CAFE_API_BASE_URL}/api/user-saved-cafes`, {
           method: "GET",
           credentials: "include",
         });
@@ -356,130 +355,34 @@ export default function useSavedPlacesState({
     [savedPlaces],
   );
 
-  const handleToggleSavedPlace = useCallback(
-    async (place) => {
-      const nextPlace = normalizeSavedPlace(place);
-      if (!nextPlace) {
-        return;
+  const fetchDeleteCheck = useCallback(
+    async (placeId) => {
+      const response = await fetch(
+        `${MEMBER_SAVED_CAFE_API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(placeId)}/delete-check`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          await readErrorMessage(
+            response,
+            messages?.saveUnexpectedError || "Failed to check saved cafe records.",
+          ),
+        );
       }
 
-      if (authMode === "guest") {
-        setSavedPlaces((current) => {
-          const exists = current.some((item) => item.id === nextPlace.id);
-
-          if (exists) {
-            setPlaceProfiles((currentProfiles) => {
-              if (!(nextPlace.id in currentProfiles)) {
-                return currentProfiles;
-              }
-
-              const { [nextPlace.id]: _removed, ...rest } = currentProfiles;
-              return rest;
-            });
-            return current.filter((item) => item.id !== nextPlace.id);
-          }
-
-          const now = new Date().toISOString();
-          return mergeSavedPlace(current, {
-            ...nextPlace,
-            createdAt: nextPlace.createdAt || now,
-            updatedAt: nextPlace.updatedAt || now,
-          });
-        });
-        return;
-      }
-
-      const exists = savedPlaces.some((item) => item.id === nextPlace.id);
-
-      try {
-        if (exists) {
-          const response = await fetch(
-            `${API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(nextPlace.id)}`,
-            {
-              method: "DELETE",
-              credentials: "include",
-            },
-          );
-
-          if (!response.ok) {
-            throw new Error(
-              await readErrorMessage(
-                response,
-                messages?.saveUnexpectedError || "Failed to update saved cafe.",
-              ),
-            );
-          }
-
-          setSavedPlaces((current) =>
-            current.filter((item) => item.id !== nextPlace.id),
-          );
-          setPlaceProfiles((currentProfiles) => {
-            if (!(nextPlace.id in currentProfiles)) {
-              return currentProfiles;
-            }
-
-            const { [nextPlace.id]: _removed, ...rest } = currentProfiles;
-            return rest;
-          });
-        } else {
-          const response = await fetch(`${API_BASE_URL}/api/user-saved-cafes`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({
-              kakaoPlaceId: nextPlace.id,
-              name: nextPlace.name,
-              categoryName: nextPlace.categoryName,
-              phone: nextPlace.phone,
-              addressName: nextPlace.address,
-              roadAddressName: nextPlace.roadAddress,
-              latitude: String(nextPlace.lat || ""),
-              longitude: String(nextPlace.lng || ""),
-              placeUrl: nextPlace.placeUrl,
-              savedType: "GENERAL",
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(
-              await readErrorMessage(
-                response,
-                messages?.saveUnexpectedError || "Failed to save cafe.",
-              ),
-            );
-          }
-
-          const payload = await response.json().catch(() => null);
-
-          setSavedPlaces((current) => mergeSavedPlace(current, payload ?? nextPlace));
-        }
-
-        setBackendSavedPlaceFetch((current) => ({
-          ...current,
-          status: "success",
-          errorMessage: "",
-        }));
-        onMemberDataChanged?.();
-      } catch (error) {
-        setBackendSavedPlaceFetch((current) => ({
-          ...current,
-          status: "error",
-          errorMessage:
-            error instanceof Error
-              ? error.message
-              : messages?.backendBannerFallback || "",
-        }));
-      }
+      return response.json().catch(() => null);
     },
-    [authMode, messages, onMemberDataChanged, savedPlaces],
+    [messages],
   );
 
   const deleteSavedPlace = useCallback(
     async (placeId) => {
       const response = await fetch(
-        `${API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(placeId)}`,
+        `${MEMBER_SAVED_CAFE_API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(placeId)}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -518,6 +421,113 @@ export default function useSavedPlacesState({
     [messages, onMemberDataChanged],
   );
 
+  const handleToggleSavedPlace = useCallback(
+    async (place) => {
+      const nextPlace = normalizeSavedPlace(place);
+      if (!nextPlace) {
+        return;
+      }
+
+      if (authMode === "guest") {
+        setSavedPlaces((current) => {
+          const exists = current.some((item) => item.id === nextPlace.id);
+
+          if (exists) {
+            setPlaceProfiles((currentProfiles) => {
+              if (!(nextPlace.id in currentProfiles)) {
+                return currentProfiles;
+              }
+
+              const { [nextPlace.id]: _removed, ...rest } = currentProfiles;
+              return rest;
+            });
+            return current.filter((item) => item.id !== nextPlace.id);
+          }
+
+          const now = new Date().toISOString();
+          return mergeSavedPlace(current, {
+            ...nextPlace,
+            createdAt: nextPlace.createdAt || now,
+            updatedAt: nextPlace.updatedAt || now,
+          });
+        });
+        return;
+      }
+
+      const exists = savedPlaces.some((item) => item.id === nextPlace.id);
+
+      try {
+        if (exists) {
+          const deleteCheck = await fetchDeleteCheck(nextPlace.id);
+          const hasRecords = Boolean(deleteCheck?.hasRecords);
+          const recordCount = Number(deleteCheck?.recordCount ?? 0);
+
+          if (hasRecords) {
+            setPendingSavedPlaceDelete({
+              placeId: nextPlace.id,
+              recordCount,
+            });
+            return;
+          }
+
+          await deleteSavedPlace(nextPlace.id);
+        } else {
+          const response = await fetch(`${MEMBER_SAVED_CAFE_API_BASE_URL}/api/user-saved-cafes`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              kakaoPlaceId: nextPlace.id,
+              name: nextPlace.name,
+              categoryName: nextPlace.categoryName,
+              phone: nextPlace.phone,
+              addressName: nextPlace.address,
+              roadAddressName: nextPlace.roadAddress,
+              latitude: String(nextPlace.lat || ""),
+              longitude: String(nextPlace.lng || ""),
+              placeUrl: nextPlace.placeUrl,
+              savedType: "GENERAL",
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              await readErrorMessage(
+                response,
+                messages?.saveUnexpectedError || "Failed to save cafe.",
+              ),
+            );
+          }
+
+          const payload = await response.json().catch(() => null);
+
+          setSavedPlaces((current) => mergeSavedPlace(current, payload ?? nextPlace));
+        }
+
+        if (!exists) {
+          setBackendSavedPlaceFetch((current) => ({
+            ...current,
+            status: "success",
+            errorMessage: "",
+          }));
+          onMemberDataChanged?.();
+        }
+      } catch (error) {
+        setBackendSavedPlaceFetch((current) => ({
+          ...current,
+          status: "error",
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : messages?.backendBannerFallback || "",
+        }));
+      }
+    },
+    [authMode, deleteSavedPlace, fetchDeleteCheck, messages, onMemberDataChanged, savedPlaces],
+  );
+
   const handleRemoveSavedPlace = useCallback(
     async (placeId) => {
       if (authMode === "guest") {
@@ -534,24 +544,7 @@ export default function useSavedPlacesState({
       }
 
       try {
-        const deleteCheckResponse = await fetch(
-          `${API_BASE_URL}/api/user-saved-cafes/${encodeURIComponent(placeId)}/delete-check`,
-          {
-            method: "GET",
-            credentials: "include",
-          },
-        );
-
-        if (!deleteCheckResponse.ok) {
-          throw new Error(
-            await readErrorMessage(
-              deleteCheckResponse,
-              messages?.saveUnexpectedError || "Failed to check saved cafe records.",
-            ),
-          );
-        }
-
-        const deleteCheck = await deleteCheckResponse.json().catch(() => null);
+        const deleteCheck = await fetchDeleteCheck(placeId);
         const hasRecords = Boolean(deleteCheck?.hasRecords);
         const recordCount = Number(deleteCheck?.recordCount ?? 0);
 
@@ -575,7 +568,7 @@ export default function useSavedPlacesState({
         }));
       }
     },
-    [authMode, deleteSavedPlace, messages],
+    [authMode, deleteSavedPlace, fetchDeleteCheck, messages],
   );
 
   const confirmRemoveSavedPlace = useCallback(async () => {

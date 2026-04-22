@@ -7,8 +7,6 @@ import { getMessages } from "../messages";
 import useSavedPlacesState from "./useSavedPlacesState";
 
 const LOCALE_STORAGE_KEY = "coffeebara.locale.v1";
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
 
 function getInitialLocale() {
   if (typeof window === "undefined") {
@@ -76,7 +74,7 @@ export default function useAppShellState() {
     return payload;
   }, []);
   const refreshAccountSummary = useCallback(async () => {
-    const response = await fetch(`${API_BASE_URL}/api/auth/status`, {
+    const response = await fetch("/api/auth/status", {
       method: "GET",
       credentials: "include",
     });
@@ -206,7 +204,7 @@ export default function useAppShellState() {
 
   const handleLogout = useCallback(async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -224,12 +222,12 @@ export default function useAppShellState() {
     setIsSidebarOpen(false);
     setAuthUser(null);
     setAuthStatus("redirecting");
-    window.location.assign(`${API_BASE_URL}/api/auth/logout/kakao-account`);
+    window.location.assign("/api/auth/logout/kakao-account");
   }, []);
 
   const updateDisplayName = useCallback(async (displayName) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/profile/display-name`, {
+      const response = await fetch("/api/auth/profile/display-name", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

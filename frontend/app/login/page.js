@@ -7,8 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getMessages } from "../messages";
 import coffeebaraLogo from "../coffeebara-logo.png";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
 const LOCALE_STORAGE_KEY = "coffeebara.locale.v1";
 
 function getInitialLocale() {
@@ -65,7 +63,7 @@ export default function LoginPage() {
 
     async function fetchAuthStatus() {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/status`, {
+        const response = await fetch("/api/auth/status", {
           method: "GET",
           credentials: "include",
         });
@@ -98,7 +96,7 @@ export default function LoginPage() {
     setToastMessage("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/guest`, {
+      const response = await fetch("/api/auth/guest", {
         method: "POST",
         credentials: "include",
       });
@@ -117,7 +115,7 @@ export default function LoginPage() {
   const handleKakaoAccess = () => {
     setStatus("loading");
     setToastMessage("");
-    window.location.assign(`${API_BASE_URL}/oauth2/authorization/kakao`);
+    window.location.assign("/api/auth/login/kakao");
   };
 
   useEffect(() => {

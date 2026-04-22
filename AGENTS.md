@@ -507,7 +507,8 @@ Their **role** changes, but their **technical value** remains.
 - Remove or replace only what no longer serves the new goal.
 - Keep the codebase understandable.
 - Avoid over-abstraction too early.
-- Do not introduce unnecessary libraries.
+- Do not introduce unnecessary libraries, but Prisma is an explicitly allowed exception for the current database-access direction.
+- If Prisma is introduced, do it incrementally without removing MyBatis until the migration scope is explicitly requested.
 - Do not widen Zustand usage unless it clearly reduces split ownership or prop drilling in an active user flow.
 - Build useful slices end-to-end.
 

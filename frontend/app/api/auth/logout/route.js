@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { fetchBackend, readJsonResponse } from "../../../lib/server/backend-api";
+import { fetchBackend, readJsonResponse } from "@/app/lib/server/backend-api";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

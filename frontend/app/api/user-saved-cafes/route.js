@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { prisma } from "../../lib/prisma";
-import { fetchBackend, readJsonResponse } from "../../lib/server/backend-api";
-import { requireMemberSession } from "../../lib/server/member-session";
-import { toUserSavedCafeResponse } from "../../lib/server/saved-cafe-response";
+import { prisma } from "@/app/lib/prisma";
+import { fetchBackend, readJsonResponse } from "@/app/lib/server/backend-api";
+import { requireMemberSession } from "@/app/lib/server/member-session";
+import { toUserSavedCafeResponse } from "@/app/lib/server/saved-cafe-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { prisma } from "../../../../lib/prisma";
-import { requireMemberSession } from "../../../../lib/server/member-session";
+import { prisma } from "@/app/lib/prisma";
+import { requireMemberSession } from "@/app/lib/server/member-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

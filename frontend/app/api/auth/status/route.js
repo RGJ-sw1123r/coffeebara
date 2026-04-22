@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { buildMemberAuthSummary } from "../../../lib/server/auth-summary";
-import { getBackendAuthStatus } from "../../../lib/server/member-session";
+import { buildMemberAuthSummary } from "@/app/lib/server/auth-summary";
+import { getBackendAuthStatus } from "@/app/lib/server/member-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

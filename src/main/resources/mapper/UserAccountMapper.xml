@@ -22,23 +22,6 @@
       AND provider_user_id = #{providerUserId}
   </select>
 
-  <select id="findById" resultType="map">
-    SELECT
-      id,
-      auth_provider AS authProvider,
-      provider_user_id AS providerUserId,
-      email,
-      nickname,
-      COALESCE(display_name, nickname) AS displayName,
-      profile_image_url AS profileImageUrl,
-      role,
-      created_at AS createdAt,
-      updated_at AS updatedAt,
-      last_login_at AS lastLoginAt
-    FROM app_user
-    WHERE id = #{id}
-  </select>
-
   <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO app_user (
       auth_provider,
@@ -71,14 +54,6 @@
       updated_at = NOW()
     WHERE auth_provider = #{authProvider}
       AND provider_user_id = #{providerUserId}
-  </update>
-
-  <update id="updateDisplayNameById">
-    UPDATE app_user
-    SET
-      display_name = #{displayName},
-      updated_at = NOW()
-    WHERE id = #{id}
   </update>
 
 </mapper>

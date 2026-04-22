@@ -62,17 +62,29 @@ model UserSavedCafe {
 }
 
 model CafeRecord {
-  id           BigInt   @id @default(autoincrement())
-  appUserId    BigInt   @map("app_user_id")
-  kakaoPlaceId String   @map("kakao_place_id") @db.VarChar(64)
-  recordType   String   @map("record_type") @db.VarChar(40)
-  displayOrder Int      @default(0) @map("display_order")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  appUser      AppUser  @relation(fields: [appUserId], references: [id])
-  cafe         Cafe     @relation(fields: [kakaoPlaceId], references: [kakaoPlaceId])
+  id           BigInt    @id @default(autoincrement())
+  appUserId    BigInt    @map("app_user_id")
+  kakaoPlaceId String    @map("kakao_place_id") @db.VarChar(64)
+  recordType   String    @map("record_type") @db.VarChar(40)
+  displayOrder Int       @default(0) @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  appUser      AppUser   @relation(fields: [appUserId], references: [id])
+  cafe         Cafe      @relation(fields: [kakaoPlaceId], references: [kakaoPlaceId])
+  note         CafeNote?
 
   @@index([appUserId, kakaoPlaceId, displayOrder, id], map: "idx_cafe_record_user_place_order")
   @@index([kakaoPlaceId], map: "idx_cafe_record_place")
   @@map("cafe_record")
+}
+
+model CafeNote {
+  cafeRecordId BigInt     @id @map("cafe_record_id")
+  title        String?    @db.VarChar(255)
+  noteText     String     @map("note_text") @db.VarChar(1000)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  cafeRecord   CafeRecord @relation(fields: [cafeRecordId], references: [id])
+
+  @@map("cafe_note")
 }

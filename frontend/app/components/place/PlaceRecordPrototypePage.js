@@ -12,8 +12,7 @@ import {
   Sidebar,
 } from "../home/Sidebar";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:18080";
+const RECORD_API_BASE_URL = "";
 const WARNING_HEADER_NAME = "X-Coffeebara-Warning";
 const MEDIA_TABLES_MISSING_WARNING = "MEDIA_TABLES_MISSING";
 
@@ -458,7 +457,7 @@ export default function PlaceRecordPrototypePage() {
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}`,
+          `${RECORD_API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}`,
           {
             method: "GET",
             credentials: "include",
@@ -586,7 +585,7 @@ export default function PlaceRecordPrototypePage() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}`,
+        `${RECORD_API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}`,
         {
           method: "POST",
           headers: {
@@ -647,7 +646,7 @@ export default function PlaceRecordPrototypePage() {
     try {
       const responses = await Promise.all(
         persistedRecords.map((record) =>
-          fetch(`${API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}`, {
+          fetch(`${RECORD_API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -708,7 +707,7 @@ export default function PlaceRecordPrototypePage() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}/${record.persistedId}`,
+        `${RECORD_API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}/${record.persistedId}`,
         {
           method: "DELETE",
           credentials: "include",

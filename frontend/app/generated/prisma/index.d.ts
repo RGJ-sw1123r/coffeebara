@@ -33,6 +33,11 @@ export type UserSavedCafe = $Result.DefaultSelection<Prisma.$UserSavedCafePayloa
  * 
  */
 export type CafeRecord = $Result.DefaultSelection<Prisma.$CafeRecordPayload>
+/**
+ * Model CafeNote
+ * 
+ */
+export type CafeNote = $Result.DefaultSelection<Prisma.$CafeNotePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -194,6 +199,16 @@ export class PrismaClient<
     * ```
     */
   get cafeRecord(): Prisma.CafeRecordDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.cafeNote`: Exposes CRUD operations for the **CafeNote** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CafeNotes
+    * const cafeNotes = await prisma.cafeNote.findMany()
+    * ```
+    */
+  get cafeNote(): Prisma.CafeNoteDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -631,7 +646,8 @@ export namespace Prisma {
     AppUser: 'AppUser',
     Cafe: 'Cafe',
     UserSavedCafe: 'UserSavedCafe',
-    CafeRecord: 'CafeRecord'
+    CafeRecord: 'CafeRecord',
+    CafeNote: 'CafeNote'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -647,7 +663,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "appUser" | "cafe" | "userSavedCafe" | "cafeRecord"
+      modelProps: "appUser" | "cafe" | "userSavedCafe" | "cafeRecord" | "cafeNote"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -915,6 +931,72 @@ export namespace Prisma {
           }
         }
       }
+      CafeNote: {
+        payload: Prisma.$CafeNotePayload<ExtArgs>
+        fields: Prisma.CafeNoteFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CafeNoteFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CafeNotePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CafeNoteFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CafeNotePayload>
+          }
+          findFirst: {
+            args: Prisma.CafeNoteFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CafeNotePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CafeNoteFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CafeNotePayload>
+          }
+          findMany: {
+            args: Prisma.CafeNoteFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CafeNotePayload>[]
+          }
+          create: {
+            args: Prisma.CafeNoteCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CafeNotePayload>
+          }
+          createMany: {
+            args: Prisma.CafeNoteCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.CafeNoteDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CafeNotePayload>
+          }
+          update: {
+            args: Prisma.CafeNoteUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CafeNotePayload>
+          }
+          deleteMany: {
+            args: Prisma.CafeNoteDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CafeNoteUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.CafeNoteUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CafeNotePayload>
+          }
+          aggregate: {
+            args: Prisma.CafeNoteAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCafeNote>
+          }
+          groupBy: {
+            args: Prisma.CafeNoteGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CafeNoteGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CafeNoteCountArgs<ExtArgs>
+            result: $Utils.Optional<CafeNoteCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1027,6 +1109,7 @@ export namespace Prisma {
     cafe?: CafeOmit
     userSavedCafe?: UserSavedCafeOmit
     cafeRecord?: CafeRecordOmit
+    cafeNote?: CafeNoteOmit
   }
 
   /* Types for Logging */
@@ -4588,6 +4671,7 @@ export namespace Prisma {
     updatedAt?: boolean
     appUser?: boolean | AppUserDefaultArgs<ExtArgs>
     cafe?: boolean | CafeDefaultArgs<ExtArgs>
+    note?: boolean | CafeRecord$noteArgs<ExtArgs>
   }, ExtArgs["result"]["cafeRecord"]>
 
 
@@ -4606,6 +4690,7 @@ export namespace Prisma {
   export type CafeRecordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     appUser?: boolean | AppUserDefaultArgs<ExtArgs>
     cafe?: boolean | CafeDefaultArgs<ExtArgs>
+    note?: boolean | CafeRecord$noteArgs<ExtArgs>
   }
 
   export type $CafeRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4613,6 +4698,7 @@ export namespace Prisma {
     objects: {
       appUser: Prisma.$AppUserPayload<ExtArgs>
       cafe: Prisma.$CafePayload<ExtArgs>
+      note: Prisma.$CafeNotePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: bigint
@@ -4964,6 +5050,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     appUser<T extends AppUserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AppUserDefaultArgs<ExtArgs>>): Prisma__AppUserClient<$Result.GetResult<Prisma.$AppUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     cafe<T extends CafeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CafeDefaultArgs<ExtArgs>>): Prisma__CafeClient<$Result.GetResult<Prisma.$CafePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    note<T extends CafeRecord$noteArgs<ExtArgs> = {}>(args?: Subset<T, CafeRecord$noteArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5348,6 +5435,25 @@ export namespace Prisma {
   }
 
   /**
+   * CafeRecord.note
+   */
+  export type CafeRecord$noteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    where?: CafeNoteWhereInput
+  }
+
+  /**
    * CafeRecord without action
    */
   export type CafeRecordDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5363,6 +5469,974 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CafeRecordInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CafeNote
+   */
+
+  export type AggregateCafeNote = {
+    _count: CafeNoteCountAggregateOutputType | null
+    _avg: CafeNoteAvgAggregateOutputType | null
+    _sum: CafeNoteSumAggregateOutputType | null
+    _min: CafeNoteMinAggregateOutputType | null
+    _max: CafeNoteMaxAggregateOutputType | null
+  }
+
+  export type CafeNoteAvgAggregateOutputType = {
+    cafeRecordId: number | null
+  }
+
+  export type CafeNoteSumAggregateOutputType = {
+    cafeRecordId: bigint | null
+  }
+
+  export type CafeNoteMinAggregateOutputType = {
+    cafeRecordId: bigint | null
+    title: string | null
+    noteText: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type CafeNoteMaxAggregateOutputType = {
+    cafeRecordId: bigint | null
+    title: string | null
+    noteText: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type CafeNoteCountAggregateOutputType = {
+    cafeRecordId: number
+    title: number
+    noteText: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type CafeNoteAvgAggregateInputType = {
+    cafeRecordId?: true
+  }
+
+  export type CafeNoteSumAggregateInputType = {
+    cafeRecordId?: true
+  }
+
+  export type CafeNoteMinAggregateInputType = {
+    cafeRecordId?: true
+    title?: true
+    noteText?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type CafeNoteMaxAggregateInputType = {
+    cafeRecordId?: true
+    title?: true
+    noteText?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type CafeNoteCountAggregateInputType = {
+    cafeRecordId?: true
+    title?: true
+    noteText?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type CafeNoteAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CafeNote to aggregate.
+     */
+    where?: CafeNoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CafeNotes to fetch.
+     */
+    orderBy?: CafeNoteOrderByWithRelationInput | CafeNoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CafeNoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CafeNotes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CafeNotes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CafeNotes
+    **/
+    _count?: true | CafeNoteCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: CafeNoteAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CafeNoteSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CafeNoteMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CafeNoteMaxAggregateInputType
+  }
+
+  export type GetCafeNoteAggregateType<T extends CafeNoteAggregateArgs> = {
+        [P in keyof T & keyof AggregateCafeNote]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCafeNote[P]>
+      : GetScalarType<T[P], AggregateCafeNote[P]>
+  }
+
+
+
+
+  export type CafeNoteGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CafeNoteWhereInput
+    orderBy?: CafeNoteOrderByWithAggregationInput | CafeNoteOrderByWithAggregationInput[]
+    by: CafeNoteScalarFieldEnum[] | CafeNoteScalarFieldEnum
+    having?: CafeNoteScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CafeNoteCountAggregateInputType | true
+    _avg?: CafeNoteAvgAggregateInputType
+    _sum?: CafeNoteSumAggregateInputType
+    _min?: CafeNoteMinAggregateInputType
+    _max?: CafeNoteMaxAggregateInputType
+  }
+
+  export type CafeNoteGroupByOutputType = {
+    cafeRecordId: bigint
+    title: string | null
+    noteText: string
+    createdAt: Date
+    updatedAt: Date
+    _count: CafeNoteCountAggregateOutputType | null
+    _avg: CafeNoteAvgAggregateOutputType | null
+    _sum: CafeNoteSumAggregateOutputType | null
+    _min: CafeNoteMinAggregateOutputType | null
+    _max: CafeNoteMaxAggregateOutputType | null
+  }
+
+  type GetCafeNoteGroupByPayload<T extends CafeNoteGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CafeNoteGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CafeNoteGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CafeNoteGroupByOutputType[P]>
+            : GetScalarType<T[P], CafeNoteGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CafeNoteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    cafeRecordId?: boolean
+    title?: boolean
+    noteText?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    cafeRecord?: boolean | CafeRecordDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cafeNote"]>
+
+
+
+  export type CafeNoteSelectScalar = {
+    cafeRecordId?: boolean
+    title?: boolean
+    noteText?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type CafeNoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"cafeRecordId" | "title" | "noteText" | "createdAt" | "updatedAt", ExtArgs["result"]["cafeNote"]>
+  export type CafeNoteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cafeRecord?: boolean | CafeRecordDefaultArgs<ExtArgs>
+  }
+
+  export type $CafeNotePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CafeNote"
+    objects: {
+      cafeRecord: Prisma.$CafeRecordPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      cafeRecordId: bigint
+      title: string | null
+      noteText: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["cafeNote"]>
+    composites: {}
+  }
+
+  type CafeNoteGetPayload<S extends boolean | null | undefined | CafeNoteDefaultArgs> = $Result.GetResult<Prisma.$CafeNotePayload, S>
+
+  type CafeNoteCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CafeNoteFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CafeNoteCountAggregateInputType | true
+    }
+
+  export interface CafeNoteDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CafeNote'], meta: { name: 'CafeNote' } }
+    /**
+     * Find zero or one CafeNote that matches the filter.
+     * @param {CafeNoteFindUniqueArgs} args - Arguments to find a CafeNote
+     * @example
+     * // Get one CafeNote
+     * const cafeNote = await prisma.cafeNote.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CafeNoteFindUniqueArgs>(args: SelectSubset<T, CafeNoteFindUniqueArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CafeNote that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CafeNoteFindUniqueOrThrowArgs} args - Arguments to find a CafeNote
+     * @example
+     * // Get one CafeNote
+     * const cafeNote = await prisma.cafeNote.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CafeNoteFindUniqueOrThrowArgs>(args: SelectSubset<T, CafeNoteFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CafeNote that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CafeNoteFindFirstArgs} args - Arguments to find a CafeNote
+     * @example
+     * // Get one CafeNote
+     * const cafeNote = await prisma.cafeNote.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CafeNoteFindFirstArgs>(args?: SelectSubset<T, CafeNoteFindFirstArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CafeNote that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CafeNoteFindFirstOrThrowArgs} args - Arguments to find a CafeNote
+     * @example
+     * // Get one CafeNote
+     * const cafeNote = await prisma.cafeNote.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CafeNoteFindFirstOrThrowArgs>(args?: SelectSubset<T, CafeNoteFindFirstOrThrowArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CafeNotes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CafeNoteFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CafeNotes
+     * const cafeNotes = await prisma.cafeNote.findMany()
+     * 
+     * // Get first 10 CafeNotes
+     * const cafeNotes = await prisma.cafeNote.findMany({ take: 10 })
+     * 
+     * // Only select the `cafeRecordId`
+     * const cafeNoteWithCafeRecordIdOnly = await prisma.cafeNote.findMany({ select: { cafeRecordId: true } })
+     * 
+     */
+    findMany<T extends CafeNoteFindManyArgs>(args?: SelectSubset<T, CafeNoteFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CafeNote.
+     * @param {CafeNoteCreateArgs} args - Arguments to create a CafeNote.
+     * @example
+     * // Create one CafeNote
+     * const CafeNote = await prisma.cafeNote.create({
+     *   data: {
+     *     // ... data to create a CafeNote
+     *   }
+     * })
+     * 
+     */
+    create<T extends CafeNoteCreateArgs>(args: SelectSubset<T, CafeNoteCreateArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CafeNotes.
+     * @param {CafeNoteCreateManyArgs} args - Arguments to create many CafeNotes.
+     * @example
+     * // Create many CafeNotes
+     * const cafeNote = await prisma.cafeNote.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CafeNoteCreateManyArgs>(args?: SelectSubset<T, CafeNoteCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a CafeNote.
+     * @param {CafeNoteDeleteArgs} args - Arguments to delete one CafeNote.
+     * @example
+     * // Delete one CafeNote
+     * const CafeNote = await prisma.cafeNote.delete({
+     *   where: {
+     *     // ... filter to delete one CafeNote
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CafeNoteDeleteArgs>(args: SelectSubset<T, CafeNoteDeleteArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CafeNote.
+     * @param {CafeNoteUpdateArgs} args - Arguments to update one CafeNote.
+     * @example
+     * // Update one CafeNote
+     * const cafeNote = await prisma.cafeNote.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CafeNoteUpdateArgs>(args: SelectSubset<T, CafeNoteUpdateArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CafeNotes.
+     * @param {CafeNoteDeleteManyArgs} args - Arguments to filter CafeNotes to delete.
+     * @example
+     * // Delete a few CafeNotes
+     * const { count } = await prisma.cafeNote.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CafeNoteDeleteManyArgs>(args?: SelectSubset<T, CafeNoteDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CafeNotes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CafeNoteUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CafeNotes
+     * const cafeNote = await prisma.cafeNote.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CafeNoteUpdateManyArgs>(args: SelectSubset<T, CafeNoteUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one CafeNote.
+     * @param {CafeNoteUpsertArgs} args - Arguments to update or create a CafeNote.
+     * @example
+     * // Update or create a CafeNote
+     * const cafeNote = await prisma.cafeNote.upsert({
+     *   create: {
+     *     // ... data to create a CafeNote
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CafeNote we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CafeNoteUpsertArgs>(args: SelectSubset<T, CafeNoteUpsertArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CafeNotes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CafeNoteCountArgs} args - Arguments to filter CafeNotes to count.
+     * @example
+     * // Count the number of CafeNotes
+     * const count = await prisma.cafeNote.count({
+     *   where: {
+     *     // ... the filter for the CafeNotes we want to count
+     *   }
+     * })
+    **/
+    count<T extends CafeNoteCountArgs>(
+      args?: Subset<T, CafeNoteCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CafeNoteCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CafeNote.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CafeNoteAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CafeNoteAggregateArgs>(args: Subset<T, CafeNoteAggregateArgs>): Prisma.PrismaPromise<GetCafeNoteAggregateType<T>>
+
+    /**
+     * Group by CafeNote.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CafeNoteGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CafeNoteGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CafeNoteGroupByArgs['orderBy'] }
+        : { orderBy?: CafeNoteGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CafeNoteGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCafeNoteGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CafeNote model
+   */
+  readonly fields: CafeNoteFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CafeNote.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CafeNoteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    cafeRecord<T extends CafeRecordDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CafeRecordDefaultArgs<ExtArgs>>): Prisma__CafeRecordClient<$Result.GetResult<Prisma.$CafeRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CafeNote model
+   */
+  interface CafeNoteFieldRefs {
+    readonly cafeRecordId: FieldRef<"CafeNote", 'BigInt'>
+    readonly title: FieldRef<"CafeNote", 'String'>
+    readonly noteText: FieldRef<"CafeNote", 'String'>
+    readonly createdAt: FieldRef<"CafeNote", 'DateTime'>
+    readonly updatedAt: FieldRef<"CafeNote", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CafeNote findUnique
+   */
+  export type CafeNoteFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    /**
+     * Filter, which CafeNote to fetch.
+     */
+    where: CafeNoteWhereUniqueInput
+  }
+
+  /**
+   * CafeNote findUniqueOrThrow
+   */
+  export type CafeNoteFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    /**
+     * Filter, which CafeNote to fetch.
+     */
+    where: CafeNoteWhereUniqueInput
+  }
+
+  /**
+   * CafeNote findFirst
+   */
+  export type CafeNoteFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    /**
+     * Filter, which CafeNote to fetch.
+     */
+    where?: CafeNoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CafeNotes to fetch.
+     */
+    orderBy?: CafeNoteOrderByWithRelationInput | CafeNoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CafeNotes.
+     */
+    cursor?: CafeNoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CafeNotes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CafeNotes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CafeNotes.
+     */
+    distinct?: CafeNoteScalarFieldEnum | CafeNoteScalarFieldEnum[]
+  }
+
+  /**
+   * CafeNote findFirstOrThrow
+   */
+  export type CafeNoteFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    /**
+     * Filter, which CafeNote to fetch.
+     */
+    where?: CafeNoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CafeNotes to fetch.
+     */
+    orderBy?: CafeNoteOrderByWithRelationInput | CafeNoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CafeNotes.
+     */
+    cursor?: CafeNoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CafeNotes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CafeNotes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CafeNotes.
+     */
+    distinct?: CafeNoteScalarFieldEnum | CafeNoteScalarFieldEnum[]
+  }
+
+  /**
+   * CafeNote findMany
+   */
+  export type CafeNoteFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    /**
+     * Filter, which CafeNotes to fetch.
+     */
+    where?: CafeNoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CafeNotes to fetch.
+     */
+    orderBy?: CafeNoteOrderByWithRelationInput | CafeNoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CafeNotes.
+     */
+    cursor?: CafeNoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CafeNotes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CafeNotes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CafeNotes.
+     */
+    distinct?: CafeNoteScalarFieldEnum | CafeNoteScalarFieldEnum[]
+  }
+
+  /**
+   * CafeNote create
+   */
+  export type CafeNoteCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CafeNote.
+     */
+    data: XOR<CafeNoteCreateInput, CafeNoteUncheckedCreateInput>
+  }
+
+  /**
+   * CafeNote createMany
+   */
+  export type CafeNoteCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CafeNotes.
+     */
+    data: CafeNoteCreateManyInput | CafeNoteCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CafeNote update
+   */
+  export type CafeNoteUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CafeNote.
+     */
+    data: XOR<CafeNoteUpdateInput, CafeNoteUncheckedUpdateInput>
+    /**
+     * Choose, which CafeNote to update.
+     */
+    where: CafeNoteWhereUniqueInput
+  }
+
+  /**
+   * CafeNote updateMany
+   */
+  export type CafeNoteUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CafeNotes.
+     */
+    data: XOR<CafeNoteUpdateManyMutationInput, CafeNoteUncheckedUpdateManyInput>
+    /**
+     * Filter which CafeNotes to update
+     */
+    where?: CafeNoteWhereInput
+    /**
+     * Limit how many CafeNotes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CafeNote upsert
+   */
+  export type CafeNoteUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CafeNote to update in case it exists.
+     */
+    where: CafeNoteWhereUniqueInput
+    /**
+     * In case the CafeNote found by the `where` argument doesn't exist, create a new CafeNote with this data.
+     */
+    create: XOR<CafeNoteCreateInput, CafeNoteUncheckedCreateInput>
+    /**
+     * In case the CafeNote was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CafeNoteUpdateInput, CafeNoteUncheckedUpdateInput>
+  }
+
+  /**
+   * CafeNote delete
+   */
+  export type CafeNoteDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
+    /**
+     * Filter which CafeNote to delete.
+     */
+    where: CafeNoteWhereUniqueInput
+  }
+
+  /**
+   * CafeNote deleteMany
+   */
+  export type CafeNoteDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CafeNotes to delete
+     */
+    where?: CafeNoteWhereInput
+    /**
+     * Limit how many CafeNotes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CafeNote without action
+   */
+  export type CafeNoteDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CafeNote
+     */
+    select?: CafeNoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CafeNote
+     */
+    omit?: CafeNoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CafeNoteInclude<ExtArgs> | null
   }
 
 
@@ -5440,6 +6514,17 @@ export namespace Prisma {
   export type CafeRecordScalarFieldEnum = (typeof CafeRecordScalarFieldEnum)[keyof typeof CafeRecordScalarFieldEnum]
 
 
+  export const CafeNoteScalarFieldEnum: {
+    cafeRecordId: 'cafeRecordId',
+    title: 'title',
+    noteText: 'noteText',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type CafeNoteScalarFieldEnum = (typeof CafeNoteScalarFieldEnum)[keyof typeof CafeNoteScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -5496,6 +6581,14 @@ export namespace Prisma {
   };
 
   export type CafeRecordOrderByRelevanceFieldEnum = (typeof CafeRecordOrderByRelevanceFieldEnum)[keyof typeof CafeRecordOrderByRelevanceFieldEnum]
+
+
+  export const CafeNoteOrderByRelevanceFieldEnum: {
+    title: 'title',
+    noteText: 'noteText'
+  };
+
+  export type CafeNoteOrderByRelevanceFieldEnum = (typeof CafeNoteOrderByRelevanceFieldEnum)[keyof typeof CafeNoteOrderByRelevanceFieldEnum]
 
 
   /**
@@ -5816,6 +6909,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"CafeRecord"> | Date | string
     appUser?: XOR<AppUserScalarRelationFilter, AppUserWhereInput>
     cafe?: XOR<CafeScalarRelationFilter, CafeWhereInput>
+    note?: XOR<CafeNoteNullableScalarRelationFilter, CafeNoteWhereInput> | null
   }
 
   export type CafeRecordOrderByWithRelationInput = {
@@ -5828,6 +6922,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     appUser?: AppUserOrderByWithRelationInput
     cafe?: CafeOrderByWithRelationInput
+    note?: CafeNoteOrderByWithRelationInput
     _relevance?: CafeRecordOrderByRelevanceInput
   }
 
@@ -5844,6 +6939,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"CafeRecord"> | Date | string
     appUser?: XOR<AppUserScalarRelationFilter, AppUserWhereInput>
     cafe?: XOR<CafeScalarRelationFilter, CafeWhereInput>
+    note?: XOR<CafeNoteNullableScalarRelationFilter, CafeNoteWhereInput> | null
   }, "id">
 
   export type CafeRecordOrderByWithAggregationInput = {
@@ -5872,6 +6968,64 @@ export namespace Prisma {
     displayOrder?: IntWithAggregatesFilter<"CafeRecord"> | number
     createdAt?: DateTimeWithAggregatesFilter<"CafeRecord"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"CafeRecord"> | Date | string
+  }
+
+  export type CafeNoteWhereInput = {
+    AND?: CafeNoteWhereInput | CafeNoteWhereInput[]
+    OR?: CafeNoteWhereInput[]
+    NOT?: CafeNoteWhereInput | CafeNoteWhereInput[]
+    cafeRecordId?: BigIntFilter<"CafeNote"> | bigint | number
+    title?: StringNullableFilter<"CafeNote"> | string | null
+    noteText?: StringFilter<"CafeNote"> | string
+    createdAt?: DateTimeFilter<"CafeNote"> | Date | string
+    updatedAt?: DateTimeFilter<"CafeNote"> | Date | string
+    cafeRecord?: XOR<CafeRecordScalarRelationFilter, CafeRecordWhereInput>
+  }
+
+  export type CafeNoteOrderByWithRelationInput = {
+    cafeRecordId?: SortOrder
+    title?: SortOrderInput | SortOrder
+    noteText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    cafeRecord?: CafeRecordOrderByWithRelationInput
+    _relevance?: CafeNoteOrderByRelevanceInput
+  }
+
+  export type CafeNoteWhereUniqueInput = Prisma.AtLeast<{
+    cafeRecordId?: bigint | number
+    AND?: CafeNoteWhereInput | CafeNoteWhereInput[]
+    OR?: CafeNoteWhereInput[]
+    NOT?: CafeNoteWhereInput | CafeNoteWhereInput[]
+    title?: StringNullableFilter<"CafeNote"> | string | null
+    noteText?: StringFilter<"CafeNote"> | string
+    createdAt?: DateTimeFilter<"CafeNote"> | Date | string
+    updatedAt?: DateTimeFilter<"CafeNote"> | Date | string
+    cafeRecord?: XOR<CafeRecordScalarRelationFilter, CafeRecordWhereInput>
+  }, "cafeRecordId">
+
+  export type CafeNoteOrderByWithAggregationInput = {
+    cafeRecordId?: SortOrder
+    title?: SortOrderInput | SortOrder
+    noteText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: CafeNoteCountOrderByAggregateInput
+    _avg?: CafeNoteAvgOrderByAggregateInput
+    _max?: CafeNoteMaxOrderByAggregateInput
+    _min?: CafeNoteMinOrderByAggregateInput
+    _sum?: CafeNoteSumOrderByAggregateInput
+  }
+
+  export type CafeNoteScalarWhereWithAggregatesInput = {
+    AND?: CafeNoteScalarWhereWithAggregatesInput | CafeNoteScalarWhereWithAggregatesInput[]
+    OR?: CafeNoteScalarWhereWithAggregatesInput[]
+    NOT?: CafeNoteScalarWhereWithAggregatesInput | CafeNoteScalarWhereWithAggregatesInput[]
+    cafeRecordId?: BigIntWithAggregatesFilter<"CafeNote"> | bigint | number
+    title?: StringNullableWithAggregatesFilter<"CafeNote"> | string | null
+    noteText?: StringWithAggregatesFilter<"CafeNote"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"CafeNote"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"CafeNote"> | Date | string
   }
 
   export type AppUserCreateInput = {
@@ -6162,6 +7316,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     appUser: AppUserCreateNestedOneWithoutCafeRecordsInput
     cafe: CafeCreateNestedOneWithoutCafeRecordsInput
+    note?: CafeNoteCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordUncheckedCreateInput = {
@@ -6172,6 +7327,7 @@ export namespace Prisma {
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    note?: CafeNoteUncheckedCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordUpdateInput = {
@@ -6182,6 +7338,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appUser?: AppUserUpdateOneRequiredWithoutCafeRecordsNestedInput
     cafe?: CafeUpdateOneRequiredWithoutCafeRecordsNestedInput
+    note?: CafeNoteUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateInput = {
@@ -6192,6 +7349,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: CafeNoteUncheckedUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordCreateManyInput = {
@@ -6218,6 +7376,61 @@ export namespace Prisma {
     kakaoPlaceId?: StringFieldUpdateOperationsInput | string
     recordType?: StringFieldUpdateOperationsInput | string
     displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CafeNoteCreateInput = {
+    title?: string | null
+    noteText: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    cafeRecord: CafeRecordCreateNestedOneWithoutNoteInput
+  }
+
+  export type CafeNoteUncheckedCreateInput = {
+    cafeRecordId: bigint | number
+    title?: string | null
+    noteText: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CafeNoteUpdateInput = {
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    noteText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    cafeRecord?: CafeRecordUpdateOneRequiredWithoutNoteNestedInput
+  }
+
+  export type CafeNoteUncheckedUpdateInput = {
+    cafeRecordId?: BigIntFieldUpdateOperationsInput | bigint | number
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    noteText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CafeNoteCreateManyInput = {
+    cafeRecordId: bigint | number
+    title?: string | null
+    noteText: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CafeNoteUpdateManyMutationInput = {
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    noteText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CafeNoteUncheckedUpdateManyInput = {
+    cafeRecordId?: BigIntFieldUpdateOperationsInput | bigint | number
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    noteText?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6608,6 +7821,11 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type CafeNoteNullableScalarRelationFilter = {
+    is?: CafeNoteWhereInput | null
+    isNot?: CafeNoteWhereInput | null
+  }
+
   export type CafeRecordOrderByRelevanceInput = {
     fields: CafeRecordOrderByRelevanceFieldEnum | CafeRecordOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -6670,6 +7888,49 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type CafeRecordScalarRelationFilter = {
+    is?: CafeRecordWhereInput
+    isNot?: CafeRecordWhereInput
+  }
+
+  export type CafeNoteOrderByRelevanceInput = {
+    fields: CafeNoteOrderByRelevanceFieldEnum | CafeNoteOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type CafeNoteCountOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
+    title?: SortOrder
+    noteText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CafeNoteAvgOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
+  }
+
+  export type CafeNoteMaxOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
+    title?: SortOrder
+    noteText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CafeNoteMinOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
+    title?: SortOrder
+    noteText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CafeNoteSumOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
   }
 
   export type UserSavedCafeCreateNestedManyWithoutAppUserInput = {
@@ -6912,6 +8173,18 @@ export namespace Prisma {
     connect?: CafeWhereUniqueInput
   }
 
+  export type CafeNoteCreateNestedOneWithoutCafeRecordInput = {
+    create?: XOR<CafeNoteCreateWithoutCafeRecordInput, CafeNoteUncheckedCreateWithoutCafeRecordInput>
+    connectOrCreate?: CafeNoteCreateOrConnectWithoutCafeRecordInput
+    connect?: CafeNoteWhereUniqueInput
+  }
+
+  export type CafeNoteUncheckedCreateNestedOneWithoutCafeRecordInput = {
+    create?: XOR<CafeNoteCreateWithoutCafeRecordInput, CafeNoteUncheckedCreateWithoutCafeRecordInput>
+    connectOrCreate?: CafeNoteCreateOrConnectWithoutCafeRecordInput
+    connect?: CafeNoteWhereUniqueInput
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -6934,6 +8207,40 @@ export namespace Prisma {
     upsert?: CafeUpsertWithoutCafeRecordsInput
     connect?: CafeWhereUniqueInput
     update?: XOR<XOR<CafeUpdateToOneWithWhereWithoutCafeRecordsInput, CafeUpdateWithoutCafeRecordsInput>, CafeUncheckedUpdateWithoutCafeRecordsInput>
+  }
+
+  export type CafeNoteUpdateOneWithoutCafeRecordNestedInput = {
+    create?: XOR<CafeNoteCreateWithoutCafeRecordInput, CafeNoteUncheckedCreateWithoutCafeRecordInput>
+    connectOrCreate?: CafeNoteCreateOrConnectWithoutCafeRecordInput
+    upsert?: CafeNoteUpsertWithoutCafeRecordInput
+    disconnect?: CafeNoteWhereInput | boolean
+    delete?: CafeNoteWhereInput | boolean
+    connect?: CafeNoteWhereUniqueInput
+    update?: XOR<XOR<CafeNoteUpdateToOneWithWhereWithoutCafeRecordInput, CafeNoteUpdateWithoutCafeRecordInput>, CafeNoteUncheckedUpdateWithoutCafeRecordInput>
+  }
+
+  export type CafeNoteUncheckedUpdateOneWithoutCafeRecordNestedInput = {
+    create?: XOR<CafeNoteCreateWithoutCafeRecordInput, CafeNoteUncheckedCreateWithoutCafeRecordInput>
+    connectOrCreate?: CafeNoteCreateOrConnectWithoutCafeRecordInput
+    upsert?: CafeNoteUpsertWithoutCafeRecordInput
+    disconnect?: CafeNoteWhereInput | boolean
+    delete?: CafeNoteWhereInput | boolean
+    connect?: CafeNoteWhereUniqueInput
+    update?: XOR<XOR<CafeNoteUpdateToOneWithWhereWithoutCafeRecordInput, CafeNoteUpdateWithoutCafeRecordInput>, CafeNoteUncheckedUpdateWithoutCafeRecordInput>
+  }
+
+  export type CafeRecordCreateNestedOneWithoutNoteInput = {
+    create?: XOR<CafeRecordCreateWithoutNoteInput, CafeRecordUncheckedCreateWithoutNoteInput>
+    connectOrCreate?: CafeRecordCreateOrConnectWithoutNoteInput
+    connect?: CafeRecordWhereUniqueInput
+  }
+
+  export type CafeRecordUpdateOneRequiredWithoutNoteNestedInput = {
+    create?: XOR<CafeRecordCreateWithoutNoteInput, CafeRecordUncheckedCreateWithoutNoteInput>
+    connectOrCreate?: CafeRecordCreateOrConnectWithoutNoteInput
+    upsert?: CafeRecordUpsertWithoutNoteInput
+    connect?: CafeRecordWhereUniqueInput
+    update?: XOR<XOR<CafeRecordUpdateToOneWithWhereWithoutNoteInput, CafeRecordUpdateWithoutNoteInput>, CafeRecordUncheckedUpdateWithoutNoteInput>
   }
 
   export type NestedBigIntFilter<$PrismaModel = never> = {
@@ -7188,6 +8495,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     cafe: CafeCreateNestedOneWithoutCafeRecordsInput
+    note?: CafeNoteCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordUncheckedCreateWithoutAppUserInput = {
@@ -7197,6 +8505,7 @@ export namespace Prisma {
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    note?: CafeNoteUncheckedCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordCreateOrConnectWithoutAppUserInput = {
@@ -7299,6 +8608,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     appUser: AppUserCreateNestedOneWithoutCafeRecordsInput
+    note?: CafeNoteCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordUncheckedCreateWithoutCafeInput = {
@@ -7308,6 +8618,7 @@ export namespace Prisma {
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    note?: CafeNoteUncheckedCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordCreateOrConnectWithoutCafeInput = {
@@ -7580,6 +8891,25 @@ export namespace Prisma {
     create: XOR<CafeCreateWithoutCafeRecordsInput, CafeUncheckedCreateWithoutCafeRecordsInput>
   }
 
+  export type CafeNoteCreateWithoutCafeRecordInput = {
+    title?: string | null
+    noteText: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CafeNoteUncheckedCreateWithoutCafeRecordInput = {
+    title?: string | null
+    noteText: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CafeNoteCreateOrConnectWithoutCafeRecordInput = {
+    where: CafeNoteWhereUniqueInput
+    create: XOR<CafeNoteCreateWithoutCafeRecordInput, CafeNoteUncheckedCreateWithoutCafeRecordInput>
+  }
+
   export type AppUserUpsertWithoutCafeRecordsInput = {
     update: XOR<AppUserUpdateWithoutCafeRecordsInput, AppUserUncheckedUpdateWithoutCafeRecordsInput>
     create: XOR<AppUserCreateWithoutCafeRecordsInput, AppUserUncheckedCreateWithoutCafeRecordsInput>
@@ -7664,6 +8994,87 @@ export namespace Prisma {
     savedCafes?: UserSavedCafeUncheckedUpdateManyWithoutCafeNestedInput
   }
 
+  export type CafeNoteUpsertWithoutCafeRecordInput = {
+    update: XOR<CafeNoteUpdateWithoutCafeRecordInput, CafeNoteUncheckedUpdateWithoutCafeRecordInput>
+    create: XOR<CafeNoteCreateWithoutCafeRecordInput, CafeNoteUncheckedCreateWithoutCafeRecordInput>
+    where?: CafeNoteWhereInput
+  }
+
+  export type CafeNoteUpdateToOneWithWhereWithoutCafeRecordInput = {
+    where?: CafeNoteWhereInput
+    data: XOR<CafeNoteUpdateWithoutCafeRecordInput, CafeNoteUncheckedUpdateWithoutCafeRecordInput>
+  }
+
+  export type CafeNoteUpdateWithoutCafeRecordInput = {
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    noteText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CafeNoteUncheckedUpdateWithoutCafeRecordInput = {
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    noteText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CafeRecordCreateWithoutNoteInput = {
+    id?: bigint | number
+    recordType: string
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    appUser: AppUserCreateNestedOneWithoutCafeRecordsInput
+    cafe: CafeCreateNestedOneWithoutCafeRecordsInput
+  }
+
+  export type CafeRecordUncheckedCreateWithoutNoteInput = {
+    id?: bigint | number
+    appUserId: bigint | number
+    kakaoPlaceId: string
+    recordType: string
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CafeRecordCreateOrConnectWithoutNoteInput = {
+    where: CafeRecordWhereUniqueInput
+    create: XOR<CafeRecordCreateWithoutNoteInput, CafeRecordUncheckedCreateWithoutNoteInput>
+  }
+
+  export type CafeRecordUpsertWithoutNoteInput = {
+    update: XOR<CafeRecordUpdateWithoutNoteInput, CafeRecordUncheckedUpdateWithoutNoteInput>
+    create: XOR<CafeRecordCreateWithoutNoteInput, CafeRecordUncheckedCreateWithoutNoteInput>
+    where?: CafeRecordWhereInput
+  }
+
+  export type CafeRecordUpdateToOneWithWhereWithoutNoteInput = {
+    where?: CafeRecordWhereInput
+    data: XOR<CafeRecordUpdateWithoutNoteInput, CafeRecordUncheckedUpdateWithoutNoteInput>
+  }
+
+  export type CafeRecordUpdateWithoutNoteInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    recordType?: StringFieldUpdateOperationsInput | string
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    appUser?: AppUserUpdateOneRequiredWithoutCafeRecordsNestedInput
+    cafe?: CafeUpdateOneRequiredWithoutCafeRecordsNestedInput
+  }
+
+  export type CafeRecordUncheckedUpdateWithoutNoteInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    appUserId?: BigIntFieldUpdateOperationsInput | bigint | number
+    kakaoPlaceId?: StringFieldUpdateOperationsInput | string
+    recordType?: StringFieldUpdateOperationsInput | string
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserSavedCafeCreateManyAppUserInput = {
     id?: bigint | number
     kakaoPlaceId: string
@@ -7712,6 +9123,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     cafe?: CafeUpdateOneRequiredWithoutCafeRecordsNestedInput
+    note?: CafeNoteUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateWithoutAppUserInput = {
@@ -7721,6 +9133,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: CafeNoteUncheckedUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateManyWithoutAppUserInput = {
@@ -7780,6 +9193,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appUser?: AppUserUpdateOneRequiredWithoutCafeRecordsNestedInput
+    note?: CafeNoteUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateWithoutCafeInput = {
@@ -7789,6 +9203,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: CafeNoteUncheckedUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateManyWithoutCafeInput = {

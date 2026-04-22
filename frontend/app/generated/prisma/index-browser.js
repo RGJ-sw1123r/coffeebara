@@ -168,6 +168,14 @@ exports.Prisma.CafeRecordScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CafeNoteScalarFieldEnum = {
+  cafeRecordId: 'cafeRecordId',
+  title: 'title',
+  noteText: 'noteText',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -208,12 +216,18 @@ exports.Prisma.CafeRecordOrderByRelevanceFieldEnum = {
   recordType: 'recordType'
 };
 
+exports.Prisma.CafeNoteOrderByRelevanceFieldEnum = {
+  title: 'title',
+  noteText: 'noteText'
+};
+
 
 exports.Prisma.ModelName = {
   AppUser: 'AppUser',
   Cafe: 'Cafe',
   UserSavedCafe: 'UserSavedCafe',
-  CafeRecord: 'CafeRecord'
+  CafeRecord: 'CafeRecord',
+  CafeNote: 'CafeNote'
 };
 
 /**

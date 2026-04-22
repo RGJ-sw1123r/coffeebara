@@ -22,14 +22,14 @@ function toIsoString(value) {
   return value.toISOString();
 }
 
-export function toCafeNoteResponse(record) {
+export function toCafeNoteResponse(record, attachments = []) {
   return {
     id: toNumber(record?.id),
     kakaoPlaceId: toStringValue(record?.kakaoPlaceId),
     title: toStringValue(record?.note?.title),
     noteText: toStringValue(record?.note?.noteText),
     displayOrder: toNumber(record?.displayOrder) ?? 0,
-    attachments: [],
+    attachments,
     createdAt: toIsoString(record?.createdAt),
     updatedAt: toIsoString(record?.updatedAt),
   };

@@ -88,3 +88,37 @@ model CafeNote {
 
   @@map("cafe_note")
 }
+
+model MediaAsset {
+  id               BigInt            @id @default(autoincrement())
+  storageKey       String            @unique(map: "uk_media_asset_storage_key") @map("storage_key") @db.VarChar(500)
+  originalFileName String            @map("original_file_name") @db.VarChar(255)
+  contentType      String            @map("content_type") @db.VarChar(100)
+  fileSize         BigInt            @map("file_size")
+  width            Int?
+  height           Int?
+  checksum         String            @db.VarChar(128)
+  createdAt        DateTime          @default(now()) @map("created_at")
+  attachments      MediaAttachment[]
+
+  @@index([checksum], map: "idx_media_asset_checksum")
+  @@map("media_asset")
+}
+
+model MediaAttachment {
+  id             BigInt      @id @default(autoincrement())
+  mediaAssetId   BigInt      @map("media_asset_id")
+  ownerType      String      @map("owner_type") @db.VarChar(40)
+  ownerId        BigInt      @map("owner_id")
+  attachmentRole String      @map("attachment_role") @db.VarChar(40)
+  sortOrder      Int         @default(0) @map("sort_order")
+  isCover        Boolean     @default(false) @map("is_cover")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  deletedAt      DateTime?   @map("deleted_at")
+  mediaAsset     MediaAsset  @relation(fields: [mediaAssetId], references: [id])
+
+  @@index([ownerType, ownerId, deletedAt, sortOrder, id], map: "idx_media_attachment_owner_lookup")
+  @@index([mediaAssetId], map: "idx_media_attachment_asset")
+  @@index([ownerType, ownerId, attachmentRole, deletedAt], map: "idx_media_attachment_owner_role")
+  @@map("media_attachment")
+}

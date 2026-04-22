@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/lib/prisma";
 import { toCafeNoteResponse } from "@/app/lib/server/cafe-note-response";
+import { groupMediaAttachmentsByOwnerId } from "@/app/lib/server/media-attachment-response";
 import { requireMemberSession } from "@/app/lib/server/member-session";
 
 export const runtime = "nodejs";
@@ -50,7 +51,22 @@ export async function GET(request, context) {
       );
     }
 
-    return NextResponse.json(toCafeNoteResponse(record));
+    const attachments = await prisma.mediaAttachment.findMany({
+      where: {
+        ownerType: "CAFE_RECORD",
+        ownerId: record.id,
+        deletedAt: null,
+      },
+      include: {
+        mediaAsset: true,
+      },
+      orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+    });
+
+    const attachmentsByRecordId = groupMediaAttachmentsByOwnerId(attachments);
+    return NextResponse.json(
+      toCafeNoteResponse(record, attachmentsByRecordId.get(Number(record.id)) || []),
+    );
   } catch {
     return NextResponse.json(
       {

@@ -176,6 +176,30 @@ exports.Prisma.CafeNoteScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.MediaAssetScalarFieldEnum = {
+  id: 'id',
+  storageKey: 'storageKey',
+  originalFileName: 'originalFileName',
+  contentType: 'contentType',
+  fileSize: 'fileSize',
+  width: 'width',
+  height: 'height',
+  checksum: 'checksum',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MediaAttachmentScalarFieldEnum = {
+  id: 'id',
+  mediaAssetId: 'mediaAssetId',
+  ownerType: 'ownerType',
+  ownerId: 'ownerId',
+  attachmentRole: 'attachmentRole',
+  sortOrder: 'sortOrder',
+  isCover: 'isCover',
+  createdAt: 'createdAt',
+  deletedAt: 'deletedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -221,13 +245,27 @@ exports.Prisma.CafeNoteOrderByRelevanceFieldEnum = {
   noteText: 'noteText'
 };
 
+exports.Prisma.MediaAssetOrderByRelevanceFieldEnum = {
+  storageKey: 'storageKey',
+  originalFileName: 'originalFileName',
+  contentType: 'contentType',
+  checksum: 'checksum'
+};
+
+exports.Prisma.MediaAttachmentOrderByRelevanceFieldEnum = {
+  ownerType: 'ownerType',
+  attachmentRole: 'attachmentRole'
+};
+
 
 exports.Prisma.ModelName = {
   AppUser: 'AppUser',
   Cafe: 'Cafe',
   UserSavedCafe: 'UserSavedCafe',
   CafeRecord: 'CafeRecord',
-  CafeNote: 'CafeNote'
+  CafeNote: 'CafeNote',
+  MediaAsset: 'MediaAsset',
+  MediaAttachment: 'MediaAttachment'
 };
 
 /**

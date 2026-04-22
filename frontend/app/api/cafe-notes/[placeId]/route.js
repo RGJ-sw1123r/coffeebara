@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/lib/prisma";
 import { toCafeNoteResponse } from "@/app/lib/server/cafe-note-response";
+import { groupMediaAttachmentsByOwnerId } from "@/app/lib/server/media-attachment-response";
 import { requireMemberSession } from "@/app/lib/server/member-session";
 
 export const runtime = "nodejs";
@@ -64,6 +65,28 @@ async function findOwnedTextRecord(appUserId, placeId, recordId) {
   });
 }
 
+async function findAttachmentsByRecordIds(recordIds) {
+  if (!recordIds.length) {
+    return new Map();
+  }
+
+  const attachments = await prisma.mediaAttachment.findMany({
+    where: {
+      ownerType: "CAFE_RECORD",
+      deletedAt: null,
+      ownerId: {
+        in: recordIds,
+      },
+    },
+    include: {
+      mediaAsset: true,
+    },
+    orderBy: [{ ownerId: "asc" }, { sortOrder: "asc" }, { id: "asc" }],
+  });
+
+  return groupMediaAttachmentsByOwnerId(attachments);
+}
+
 export async function GET(request, context) {
   const session = await requireMemberSession(request);
   if (session.error) {
@@ -89,8 +112,14 @@ export async function GET(request, context) {
       orderBy: [{ displayOrder: "asc" }, { id: "asc" }],
     });
 
+    const attachmentsByRecordId = await findAttachmentsByRecordIds(
+      records.map((record) => record.id),
+    );
+
     return NextResponse.json(
-      records.filter((record) => record.note).map(toCafeNoteResponse),
+      records
+        .filter((record) => record.note)
+        .map((record) => toCafeNoteResponse(record, attachmentsByRecordId.get(Number(record.id)) || [])),
     );
   } catch {
     return NextResponse.json(
@@ -174,7 +203,10 @@ export async function POST(request, context) {
         });
       });
 
-      return NextResponse.json(toCafeNoteResponse(updatedRecord));
+      const attachmentsByRecordId = await findAttachmentsByRecordIds([updatedRecord.id]);
+      return NextResponse.json(
+        toCafeNoteResponse(updatedRecord, attachmentsByRecordId.get(Number(updatedRecord.id)) || []),
+      );
     }
 
     const createdRecord = await prisma.$transaction(async (tx) => {
@@ -199,7 +231,7 @@ export async function POST(request, context) {
       return record;
     });
 
-    return NextResponse.json(toCafeNoteResponse(createdRecord));
+    return NextResponse.json(toCafeNoteResponse(createdRecord, []));
   } catch {
     return NextResponse.json(
       {

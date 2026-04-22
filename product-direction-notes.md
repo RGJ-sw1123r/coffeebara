@@ -40,7 +40,8 @@ What still carries forward:
 - Kakao login
 - place search and place persistence
 - `kakao_place_id` based place handling
-- Spring Boot + MyBatis + MariaDB structure
+- Spring Boot + MariaDB structure
+- a mostly completed Prisma migration path for active CRUD
 - existing frontend interaction patterns
 - implementation notes and AI collaboration records
 
@@ -84,6 +85,7 @@ The current active product scope should be understood as follows:
 - member saved cafes
 - guest saved cafes in local browser state
 - member cafe-linked text records
+- record image attachment metadata and linking
 - place-aware archive flow
 - archive-oriented account and profile structure
 
@@ -94,6 +96,38 @@ The current persistence model is:
 - guest saved cafes as temporary browser state
 - `cafe_record` as the parent layer for member-owned cafe-linked records
 - `cafe_note` as the current text-record payload layer
+- `media_asset` as local file metadata
+- `media_attachment` as the attachment link layer for record-owned files
+
+The current runtime boundary is also important:
+
+- the active `frontend` app now uses local Next.js route handlers plus Prisma for saved-cafe CRUD
+- the active `frontend` app also uses local Next.js route handlers plus Prisma for cafe-note and record CRUD
+- the active text-record payload returned to the frontend is now assembled from Prisma-backed routes
+- guest saved cafes remain browser-local
+- in practice, active CRUD should now be understood as Prisma-backed
+- the remaining Spring/MyBatis boundaries are intentionally narrow:
+  - Kakao login-time `app_user` upsert
+  - `cafe` cache/master upsert
+
+So the current project should be described this way:
+
+- active archive-facing CRUD migration is effectively complete
+- new UI and new feature slices should attach to Prisma by default
+- the remaining MyBatis usage is an intentional exception boundary, not the center of ongoing CRUD work
+
+That exception boundary was kept for a practical reason:
+
+- Kakao OAuth and UserInfo handling are still deeply tied to the current Spring Security flow
+- the `app_user` upsert happens naturally inside that login path
+- the `cafe` master upsert is also already stably coupled to Kakao place lookup and refresh on the Spring side
+- forcing those paths into the frontend layer right now would require a much larger ownership and architecture change than the project actually needs
+
+So the project chose the boundary that best fits its current scale:
+
+- archive-facing CRUD moved to Prisma
+- Kakao-coupled login and place-master upsert remain on Spring/MyBatis
+  because that is the lower-cost and more coherent structure for the current product
 
 Future bean and brewing records should extend the same record-centered structure.
 
@@ -152,10 +186,5 @@ These are small enough to build realistically and meaningful enough to make the 
 
 ## 10. Final Framing
 
-Coffeebara should continue in the same repository.
-
 The earlier phase, internally called **v1**, should be treated as a preserved implementation milestone rather than the current product baseline.
-The current phase should stay focused on a personal brewing record and coffee archive system.
-
-The goal is not to erase earlier work.
-The goal is to make the existing codebase serve a stronger and more durable product center.
+The current phase is a personal brewing record and coffee archive system built on the same repository continuity.

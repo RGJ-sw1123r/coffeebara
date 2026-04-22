@@ -4,16 +4,11 @@
 
 ### Project identity
 
-This project continues from the existing **Coffeebara** repository.
-
-It does **not** move to a separate v2 repository.
-It does **not** preserve the earlier phase mainly through branch strategy.
-
-Instead:
+This project continues in the existing **Coffeebara** repository.
 
 - the current repository remains the main project
-- the earlier cafe exploration and recommendation-oriented phase is preserved as **v1**
-- the product direction is being refocused **inside the same repository**
+- the earlier cafe exploration and recommendation-oriented phase may be referred to internally as **v1**
+- the product direction is being refocused inside the same repository
 
 The current direction is:
 
@@ -41,9 +36,7 @@ The product should feel like a **personal coffee logbook with cafe context**, no
 - guest-first flow
 - recommendation-oriented product assumptions
 
-v1 remains an important earlier phase.
-
-However, v1 is **not** the current main direction.
+v1 is an earlier phase, not the current main direction.
 
 Its role now is:
 
@@ -54,10 +47,6 @@ Its role now is:
 
 ### Repository continuity rule
 
-Do **not** treat this repository as abandoned.
-
-Do **not** create a symbolic "fresh start" by pretending the earlier work has no value.
-
 The correct interpretation is:
 
 - Coffeebara v1 already exists in this repository
@@ -65,9 +54,7 @@ The correct interpretation is:
 - those assumptions were reviewed and partially rejected
 - the repository now continues forward with a different product center
 
-Important:
-
-- preserve v1 as a documented milestone
+- preserve v1 as a documented milestone when that context is useful
 - keep repository continuity
 - reuse working technical assets when they still fit
 - do not rely on branches as the main preservation method
@@ -103,46 +90,39 @@ It should not pretend to be a public recommendation platform.
 
 ## 2. Current runtime reality
 
-### Important current-state rule
-
-Do **not** describe the current runtime as if the full archive/record product were already complete.
-
-That would be inaccurate.
-
 As of the current codebase state:
 
 - cafe search is active
 - auth and account persistence are active
 - cafe cache/master persistence into `cafe` is active
 - member saved-cafe persistence into `user_saved_cafe` is active
+- member cafe-linked record and note CRUD are active
 - guest saved-cafe behavior is local-storage centered
-- frontend saved-cafe state is split by auth mode:
-  - members are hydrated from backend saved-cafe APIs
-  - guests remain local-storage centered
-- the old persistence-oriented interpretation has already been partially removed, not merely "planned for decoupling"
-
-If documentation or generated text describes the current project as still heavily centered on place persistence, that description should be corrected.
+- active archive-facing CRUD is now Prisma-based through frontend local routes
+- the main remaining MyBatis boundaries are intentional exceptions, not unfinished migration by default
 
 ### Active backend reality
 
 The currently active backend scope is centered on:
 
 - Kakao OAuth login
-- user account upsert / profile handling
+- login-time `app_user` upsert / profile source handling
 - auth status and guest flow
 - cafe keyword search
 - cafe detail lookup
 - single-row or search-result cafe upsert into `cafe`
 - DB-first cafe detail lookup with stale Kakao refresh
-- member saved-cafe CRUD through `user_saved_cafe`
-- member cafe-scoped text note CRUD through `cafe_note`
-- member text-note parent record management through `cafe_record`
-- local-file image attachment upload for `CAFE_RECORD`
-- `media_asset` metadata persistence and `media_attachment` owner-link persistence
-- record detail / list attachment lookup with warning fallback when media tables are not yet provisioned
-- member cafe-note `display_order` persistence
 - caching and rate limiting around search flows
 - place-cache logic reused to support the current cafe reference layer
+
+Important interpretation:
+
+- active saved-cafe, record, note, and attachment CRUD now run through frontend local routes backed by Prisma
+- the backend is no longer the main runtime path for those archive-facing CRUD flows
+- the main remaining MyBatis runtime boundaries are:
+  - Kakao login-time `app_user` upsert inside the Spring Security flow
+  - `cafe` cache/master upsert tied to Kakao place lookup and refresh handling
+- those boundaries remain because moving them into the frontend/Next layer would require larger auth and ownership restructuring than the project currently needs
 
 The repository may still contain map-related lookup paths, bounds-based search paths, and related compatibility logic.
 Interpret those carefully.
@@ -156,16 +136,21 @@ The currently active frontend scope is centered on:
 - app shell and current shell UI
 - keyword search
 - home search/map shared state managed through a narrow Zustand store
-- member saved-cafe UI flow backed by backend APIs
+- member saved-cafe UI flow backed by frontend local routes and Prisma
 - guest saved-cafe UI flow backed by local state / local storage
-- member place detail page text-note flow backed by `cafe_note`
+- member place detail page text-note flow backed by frontend local routes and Prisma
 - text-note create / edit / delete / reorder interactions in the place detail page
+- member cafe-linked record detail / delete flow backed by frontend local routes and Prisma
 - save-cafe delete-confirm modal instead of native browser confirm
 - UI copy for the active shell / note flow should be interpreted through the locale message layer in `frontend/app/messages.js`
 - lightweight place-profile tagging in the frontend state
 - account menu summary UI for saved cafe count
 
 Important interpretation:
+
+- active CRUD migration is effectively complete for the current archive-facing UI
+- new UI and new archive features should attach to Prisma by default
+- image attachment persistence is prepared in the Prisma/local-route layer, but the full upload UI is not yet an active product-complete flow
 
 - the current Zustand usage is intentionally narrow
 - Zustand is currently for home search/map shared state, not for every frontend domain
@@ -195,7 +180,7 @@ Important interpretation:
 - user ownership and save state belong in a separate table linked to `app_user`
 - `cafe_record` is the member-owned parent record layer for cafe-linked archive items
 - `cafe_note` is an early member-owned text record layer, not the final archive model
-- current image upload is only for `CAFE_RECORD`, not for every future archive domain
+- current attachment persistence is scoped to `CAFE_RECORD`, not to every future archive domain
 - local file storage should use `app.media.storage-root` and persist only relative `storage_key` values
 - text-note ordering and deletion should be interpreted through `cafe_record`, not as `cafe_note`-local concerns
 - guest demo behavior is an intentional product decision, not a temporary bug
@@ -223,6 +208,11 @@ The current auth/account implementation includes:
 - `display_name` editing from the account menu
 - logout that, for Kakao users, can include Kakao account logout for shared environments
 
+Important implementation boundary:
+
+- login-time `app_user` upsert remains in Spring/MyBatis because it is part of the Kakao OAuth and Spring Security ownership boundary
+- profile reads and edits used by the active frontend runtime can be handled outside that boundary
+
 When updating auth flows, maintain this distinction:
 
 - `nickname` is provider data
@@ -247,6 +237,11 @@ They are also **not** to be framed as recommendation-candidate accumulation.
 
 Cafes are context, not the product center.
 
+Important implementation boundary:
+
+- `cafe` upsert remains in Spring/MyBatis because it is already stably coupled to Kakao place lookup, refresh, and cache/master handling
+- new archive-facing CRUD should not be forced back through that boundary unless the feature genuinely depends on Kakao-side place synchronization
+
 ### Near-term active reality
 
 Right now, the repository is closer to:
@@ -256,8 +251,8 @@ Right now, the repository is closer to:
 - archive-oriented product reframing
 - frontend shell refinement
 - active cafe cache/master persistence
-- active member saved-cafe persistence
-- active member cafe text-note prototype persistence
+- active member saved-cafe Prisma persistence
+- active member cafe-linked record and text-note Prisma persistence
 - guest sample/demo groundwork derived from the member note flow
 - an archive-oriented interpretation of the existing place layer
 
@@ -281,15 +276,11 @@ If legacy schema, mapper, endpoint, compatibility path, or helper method still e
 
 ### Special note about cafe persistence
 
-There may still be remnants of earlier persistence-oriented structure in the repository.
-
-Interpret them carefully.
-
 Rules:
 
 - do not describe member saved-cafe DB persistence as if it already means the archive product is complete
 - do not say the app is still primarily running on a storage-first v1 runtime path
-- do not frame the project as merely waiting for decoupling if removal has already progressed in the live path
+- do not frame the project as merely waiting for decoupling when active CRUD has already moved to Prisma
 - distinguish between **legacy remnants**, **compatibility leftovers**, and **active runtime behavior**
 - distinguish clearly between:
   - `cafe` as place cache / master data
@@ -493,7 +484,8 @@ These existing assets are worth keeping and reusing when practical:
 - account persistence through `app_user`
 - Kakao Map integration
 - cafe search and cafe selection flow
-- Spring Boot + MyBatis + MariaDB base structure
+- Spring Boot + MariaDB base structure
+- Prisma-based archive CRUD structure in the frontend local-route layer
 - frontend app structure and current UI groundwork
 - caching and rate limiting patterns where still relevant
 
@@ -508,7 +500,11 @@ Their **role** changes, but their **technical value** remains.
 - Keep the codebase understandable.
 - Avoid over-abstraction too early.
 - Do not introduce unnecessary libraries, but Prisma is an explicitly allowed exception for the current database-access direction.
-- If Prisma is introduced, do it incrementally without removing MyBatis until the migration scope is explicitly requested.
+- Active archive-facing CRUD has already moved to Prisma.
+- New UI and new archive features should default to Prisma unless they clearly belong to an intentional Spring/Kakao boundary.
+- Keep MyBatis only where it is structurally justified, especially:
+  - Kakao login-time `app_user` upsert in Spring Security
+  - `cafe` cache/master upsert tied to Kakao place synchronization
 - Do not widen Zustand usage unless it clearly reduces split ownership or prop drilling in an active user flow.
 - Build useful slices end-to-end.
 

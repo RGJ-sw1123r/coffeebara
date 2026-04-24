@@ -39,6 +39,11 @@ export type CafeRecord = $Result.DefaultSelection<Prisma.$CafeRecordPayload>
  */
 export type CafeNote = $Result.DefaultSelection<Prisma.$CafeNotePayload>
 /**
+ * Model BeanRecord
+ * 
+ */
+export type BeanRecord = $Result.DefaultSelection<Prisma.$BeanRecordPayload>
+/**
  * Model MediaAsset
  * 
  */
@@ -219,6 +224,16 @@ export class PrismaClient<
     * ```
     */
   get cafeNote(): Prisma.CafeNoteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.beanRecord`: Exposes CRUD operations for the **BeanRecord** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BeanRecords
+    * const beanRecords = await prisma.beanRecord.findMany()
+    * ```
+    */
+  get beanRecord(): Prisma.BeanRecordDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.mediaAsset`: Exposes CRUD operations for the **MediaAsset** model.
@@ -678,6 +693,7 @@ export namespace Prisma {
     UserSavedCafe: 'UserSavedCafe',
     CafeRecord: 'CafeRecord',
     CafeNote: 'CafeNote',
+    BeanRecord: 'BeanRecord',
     MediaAsset: 'MediaAsset',
     MediaAttachment: 'MediaAttachment'
   };
@@ -695,7 +711,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "appUser" | "cafe" | "userSavedCafe" | "cafeRecord" | "cafeNote" | "mediaAsset" | "mediaAttachment"
+      modelProps: "appUser" | "cafe" | "userSavedCafe" | "cafeRecord" | "cafeNote" | "beanRecord" | "mediaAsset" | "mediaAttachment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1029,6 +1045,72 @@ export namespace Prisma {
           }
         }
       }
+      BeanRecord: {
+        payload: Prisma.$BeanRecordPayload<ExtArgs>
+        fields: Prisma.BeanRecordFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BeanRecordFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BeanRecordPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BeanRecordFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BeanRecordPayload>
+          }
+          findFirst: {
+            args: Prisma.BeanRecordFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BeanRecordPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BeanRecordFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BeanRecordPayload>
+          }
+          findMany: {
+            args: Prisma.BeanRecordFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BeanRecordPayload>[]
+          }
+          create: {
+            args: Prisma.BeanRecordCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BeanRecordPayload>
+          }
+          createMany: {
+            args: Prisma.BeanRecordCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.BeanRecordDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BeanRecordPayload>
+          }
+          update: {
+            args: Prisma.BeanRecordUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BeanRecordPayload>
+          }
+          deleteMany: {
+            args: Prisma.BeanRecordDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BeanRecordUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.BeanRecordUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BeanRecordPayload>
+          }
+          aggregate: {
+            args: Prisma.BeanRecordAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBeanRecord>
+          }
+          groupBy: {
+            args: Prisma.BeanRecordGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BeanRecordGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BeanRecordCountArgs<ExtArgs>
+            result: $Utils.Optional<BeanRecordCountAggregateOutputType> | number
+          }
+        }
+      }
       MediaAsset: {
         payload: Prisma.$MediaAssetPayload<ExtArgs>
         fields: Prisma.MediaAssetFieldRefs
@@ -1274,6 +1356,7 @@ export namespace Prisma {
     userSavedCafe?: UserSavedCafeOmit
     cafeRecord?: CafeRecordOmit
     cafeNote?: CafeNoteOmit
+    beanRecord?: BeanRecordOmit
     mediaAsset?: MediaAssetOmit
     mediaAttachment?: MediaAttachmentOmit
   }
@@ -4869,6 +4952,7 @@ export namespace Prisma {
     appUser?: boolean | AppUserDefaultArgs<ExtArgs>
     cafe?: boolean | CafeDefaultArgs<ExtArgs>
     note?: boolean | CafeRecord$noteArgs<ExtArgs>
+    bean?: boolean | CafeRecord$beanArgs<ExtArgs>
   }, ExtArgs["result"]["cafeRecord"]>
 
 
@@ -4888,6 +4972,7 @@ export namespace Prisma {
     appUser?: boolean | AppUserDefaultArgs<ExtArgs>
     cafe?: boolean | CafeDefaultArgs<ExtArgs>
     note?: boolean | CafeRecord$noteArgs<ExtArgs>
+    bean?: boolean | CafeRecord$beanArgs<ExtArgs>
   }
 
   export type $CafeRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4896,6 +4981,7 @@ export namespace Prisma {
       appUser: Prisma.$AppUserPayload<ExtArgs>
       cafe: Prisma.$CafePayload<ExtArgs>
       note: Prisma.$CafeNotePayload<ExtArgs> | null
+      bean: Prisma.$BeanRecordPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: bigint
@@ -5248,6 +5334,7 @@ export namespace Prisma {
     appUser<T extends AppUserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AppUserDefaultArgs<ExtArgs>>): Prisma__AppUserClient<$Result.GetResult<Prisma.$AppUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     cafe<T extends CafeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CafeDefaultArgs<ExtArgs>>): Prisma__CafeClient<$Result.GetResult<Prisma.$CafePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     note<T extends CafeRecord$noteArgs<ExtArgs> = {}>(args?: Subset<T, CafeRecord$noteArgs<ExtArgs>>): Prisma__CafeNoteClient<$Result.GetResult<Prisma.$CafeNotePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    bean<T extends CafeRecord$beanArgs<ExtArgs> = {}>(args?: Subset<T, CafeRecord$beanArgs<ExtArgs>>): Prisma__BeanRecordClient<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5648,6 +5735,25 @@ export namespace Prisma {
      */
     include?: CafeNoteInclude<ExtArgs> | null
     where?: CafeNoteWhereInput
+  }
+
+  /**
+   * CafeRecord.bean
+   */
+  export type CafeRecord$beanArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    where?: BeanRecordWhereInput
   }
 
   /**
@@ -6634,6 +6740,1107 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CafeNoteInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BeanRecord
+   */
+
+  export type AggregateBeanRecord = {
+    _count: BeanRecordCountAggregateOutputType | null
+    _avg: BeanRecordAvgAggregateOutputType | null
+    _sum: BeanRecordSumAggregateOutputType | null
+    _min: BeanRecordMinAggregateOutputType | null
+    _max: BeanRecordMaxAggregateOutputType | null
+  }
+
+  export type BeanRecordAvgAggregateOutputType = {
+    cafeRecordId: number | null
+    altitudeMeters: number | null
+    purchasePrice: number | null
+    quantityGrams: number | null
+  }
+
+  export type BeanRecordSumAggregateOutputType = {
+    cafeRecordId: bigint | null
+    altitudeMeters: number | null
+    purchasePrice: number | null
+    quantityGrams: number | null
+  }
+
+  export type BeanRecordMinAggregateOutputType = {
+    cafeRecordId: bigint | null
+    beanName: string | null
+    originCountry: string | null
+    originRegion: string | null
+    beanVariety: string | null
+    processType: string | null
+    roastLevel: string | null
+    roastDate: Date | null
+    altitudeMeters: number | null
+    tastingNotes: string | null
+    purchaseDate: Date | null
+    purchasePrice: number | null
+    quantityGrams: number | null
+    memo: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BeanRecordMaxAggregateOutputType = {
+    cafeRecordId: bigint | null
+    beanName: string | null
+    originCountry: string | null
+    originRegion: string | null
+    beanVariety: string | null
+    processType: string | null
+    roastLevel: string | null
+    roastDate: Date | null
+    altitudeMeters: number | null
+    tastingNotes: string | null
+    purchaseDate: Date | null
+    purchasePrice: number | null
+    quantityGrams: number | null
+    memo: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BeanRecordCountAggregateOutputType = {
+    cafeRecordId: number
+    beanName: number
+    originCountry: number
+    originRegion: number
+    beanVariety: number
+    processType: number
+    roastLevel: number
+    roastDate: number
+    altitudeMeters: number
+    tastingNotes: number
+    purchaseDate: number
+    purchasePrice: number
+    quantityGrams: number
+    memo: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type BeanRecordAvgAggregateInputType = {
+    cafeRecordId?: true
+    altitudeMeters?: true
+    purchasePrice?: true
+    quantityGrams?: true
+  }
+
+  export type BeanRecordSumAggregateInputType = {
+    cafeRecordId?: true
+    altitudeMeters?: true
+    purchasePrice?: true
+    quantityGrams?: true
+  }
+
+  export type BeanRecordMinAggregateInputType = {
+    cafeRecordId?: true
+    beanName?: true
+    originCountry?: true
+    originRegion?: true
+    beanVariety?: true
+    processType?: true
+    roastLevel?: true
+    roastDate?: true
+    altitudeMeters?: true
+    tastingNotes?: true
+    purchaseDate?: true
+    purchasePrice?: true
+    quantityGrams?: true
+    memo?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BeanRecordMaxAggregateInputType = {
+    cafeRecordId?: true
+    beanName?: true
+    originCountry?: true
+    originRegion?: true
+    beanVariety?: true
+    processType?: true
+    roastLevel?: true
+    roastDate?: true
+    altitudeMeters?: true
+    tastingNotes?: true
+    purchaseDate?: true
+    purchasePrice?: true
+    quantityGrams?: true
+    memo?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BeanRecordCountAggregateInputType = {
+    cafeRecordId?: true
+    beanName?: true
+    originCountry?: true
+    originRegion?: true
+    beanVariety?: true
+    processType?: true
+    roastLevel?: true
+    roastDate?: true
+    altitudeMeters?: true
+    tastingNotes?: true
+    purchaseDate?: true
+    purchasePrice?: true
+    quantityGrams?: true
+    memo?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type BeanRecordAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BeanRecord to aggregate.
+     */
+    where?: BeanRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BeanRecords to fetch.
+     */
+    orderBy?: BeanRecordOrderByWithRelationInput | BeanRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BeanRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BeanRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BeanRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BeanRecords
+    **/
+    _count?: true | BeanRecordCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: BeanRecordAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BeanRecordSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BeanRecordMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BeanRecordMaxAggregateInputType
+  }
+
+  export type GetBeanRecordAggregateType<T extends BeanRecordAggregateArgs> = {
+        [P in keyof T & keyof AggregateBeanRecord]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBeanRecord[P]>
+      : GetScalarType<T[P], AggregateBeanRecord[P]>
+  }
+
+
+
+
+  export type BeanRecordGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BeanRecordWhereInput
+    orderBy?: BeanRecordOrderByWithAggregationInput | BeanRecordOrderByWithAggregationInput[]
+    by: BeanRecordScalarFieldEnum[] | BeanRecordScalarFieldEnum
+    having?: BeanRecordScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BeanRecordCountAggregateInputType | true
+    _avg?: BeanRecordAvgAggregateInputType
+    _sum?: BeanRecordSumAggregateInputType
+    _min?: BeanRecordMinAggregateInputType
+    _max?: BeanRecordMaxAggregateInputType
+  }
+
+  export type BeanRecordGroupByOutputType = {
+    cafeRecordId: bigint
+    beanName: string
+    originCountry: string | null
+    originRegion: string | null
+    beanVariety: string | null
+    processType: string | null
+    roastLevel: string | null
+    roastDate: Date | null
+    altitudeMeters: number | null
+    tastingNotes: string | null
+    purchaseDate: Date
+    purchasePrice: number | null
+    quantityGrams: number | null
+    memo: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: BeanRecordCountAggregateOutputType | null
+    _avg: BeanRecordAvgAggregateOutputType | null
+    _sum: BeanRecordSumAggregateOutputType | null
+    _min: BeanRecordMinAggregateOutputType | null
+    _max: BeanRecordMaxAggregateOutputType | null
+  }
+
+  type GetBeanRecordGroupByPayload<T extends BeanRecordGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BeanRecordGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BeanRecordGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BeanRecordGroupByOutputType[P]>
+            : GetScalarType<T[P], BeanRecordGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BeanRecordSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    cafeRecordId?: boolean
+    beanName?: boolean
+    originCountry?: boolean
+    originRegion?: boolean
+    beanVariety?: boolean
+    processType?: boolean
+    roastLevel?: boolean
+    roastDate?: boolean
+    altitudeMeters?: boolean
+    tastingNotes?: boolean
+    purchaseDate?: boolean
+    purchasePrice?: boolean
+    quantityGrams?: boolean
+    memo?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    cafeRecord?: boolean | CafeRecordDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["beanRecord"]>
+
+
+
+  export type BeanRecordSelectScalar = {
+    cafeRecordId?: boolean
+    beanName?: boolean
+    originCountry?: boolean
+    originRegion?: boolean
+    beanVariety?: boolean
+    processType?: boolean
+    roastLevel?: boolean
+    roastDate?: boolean
+    altitudeMeters?: boolean
+    tastingNotes?: boolean
+    purchaseDate?: boolean
+    purchasePrice?: boolean
+    quantityGrams?: boolean
+    memo?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type BeanRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"cafeRecordId" | "beanName" | "originCountry" | "originRegion" | "beanVariety" | "processType" | "roastLevel" | "roastDate" | "altitudeMeters" | "tastingNotes" | "purchaseDate" | "purchasePrice" | "quantityGrams" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["beanRecord"]>
+  export type BeanRecordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cafeRecord?: boolean | CafeRecordDefaultArgs<ExtArgs>
+  }
+
+  export type $BeanRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BeanRecord"
+    objects: {
+      cafeRecord: Prisma.$CafeRecordPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      cafeRecordId: bigint
+      beanName: string
+      originCountry: string | null
+      originRegion: string | null
+      beanVariety: string | null
+      processType: string | null
+      roastLevel: string | null
+      roastDate: Date | null
+      altitudeMeters: number | null
+      tastingNotes: string | null
+      purchaseDate: Date
+      purchasePrice: number | null
+      quantityGrams: number | null
+      memo: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["beanRecord"]>
+    composites: {}
+  }
+
+  type BeanRecordGetPayload<S extends boolean | null | undefined | BeanRecordDefaultArgs> = $Result.GetResult<Prisma.$BeanRecordPayload, S>
+
+  type BeanRecordCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BeanRecordFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BeanRecordCountAggregateInputType | true
+    }
+
+  export interface BeanRecordDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BeanRecord'], meta: { name: 'BeanRecord' } }
+    /**
+     * Find zero or one BeanRecord that matches the filter.
+     * @param {BeanRecordFindUniqueArgs} args - Arguments to find a BeanRecord
+     * @example
+     * // Get one BeanRecord
+     * const beanRecord = await prisma.beanRecord.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BeanRecordFindUniqueArgs>(args: SelectSubset<T, BeanRecordFindUniqueArgs<ExtArgs>>): Prisma__BeanRecordClient<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one BeanRecord that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BeanRecordFindUniqueOrThrowArgs} args - Arguments to find a BeanRecord
+     * @example
+     * // Get one BeanRecord
+     * const beanRecord = await prisma.beanRecord.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BeanRecordFindUniqueOrThrowArgs>(args: SelectSubset<T, BeanRecordFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BeanRecordClient<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BeanRecord that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BeanRecordFindFirstArgs} args - Arguments to find a BeanRecord
+     * @example
+     * // Get one BeanRecord
+     * const beanRecord = await prisma.beanRecord.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BeanRecordFindFirstArgs>(args?: SelectSubset<T, BeanRecordFindFirstArgs<ExtArgs>>): Prisma__BeanRecordClient<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BeanRecord that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BeanRecordFindFirstOrThrowArgs} args - Arguments to find a BeanRecord
+     * @example
+     * // Get one BeanRecord
+     * const beanRecord = await prisma.beanRecord.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BeanRecordFindFirstOrThrowArgs>(args?: SelectSubset<T, BeanRecordFindFirstOrThrowArgs<ExtArgs>>): Prisma__BeanRecordClient<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more BeanRecords that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BeanRecordFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BeanRecords
+     * const beanRecords = await prisma.beanRecord.findMany()
+     * 
+     * // Get first 10 BeanRecords
+     * const beanRecords = await prisma.beanRecord.findMany({ take: 10 })
+     * 
+     * // Only select the `cafeRecordId`
+     * const beanRecordWithCafeRecordIdOnly = await prisma.beanRecord.findMany({ select: { cafeRecordId: true } })
+     * 
+     */
+    findMany<T extends BeanRecordFindManyArgs>(args?: SelectSubset<T, BeanRecordFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a BeanRecord.
+     * @param {BeanRecordCreateArgs} args - Arguments to create a BeanRecord.
+     * @example
+     * // Create one BeanRecord
+     * const BeanRecord = await prisma.beanRecord.create({
+     *   data: {
+     *     // ... data to create a BeanRecord
+     *   }
+     * })
+     * 
+     */
+    create<T extends BeanRecordCreateArgs>(args: SelectSubset<T, BeanRecordCreateArgs<ExtArgs>>): Prisma__BeanRecordClient<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many BeanRecords.
+     * @param {BeanRecordCreateManyArgs} args - Arguments to create many BeanRecords.
+     * @example
+     * // Create many BeanRecords
+     * const beanRecord = await prisma.beanRecord.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BeanRecordCreateManyArgs>(args?: SelectSubset<T, BeanRecordCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a BeanRecord.
+     * @param {BeanRecordDeleteArgs} args - Arguments to delete one BeanRecord.
+     * @example
+     * // Delete one BeanRecord
+     * const BeanRecord = await prisma.beanRecord.delete({
+     *   where: {
+     *     // ... filter to delete one BeanRecord
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BeanRecordDeleteArgs>(args: SelectSubset<T, BeanRecordDeleteArgs<ExtArgs>>): Prisma__BeanRecordClient<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one BeanRecord.
+     * @param {BeanRecordUpdateArgs} args - Arguments to update one BeanRecord.
+     * @example
+     * // Update one BeanRecord
+     * const beanRecord = await prisma.beanRecord.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BeanRecordUpdateArgs>(args: SelectSubset<T, BeanRecordUpdateArgs<ExtArgs>>): Prisma__BeanRecordClient<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more BeanRecords.
+     * @param {BeanRecordDeleteManyArgs} args - Arguments to filter BeanRecords to delete.
+     * @example
+     * // Delete a few BeanRecords
+     * const { count } = await prisma.beanRecord.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BeanRecordDeleteManyArgs>(args?: SelectSubset<T, BeanRecordDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BeanRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BeanRecordUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BeanRecords
+     * const beanRecord = await prisma.beanRecord.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BeanRecordUpdateManyArgs>(args: SelectSubset<T, BeanRecordUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one BeanRecord.
+     * @param {BeanRecordUpsertArgs} args - Arguments to update or create a BeanRecord.
+     * @example
+     * // Update or create a BeanRecord
+     * const beanRecord = await prisma.beanRecord.upsert({
+     *   create: {
+     *     // ... data to create a BeanRecord
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BeanRecord we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BeanRecordUpsertArgs>(args: SelectSubset<T, BeanRecordUpsertArgs<ExtArgs>>): Prisma__BeanRecordClient<$Result.GetResult<Prisma.$BeanRecordPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of BeanRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BeanRecordCountArgs} args - Arguments to filter BeanRecords to count.
+     * @example
+     * // Count the number of BeanRecords
+     * const count = await prisma.beanRecord.count({
+     *   where: {
+     *     // ... the filter for the BeanRecords we want to count
+     *   }
+     * })
+    **/
+    count<T extends BeanRecordCountArgs>(
+      args?: Subset<T, BeanRecordCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BeanRecordCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BeanRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BeanRecordAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BeanRecordAggregateArgs>(args: Subset<T, BeanRecordAggregateArgs>): Prisma.PrismaPromise<GetBeanRecordAggregateType<T>>
+
+    /**
+     * Group by BeanRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BeanRecordGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BeanRecordGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BeanRecordGroupByArgs['orderBy'] }
+        : { orderBy?: BeanRecordGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BeanRecordGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBeanRecordGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BeanRecord model
+   */
+  readonly fields: BeanRecordFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BeanRecord.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BeanRecordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    cafeRecord<T extends CafeRecordDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CafeRecordDefaultArgs<ExtArgs>>): Prisma__CafeRecordClient<$Result.GetResult<Prisma.$CafeRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BeanRecord model
+   */
+  interface BeanRecordFieldRefs {
+    readonly cafeRecordId: FieldRef<"BeanRecord", 'BigInt'>
+    readonly beanName: FieldRef<"BeanRecord", 'String'>
+    readonly originCountry: FieldRef<"BeanRecord", 'String'>
+    readonly originRegion: FieldRef<"BeanRecord", 'String'>
+    readonly beanVariety: FieldRef<"BeanRecord", 'String'>
+    readonly processType: FieldRef<"BeanRecord", 'String'>
+    readonly roastLevel: FieldRef<"BeanRecord", 'String'>
+    readonly roastDate: FieldRef<"BeanRecord", 'DateTime'>
+    readonly altitudeMeters: FieldRef<"BeanRecord", 'Int'>
+    readonly tastingNotes: FieldRef<"BeanRecord", 'String'>
+    readonly purchaseDate: FieldRef<"BeanRecord", 'DateTime'>
+    readonly purchasePrice: FieldRef<"BeanRecord", 'Int'>
+    readonly quantityGrams: FieldRef<"BeanRecord", 'Int'>
+    readonly memo: FieldRef<"BeanRecord", 'String'>
+    readonly createdAt: FieldRef<"BeanRecord", 'DateTime'>
+    readonly updatedAt: FieldRef<"BeanRecord", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BeanRecord findUnique
+   */
+  export type BeanRecordFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BeanRecord to fetch.
+     */
+    where: BeanRecordWhereUniqueInput
+  }
+
+  /**
+   * BeanRecord findUniqueOrThrow
+   */
+  export type BeanRecordFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BeanRecord to fetch.
+     */
+    where: BeanRecordWhereUniqueInput
+  }
+
+  /**
+   * BeanRecord findFirst
+   */
+  export type BeanRecordFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BeanRecord to fetch.
+     */
+    where?: BeanRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BeanRecords to fetch.
+     */
+    orderBy?: BeanRecordOrderByWithRelationInput | BeanRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BeanRecords.
+     */
+    cursor?: BeanRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BeanRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BeanRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BeanRecords.
+     */
+    distinct?: BeanRecordScalarFieldEnum | BeanRecordScalarFieldEnum[]
+  }
+
+  /**
+   * BeanRecord findFirstOrThrow
+   */
+  export type BeanRecordFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BeanRecord to fetch.
+     */
+    where?: BeanRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BeanRecords to fetch.
+     */
+    orderBy?: BeanRecordOrderByWithRelationInput | BeanRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BeanRecords.
+     */
+    cursor?: BeanRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BeanRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BeanRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BeanRecords.
+     */
+    distinct?: BeanRecordScalarFieldEnum | BeanRecordScalarFieldEnum[]
+  }
+
+  /**
+   * BeanRecord findMany
+   */
+  export type BeanRecordFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BeanRecords to fetch.
+     */
+    where?: BeanRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BeanRecords to fetch.
+     */
+    orderBy?: BeanRecordOrderByWithRelationInput | BeanRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BeanRecords.
+     */
+    cursor?: BeanRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BeanRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BeanRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BeanRecords.
+     */
+    distinct?: BeanRecordScalarFieldEnum | BeanRecordScalarFieldEnum[]
+  }
+
+  /**
+   * BeanRecord create
+   */
+  export type BeanRecordCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BeanRecord.
+     */
+    data: XOR<BeanRecordCreateInput, BeanRecordUncheckedCreateInput>
+  }
+
+  /**
+   * BeanRecord createMany
+   */
+  export type BeanRecordCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BeanRecords.
+     */
+    data: BeanRecordCreateManyInput | BeanRecordCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * BeanRecord update
+   */
+  export type BeanRecordUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BeanRecord.
+     */
+    data: XOR<BeanRecordUpdateInput, BeanRecordUncheckedUpdateInput>
+    /**
+     * Choose, which BeanRecord to update.
+     */
+    where: BeanRecordWhereUniqueInput
+  }
+
+  /**
+   * BeanRecord updateMany
+   */
+  export type BeanRecordUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BeanRecords.
+     */
+    data: XOR<BeanRecordUpdateManyMutationInput, BeanRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which BeanRecords to update
+     */
+    where?: BeanRecordWhereInput
+    /**
+     * Limit how many BeanRecords to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * BeanRecord upsert
+   */
+  export type BeanRecordUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BeanRecord to update in case it exists.
+     */
+    where: BeanRecordWhereUniqueInput
+    /**
+     * In case the BeanRecord found by the `where` argument doesn't exist, create a new BeanRecord with this data.
+     */
+    create: XOR<BeanRecordCreateInput, BeanRecordUncheckedCreateInput>
+    /**
+     * In case the BeanRecord was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BeanRecordUpdateInput, BeanRecordUncheckedUpdateInput>
+  }
+
+  /**
+   * BeanRecord delete
+   */
+  export type BeanRecordDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
+    /**
+     * Filter which BeanRecord to delete.
+     */
+    where: BeanRecordWhereUniqueInput
+  }
+
+  /**
+   * BeanRecord deleteMany
+   */
+  export type BeanRecordDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BeanRecords to delete
+     */
+    where?: BeanRecordWhereInput
+    /**
+     * Limit how many BeanRecords to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * BeanRecord without action
+   */
+  export type BeanRecordDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BeanRecord
+     */
+    select?: BeanRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BeanRecord
+     */
+    omit?: BeanRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BeanRecordInclude<ExtArgs> | null
   }
 
 
@@ -8796,6 +10003,28 @@ export namespace Prisma {
   export type CafeNoteScalarFieldEnum = (typeof CafeNoteScalarFieldEnum)[keyof typeof CafeNoteScalarFieldEnum]
 
 
+  export const BeanRecordScalarFieldEnum: {
+    cafeRecordId: 'cafeRecordId',
+    beanName: 'beanName',
+    originCountry: 'originCountry',
+    originRegion: 'originRegion',
+    beanVariety: 'beanVariety',
+    processType: 'processType',
+    roastLevel: 'roastLevel',
+    roastDate: 'roastDate',
+    altitudeMeters: 'altitudeMeters',
+    tastingNotes: 'tastingNotes',
+    purchaseDate: 'purchaseDate',
+    purchasePrice: 'purchasePrice',
+    quantityGrams: 'quantityGrams',
+    memo: 'memo',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type BeanRecordScalarFieldEnum = (typeof BeanRecordScalarFieldEnum)[keyof typeof BeanRecordScalarFieldEnum]
+
+
   export const MediaAssetScalarFieldEnum: {
     id: 'id',
     storageKey: 'storageKey',
@@ -8890,6 +10119,20 @@ export namespace Prisma {
   };
 
   export type CafeNoteOrderByRelevanceFieldEnum = (typeof CafeNoteOrderByRelevanceFieldEnum)[keyof typeof CafeNoteOrderByRelevanceFieldEnum]
+
+
+  export const BeanRecordOrderByRelevanceFieldEnum: {
+    beanName: 'beanName',
+    originCountry: 'originCountry',
+    originRegion: 'originRegion',
+    beanVariety: 'beanVariety',
+    processType: 'processType',
+    roastLevel: 'roastLevel',
+    tastingNotes: 'tastingNotes',
+    memo: 'memo'
+  };
+
+  export type BeanRecordOrderByRelevanceFieldEnum = (typeof BeanRecordOrderByRelevanceFieldEnum)[keyof typeof BeanRecordOrderByRelevanceFieldEnum]
 
 
   export const MediaAssetOrderByRelevanceFieldEnum: {
@@ -9236,6 +10479,7 @@ export namespace Prisma {
     appUser?: XOR<AppUserScalarRelationFilter, AppUserWhereInput>
     cafe?: XOR<CafeScalarRelationFilter, CafeWhereInput>
     note?: XOR<CafeNoteNullableScalarRelationFilter, CafeNoteWhereInput> | null
+    bean?: XOR<BeanRecordNullableScalarRelationFilter, BeanRecordWhereInput> | null
   }
 
   export type CafeRecordOrderByWithRelationInput = {
@@ -9249,6 +10493,7 @@ export namespace Prisma {
     appUser?: AppUserOrderByWithRelationInput
     cafe?: CafeOrderByWithRelationInput
     note?: CafeNoteOrderByWithRelationInput
+    bean?: BeanRecordOrderByWithRelationInput
     _relevance?: CafeRecordOrderByRelevanceInput
   }
 
@@ -9266,6 +10511,7 @@ export namespace Prisma {
     appUser?: XOR<AppUserScalarRelationFilter, AppUserWhereInput>
     cafe?: XOR<CafeScalarRelationFilter, CafeWhereInput>
     note?: XOR<CafeNoteNullableScalarRelationFilter, CafeNoteWhereInput> | null
+    bean?: XOR<BeanRecordNullableScalarRelationFilter, BeanRecordWhereInput> | null
   }, "id">
 
   export type CafeRecordOrderByWithAggregationInput = {
@@ -9352,6 +10598,119 @@ export namespace Prisma {
     noteText?: StringWithAggregatesFilter<"CafeNote"> | string
     createdAt?: DateTimeWithAggregatesFilter<"CafeNote"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"CafeNote"> | Date | string
+  }
+
+  export type BeanRecordWhereInput = {
+    AND?: BeanRecordWhereInput | BeanRecordWhereInput[]
+    OR?: BeanRecordWhereInput[]
+    NOT?: BeanRecordWhereInput | BeanRecordWhereInput[]
+    cafeRecordId?: BigIntFilter<"BeanRecord"> | bigint | number
+    beanName?: StringFilter<"BeanRecord"> | string
+    originCountry?: StringNullableFilter<"BeanRecord"> | string | null
+    originRegion?: StringNullableFilter<"BeanRecord"> | string | null
+    beanVariety?: StringNullableFilter<"BeanRecord"> | string | null
+    processType?: StringNullableFilter<"BeanRecord"> | string | null
+    roastLevel?: StringNullableFilter<"BeanRecord"> | string | null
+    roastDate?: DateTimeNullableFilter<"BeanRecord"> | Date | string | null
+    altitudeMeters?: IntNullableFilter<"BeanRecord"> | number | null
+    tastingNotes?: StringNullableFilter<"BeanRecord"> | string | null
+    purchaseDate?: DateTimeFilter<"BeanRecord"> | Date | string
+    purchasePrice?: IntNullableFilter<"BeanRecord"> | number | null
+    quantityGrams?: IntNullableFilter<"BeanRecord"> | number | null
+    memo?: StringNullableFilter<"BeanRecord"> | string | null
+    createdAt?: DateTimeFilter<"BeanRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"BeanRecord"> | Date | string
+    cafeRecord?: XOR<CafeRecordScalarRelationFilter, CafeRecordWhereInput>
+  }
+
+  export type BeanRecordOrderByWithRelationInput = {
+    cafeRecordId?: SortOrder
+    beanName?: SortOrder
+    originCountry?: SortOrderInput | SortOrder
+    originRegion?: SortOrderInput | SortOrder
+    beanVariety?: SortOrderInput | SortOrder
+    processType?: SortOrderInput | SortOrder
+    roastLevel?: SortOrderInput | SortOrder
+    roastDate?: SortOrderInput | SortOrder
+    altitudeMeters?: SortOrderInput | SortOrder
+    tastingNotes?: SortOrderInput | SortOrder
+    purchaseDate?: SortOrder
+    purchasePrice?: SortOrderInput | SortOrder
+    quantityGrams?: SortOrderInput | SortOrder
+    memo?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    cafeRecord?: CafeRecordOrderByWithRelationInput
+    _relevance?: BeanRecordOrderByRelevanceInput
+  }
+
+  export type BeanRecordWhereUniqueInput = Prisma.AtLeast<{
+    cafeRecordId?: bigint | number
+    AND?: BeanRecordWhereInput | BeanRecordWhereInput[]
+    OR?: BeanRecordWhereInput[]
+    NOT?: BeanRecordWhereInput | BeanRecordWhereInput[]
+    beanName?: StringFilter<"BeanRecord"> | string
+    originCountry?: StringNullableFilter<"BeanRecord"> | string | null
+    originRegion?: StringNullableFilter<"BeanRecord"> | string | null
+    beanVariety?: StringNullableFilter<"BeanRecord"> | string | null
+    processType?: StringNullableFilter<"BeanRecord"> | string | null
+    roastLevel?: StringNullableFilter<"BeanRecord"> | string | null
+    roastDate?: DateTimeNullableFilter<"BeanRecord"> | Date | string | null
+    altitudeMeters?: IntNullableFilter<"BeanRecord"> | number | null
+    tastingNotes?: StringNullableFilter<"BeanRecord"> | string | null
+    purchaseDate?: DateTimeFilter<"BeanRecord"> | Date | string
+    purchasePrice?: IntNullableFilter<"BeanRecord"> | number | null
+    quantityGrams?: IntNullableFilter<"BeanRecord"> | number | null
+    memo?: StringNullableFilter<"BeanRecord"> | string | null
+    createdAt?: DateTimeFilter<"BeanRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"BeanRecord"> | Date | string
+    cafeRecord?: XOR<CafeRecordScalarRelationFilter, CafeRecordWhereInput>
+  }, "cafeRecordId">
+
+  export type BeanRecordOrderByWithAggregationInput = {
+    cafeRecordId?: SortOrder
+    beanName?: SortOrder
+    originCountry?: SortOrderInput | SortOrder
+    originRegion?: SortOrderInput | SortOrder
+    beanVariety?: SortOrderInput | SortOrder
+    processType?: SortOrderInput | SortOrder
+    roastLevel?: SortOrderInput | SortOrder
+    roastDate?: SortOrderInput | SortOrder
+    altitudeMeters?: SortOrderInput | SortOrder
+    tastingNotes?: SortOrderInput | SortOrder
+    purchaseDate?: SortOrder
+    purchasePrice?: SortOrderInput | SortOrder
+    quantityGrams?: SortOrderInput | SortOrder
+    memo?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: BeanRecordCountOrderByAggregateInput
+    _avg?: BeanRecordAvgOrderByAggregateInput
+    _max?: BeanRecordMaxOrderByAggregateInput
+    _min?: BeanRecordMinOrderByAggregateInput
+    _sum?: BeanRecordSumOrderByAggregateInput
+  }
+
+  export type BeanRecordScalarWhereWithAggregatesInput = {
+    AND?: BeanRecordScalarWhereWithAggregatesInput | BeanRecordScalarWhereWithAggregatesInput[]
+    OR?: BeanRecordScalarWhereWithAggregatesInput[]
+    NOT?: BeanRecordScalarWhereWithAggregatesInput | BeanRecordScalarWhereWithAggregatesInput[]
+    cafeRecordId?: BigIntWithAggregatesFilter<"BeanRecord"> | bigint | number
+    beanName?: StringWithAggregatesFilter<"BeanRecord"> | string
+    originCountry?: StringNullableWithAggregatesFilter<"BeanRecord"> | string | null
+    originRegion?: StringNullableWithAggregatesFilter<"BeanRecord"> | string | null
+    beanVariety?: StringNullableWithAggregatesFilter<"BeanRecord"> | string | null
+    processType?: StringNullableWithAggregatesFilter<"BeanRecord"> | string | null
+    roastLevel?: StringNullableWithAggregatesFilter<"BeanRecord"> | string | null
+    roastDate?: DateTimeNullableWithAggregatesFilter<"BeanRecord"> | Date | string | null
+    altitudeMeters?: IntNullableWithAggregatesFilter<"BeanRecord"> | number | null
+    tastingNotes?: StringNullableWithAggregatesFilter<"BeanRecord"> | string | null
+    purchaseDate?: DateTimeWithAggregatesFilter<"BeanRecord"> | Date | string
+    purchasePrice?: IntNullableWithAggregatesFilter<"BeanRecord"> | number | null
+    quantityGrams?: IntNullableWithAggregatesFilter<"BeanRecord"> | number | null
+    memo?: StringNullableWithAggregatesFilter<"BeanRecord"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"BeanRecord"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"BeanRecord"> | Date | string
   }
 
   export type MediaAssetWhereInput = {
@@ -9799,6 +11158,7 @@ export namespace Prisma {
     appUser: AppUserCreateNestedOneWithoutCafeRecordsInput
     cafe: CafeCreateNestedOneWithoutCafeRecordsInput
     note?: CafeNoteCreateNestedOneWithoutCafeRecordInput
+    bean?: BeanRecordCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordUncheckedCreateInput = {
@@ -9810,6 +11170,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     note?: CafeNoteUncheckedCreateNestedOneWithoutCafeRecordInput
+    bean?: BeanRecordUncheckedCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordUpdateInput = {
@@ -9821,6 +11182,7 @@ export namespace Prisma {
     appUser?: AppUserUpdateOneRequiredWithoutCafeRecordsNestedInput
     cafe?: CafeUpdateOneRequiredWithoutCafeRecordsNestedInput
     note?: CafeNoteUpdateOneWithoutCafeRecordNestedInput
+    bean?: BeanRecordUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateInput = {
@@ -9832,6 +11194,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     note?: CafeNoteUncheckedUpdateOneWithoutCafeRecordNestedInput
+    bean?: BeanRecordUncheckedUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordCreateManyInput = {
@@ -9913,6 +11276,138 @@ export namespace Prisma {
     cafeRecordId?: BigIntFieldUpdateOperationsInput | bigint | number
     title?: NullableStringFieldUpdateOperationsInput | string | null
     noteText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BeanRecordCreateInput = {
+    beanName: string
+    originCountry?: string | null
+    originRegion?: string | null
+    beanVariety?: string | null
+    processType?: string | null
+    roastLevel?: string | null
+    roastDate?: Date | string | null
+    altitudeMeters?: number | null
+    tastingNotes?: string | null
+    purchaseDate: Date | string
+    purchasePrice?: number | null
+    quantityGrams?: number | null
+    memo?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    cafeRecord: CafeRecordCreateNestedOneWithoutBeanInput
+  }
+
+  export type BeanRecordUncheckedCreateInput = {
+    cafeRecordId: bigint | number
+    beanName: string
+    originCountry?: string | null
+    originRegion?: string | null
+    beanVariety?: string | null
+    processType?: string | null
+    roastLevel?: string | null
+    roastDate?: Date | string | null
+    altitudeMeters?: number | null
+    tastingNotes?: string | null
+    purchaseDate: Date | string
+    purchasePrice?: number | null
+    quantityGrams?: number | null
+    memo?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BeanRecordUpdateInput = {
+    beanName?: StringFieldUpdateOperationsInput | string
+    originCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    originRegion?: NullableStringFieldUpdateOperationsInput | string | null
+    beanVariety?: NullableStringFieldUpdateOperationsInput | string | null
+    processType?: NullableStringFieldUpdateOperationsInput | string | null
+    roastLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    roastDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    altitudeMeters?: NullableIntFieldUpdateOperationsInput | number | null
+    tastingNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasePrice?: NullableIntFieldUpdateOperationsInput | number | null
+    quantityGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    memo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    cafeRecord?: CafeRecordUpdateOneRequiredWithoutBeanNestedInput
+  }
+
+  export type BeanRecordUncheckedUpdateInput = {
+    cafeRecordId?: BigIntFieldUpdateOperationsInput | bigint | number
+    beanName?: StringFieldUpdateOperationsInput | string
+    originCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    originRegion?: NullableStringFieldUpdateOperationsInput | string | null
+    beanVariety?: NullableStringFieldUpdateOperationsInput | string | null
+    processType?: NullableStringFieldUpdateOperationsInput | string | null
+    roastLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    roastDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    altitudeMeters?: NullableIntFieldUpdateOperationsInput | number | null
+    tastingNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasePrice?: NullableIntFieldUpdateOperationsInput | number | null
+    quantityGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    memo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BeanRecordCreateManyInput = {
+    cafeRecordId: bigint | number
+    beanName: string
+    originCountry?: string | null
+    originRegion?: string | null
+    beanVariety?: string | null
+    processType?: string | null
+    roastLevel?: string | null
+    roastDate?: Date | string | null
+    altitudeMeters?: number | null
+    tastingNotes?: string | null
+    purchaseDate: Date | string
+    purchasePrice?: number | null
+    quantityGrams?: number | null
+    memo?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BeanRecordUpdateManyMutationInput = {
+    beanName?: StringFieldUpdateOperationsInput | string
+    originCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    originRegion?: NullableStringFieldUpdateOperationsInput | string | null
+    beanVariety?: NullableStringFieldUpdateOperationsInput | string | null
+    processType?: NullableStringFieldUpdateOperationsInput | string | null
+    roastLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    roastDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    altitudeMeters?: NullableIntFieldUpdateOperationsInput | number | null
+    tastingNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasePrice?: NullableIntFieldUpdateOperationsInput | number | null
+    quantityGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    memo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BeanRecordUncheckedUpdateManyInput = {
+    cafeRecordId?: BigIntFieldUpdateOperationsInput | bigint | number
+    beanName?: StringFieldUpdateOperationsInput | string
+    originCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    originRegion?: NullableStringFieldUpdateOperationsInput | string | null
+    beanVariety?: NullableStringFieldUpdateOperationsInput | string | null
+    processType?: NullableStringFieldUpdateOperationsInput | string | null
+    roastLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    roastDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    altitudeMeters?: NullableIntFieldUpdateOperationsInput | number | null
+    tastingNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasePrice?: NullableIntFieldUpdateOperationsInput | number | null
+    quantityGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    memo?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10479,6 +11974,11 @@ export namespace Prisma {
     isNot?: CafeNoteWhereInput | null
   }
 
+  export type BeanRecordNullableScalarRelationFilter = {
+    is?: BeanRecordWhereInput | null
+    isNot?: BeanRecordWhereInput | null
+  }
+
   export type CafeRecordOrderByRelevanceInput = {
     fields: CafeRecordOrderByRelevanceFieldEnum | CafeRecordOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -10597,6 +12097,99 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type BeanRecordOrderByRelevanceInput = {
+    fields: BeanRecordOrderByRelevanceFieldEnum | BeanRecordOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type BeanRecordCountOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
+    beanName?: SortOrder
+    originCountry?: SortOrder
+    originRegion?: SortOrder
+    beanVariety?: SortOrder
+    processType?: SortOrder
+    roastLevel?: SortOrder
+    roastDate?: SortOrder
+    altitudeMeters?: SortOrder
+    tastingNotes?: SortOrder
+    purchaseDate?: SortOrder
+    purchasePrice?: SortOrder
+    quantityGrams?: SortOrder
+    memo?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BeanRecordAvgOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
+    altitudeMeters?: SortOrder
+    purchasePrice?: SortOrder
+    quantityGrams?: SortOrder
+  }
+
+  export type BeanRecordMaxOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
+    beanName?: SortOrder
+    originCountry?: SortOrder
+    originRegion?: SortOrder
+    beanVariety?: SortOrder
+    processType?: SortOrder
+    roastLevel?: SortOrder
+    roastDate?: SortOrder
+    altitudeMeters?: SortOrder
+    tastingNotes?: SortOrder
+    purchaseDate?: SortOrder
+    purchasePrice?: SortOrder
+    quantityGrams?: SortOrder
+    memo?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BeanRecordMinOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
+    beanName?: SortOrder
+    originCountry?: SortOrder
+    originRegion?: SortOrder
+    beanVariety?: SortOrder
+    processType?: SortOrder
+    roastLevel?: SortOrder
+    roastDate?: SortOrder
+    altitudeMeters?: SortOrder
+    tastingNotes?: SortOrder
+    purchaseDate?: SortOrder
+    purchasePrice?: SortOrder
+    quantityGrams?: SortOrder
+    memo?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BeanRecordSumOrderByAggregateInput = {
+    cafeRecordId?: SortOrder
+    altitudeMeters?: SortOrder
+    purchasePrice?: SortOrder
+    quantityGrams?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
   export type MediaAttachmentListRelationFilter = {
     every?: MediaAttachmentWhereInput
     some?: MediaAttachmentWhereInput
@@ -10661,22 +12254,6 @@ export namespace Prisma {
     fileSize?: SortOrder
     width?: SortOrder
     height?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type BoolFilter<$PrismaModel = never> = {
@@ -10999,10 +12576,22 @@ export namespace Prisma {
     connect?: CafeNoteWhereUniqueInput
   }
 
+  export type BeanRecordCreateNestedOneWithoutCafeRecordInput = {
+    create?: XOR<BeanRecordCreateWithoutCafeRecordInput, BeanRecordUncheckedCreateWithoutCafeRecordInput>
+    connectOrCreate?: BeanRecordCreateOrConnectWithoutCafeRecordInput
+    connect?: BeanRecordWhereUniqueInput
+  }
+
   export type CafeNoteUncheckedCreateNestedOneWithoutCafeRecordInput = {
     create?: XOR<CafeNoteCreateWithoutCafeRecordInput, CafeNoteUncheckedCreateWithoutCafeRecordInput>
     connectOrCreate?: CafeNoteCreateOrConnectWithoutCafeRecordInput
     connect?: CafeNoteWhereUniqueInput
+  }
+
+  export type BeanRecordUncheckedCreateNestedOneWithoutCafeRecordInput = {
+    create?: XOR<BeanRecordCreateWithoutCafeRecordInput, BeanRecordUncheckedCreateWithoutCafeRecordInput>
+    connectOrCreate?: BeanRecordCreateOrConnectWithoutCafeRecordInput
+    connect?: BeanRecordWhereUniqueInput
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -11039,6 +12628,16 @@ export namespace Prisma {
     update?: XOR<XOR<CafeNoteUpdateToOneWithWhereWithoutCafeRecordInput, CafeNoteUpdateWithoutCafeRecordInput>, CafeNoteUncheckedUpdateWithoutCafeRecordInput>
   }
 
+  export type BeanRecordUpdateOneWithoutCafeRecordNestedInput = {
+    create?: XOR<BeanRecordCreateWithoutCafeRecordInput, BeanRecordUncheckedCreateWithoutCafeRecordInput>
+    connectOrCreate?: BeanRecordCreateOrConnectWithoutCafeRecordInput
+    upsert?: BeanRecordUpsertWithoutCafeRecordInput
+    disconnect?: BeanRecordWhereInput | boolean
+    delete?: BeanRecordWhereInput | boolean
+    connect?: BeanRecordWhereUniqueInput
+    update?: XOR<XOR<BeanRecordUpdateToOneWithWhereWithoutCafeRecordInput, BeanRecordUpdateWithoutCafeRecordInput>, BeanRecordUncheckedUpdateWithoutCafeRecordInput>
+  }
+
   export type CafeNoteUncheckedUpdateOneWithoutCafeRecordNestedInput = {
     create?: XOR<CafeNoteCreateWithoutCafeRecordInput, CafeNoteUncheckedCreateWithoutCafeRecordInput>
     connectOrCreate?: CafeNoteCreateOrConnectWithoutCafeRecordInput
@@ -11047,6 +12646,16 @@ export namespace Prisma {
     delete?: CafeNoteWhereInput | boolean
     connect?: CafeNoteWhereUniqueInput
     update?: XOR<XOR<CafeNoteUpdateToOneWithWhereWithoutCafeRecordInput, CafeNoteUpdateWithoutCafeRecordInput>, CafeNoteUncheckedUpdateWithoutCafeRecordInput>
+  }
+
+  export type BeanRecordUncheckedUpdateOneWithoutCafeRecordNestedInput = {
+    create?: XOR<BeanRecordCreateWithoutCafeRecordInput, BeanRecordUncheckedCreateWithoutCafeRecordInput>
+    connectOrCreate?: BeanRecordCreateOrConnectWithoutCafeRecordInput
+    upsert?: BeanRecordUpsertWithoutCafeRecordInput
+    disconnect?: BeanRecordWhereInput | boolean
+    delete?: BeanRecordWhereInput | boolean
+    connect?: BeanRecordWhereUniqueInput
+    update?: XOR<XOR<BeanRecordUpdateToOneWithWhereWithoutCafeRecordInput, BeanRecordUpdateWithoutCafeRecordInput>, BeanRecordUncheckedUpdateWithoutCafeRecordInput>
   }
 
   export type CafeRecordCreateNestedOneWithoutNoteInput = {
@@ -11063,6 +12672,28 @@ export namespace Prisma {
     update?: XOR<XOR<CafeRecordUpdateToOneWithWhereWithoutNoteInput, CafeRecordUpdateWithoutNoteInput>, CafeRecordUncheckedUpdateWithoutNoteInput>
   }
 
+  export type CafeRecordCreateNestedOneWithoutBeanInput = {
+    create?: XOR<CafeRecordCreateWithoutBeanInput, CafeRecordUncheckedCreateWithoutBeanInput>
+    connectOrCreate?: CafeRecordCreateOrConnectWithoutBeanInput
+    connect?: CafeRecordWhereUniqueInput
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type CafeRecordUpdateOneRequiredWithoutBeanNestedInput = {
+    create?: XOR<CafeRecordCreateWithoutBeanInput, CafeRecordUncheckedCreateWithoutBeanInput>
+    connectOrCreate?: CafeRecordCreateOrConnectWithoutBeanInput
+    upsert?: CafeRecordUpsertWithoutBeanInput
+    connect?: CafeRecordWhereUniqueInput
+    update?: XOR<XOR<CafeRecordUpdateToOneWithWhereWithoutBeanInput, CafeRecordUpdateWithoutBeanInput>, CafeRecordUncheckedUpdateWithoutBeanInput>
+  }
+
   export type MediaAttachmentCreateNestedManyWithoutMediaAssetInput = {
     create?: XOR<MediaAttachmentCreateWithoutMediaAssetInput, MediaAttachmentUncheckedCreateWithoutMediaAssetInput> | MediaAttachmentCreateWithoutMediaAssetInput[] | MediaAttachmentUncheckedCreateWithoutMediaAssetInput[]
     connectOrCreate?: MediaAttachmentCreateOrConnectWithoutMediaAssetInput | MediaAttachmentCreateOrConnectWithoutMediaAssetInput[]
@@ -11075,14 +12706,6 @@ export namespace Prisma {
     connectOrCreate?: MediaAttachmentCreateOrConnectWithoutMediaAssetInput | MediaAttachmentCreateOrConnectWithoutMediaAssetInput[]
     createMany?: MediaAttachmentCreateManyMediaAssetInputEnvelope
     connect?: MediaAttachmentWhereUniqueInput | MediaAttachmentWhereUniqueInput[]
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type MediaAttachmentUpdateManyWithoutMediaAssetNestedInput = {
@@ -11424,6 +13047,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     cafe: CafeCreateNestedOneWithoutCafeRecordsInput
     note?: CafeNoteCreateNestedOneWithoutCafeRecordInput
+    bean?: BeanRecordCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordUncheckedCreateWithoutAppUserInput = {
@@ -11434,6 +13058,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     note?: CafeNoteUncheckedCreateNestedOneWithoutCafeRecordInput
+    bean?: BeanRecordUncheckedCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordCreateOrConnectWithoutAppUserInput = {
@@ -11537,6 +13162,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     appUser: AppUserCreateNestedOneWithoutCafeRecordsInput
     note?: CafeNoteCreateNestedOneWithoutCafeRecordInput
+    bean?: BeanRecordCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordUncheckedCreateWithoutCafeInput = {
@@ -11547,6 +13173,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     note?: CafeNoteUncheckedCreateNestedOneWithoutCafeRecordInput
+    bean?: BeanRecordUncheckedCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordCreateOrConnectWithoutCafeInput = {
@@ -11838,6 +13465,47 @@ export namespace Prisma {
     create: XOR<CafeNoteCreateWithoutCafeRecordInput, CafeNoteUncheckedCreateWithoutCafeRecordInput>
   }
 
+  export type BeanRecordCreateWithoutCafeRecordInput = {
+    beanName: string
+    originCountry?: string | null
+    originRegion?: string | null
+    beanVariety?: string | null
+    processType?: string | null
+    roastLevel?: string | null
+    roastDate?: Date | string | null
+    altitudeMeters?: number | null
+    tastingNotes?: string | null
+    purchaseDate: Date | string
+    purchasePrice?: number | null
+    quantityGrams?: number | null
+    memo?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BeanRecordUncheckedCreateWithoutCafeRecordInput = {
+    beanName: string
+    originCountry?: string | null
+    originRegion?: string | null
+    beanVariety?: string | null
+    processType?: string | null
+    roastLevel?: string | null
+    roastDate?: Date | string | null
+    altitudeMeters?: number | null
+    tastingNotes?: string | null
+    purchaseDate: Date | string
+    purchasePrice?: number | null
+    quantityGrams?: number | null
+    memo?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BeanRecordCreateOrConnectWithoutCafeRecordInput = {
+    where: BeanRecordWhereUniqueInput
+    create: XOR<BeanRecordCreateWithoutCafeRecordInput, BeanRecordUncheckedCreateWithoutCafeRecordInput>
+  }
+
   export type AppUserUpsertWithoutCafeRecordsInput = {
     update: XOR<AppUserUpdateWithoutCafeRecordsInput, AppUserUncheckedUpdateWithoutCafeRecordsInput>
     create: XOR<AppUserCreateWithoutCafeRecordsInput, AppUserUncheckedCreateWithoutCafeRecordsInput>
@@ -11947,6 +13615,53 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type BeanRecordUpsertWithoutCafeRecordInput = {
+    update: XOR<BeanRecordUpdateWithoutCafeRecordInput, BeanRecordUncheckedUpdateWithoutCafeRecordInput>
+    create: XOR<BeanRecordCreateWithoutCafeRecordInput, BeanRecordUncheckedCreateWithoutCafeRecordInput>
+    where?: BeanRecordWhereInput
+  }
+
+  export type BeanRecordUpdateToOneWithWhereWithoutCafeRecordInput = {
+    where?: BeanRecordWhereInput
+    data: XOR<BeanRecordUpdateWithoutCafeRecordInput, BeanRecordUncheckedUpdateWithoutCafeRecordInput>
+  }
+
+  export type BeanRecordUpdateWithoutCafeRecordInput = {
+    beanName?: StringFieldUpdateOperationsInput | string
+    originCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    originRegion?: NullableStringFieldUpdateOperationsInput | string | null
+    beanVariety?: NullableStringFieldUpdateOperationsInput | string | null
+    processType?: NullableStringFieldUpdateOperationsInput | string | null
+    roastLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    roastDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    altitudeMeters?: NullableIntFieldUpdateOperationsInput | number | null
+    tastingNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasePrice?: NullableIntFieldUpdateOperationsInput | number | null
+    quantityGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    memo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BeanRecordUncheckedUpdateWithoutCafeRecordInput = {
+    beanName?: StringFieldUpdateOperationsInput | string
+    originCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    originRegion?: NullableStringFieldUpdateOperationsInput | string | null
+    beanVariety?: NullableStringFieldUpdateOperationsInput | string | null
+    processType?: NullableStringFieldUpdateOperationsInput | string | null
+    roastLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    roastDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    altitudeMeters?: NullableIntFieldUpdateOperationsInput | number | null
+    tastingNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasePrice?: NullableIntFieldUpdateOperationsInput | number | null
+    quantityGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    memo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CafeRecordCreateWithoutNoteInput = {
     id?: bigint | number
     recordType: string
@@ -11955,6 +13670,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     appUser: AppUserCreateNestedOneWithoutCafeRecordsInput
     cafe: CafeCreateNestedOneWithoutCafeRecordsInput
+    bean?: BeanRecordCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordUncheckedCreateWithoutNoteInput = {
@@ -11965,6 +13681,7 @@ export namespace Prisma {
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    bean?: BeanRecordUncheckedCreateNestedOneWithoutCafeRecordInput
   }
 
   export type CafeRecordCreateOrConnectWithoutNoteInput = {
@@ -11991,6 +13708,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appUser?: AppUserUpdateOneRequiredWithoutCafeRecordsNestedInput
     cafe?: CafeUpdateOneRequiredWithoutCafeRecordsNestedInput
+    bean?: BeanRecordUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateWithoutNoteInput = {
@@ -12001,6 +13719,67 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bean?: BeanRecordUncheckedUpdateOneWithoutCafeRecordNestedInput
+  }
+
+  export type CafeRecordCreateWithoutBeanInput = {
+    id?: bigint | number
+    recordType: string
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    appUser: AppUserCreateNestedOneWithoutCafeRecordsInput
+    cafe: CafeCreateNestedOneWithoutCafeRecordsInput
+    note?: CafeNoteCreateNestedOneWithoutCafeRecordInput
+  }
+
+  export type CafeRecordUncheckedCreateWithoutBeanInput = {
+    id?: bigint | number
+    appUserId: bigint | number
+    kakaoPlaceId: string
+    recordType: string
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    note?: CafeNoteUncheckedCreateNestedOneWithoutCafeRecordInput
+  }
+
+  export type CafeRecordCreateOrConnectWithoutBeanInput = {
+    where: CafeRecordWhereUniqueInput
+    create: XOR<CafeRecordCreateWithoutBeanInput, CafeRecordUncheckedCreateWithoutBeanInput>
+  }
+
+  export type CafeRecordUpsertWithoutBeanInput = {
+    update: XOR<CafeRecordUpdateWithoutBeanInput, CafeRecordUncheckedUpdateWithoutBeanInput>
+    create: XOR<CafeRecordCreateWithoutBeanInput, CafeRecordUncheckedCreateWithoutBeanInput>
+    where?: CafeRecordWhereInput
+  }
+
+  export type CafeRecordUpdateToOneWithWhereWithoutBeanInput = {
+    where?: CafeRecordWhereInput
+    data: XOR<CafeRecordUpdateWithoutBeanInput, CafeRecordUncheckedUpdateWithoutBeanInput>
+  }
+
+  export type CafeRecordUpdateWithoutBeanInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    recordType?: StringFieldUpdateOperationsInput | string
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    appUser?: AppUserUpdateOneRequiredWithoutCafeRecordsNestedInput
+    cafe?: CafeUpdateOneRequiredWithoutCafeRecordsNestedInput
+    note?: CafeNoteUpdateOneWithoutCafeRecordNestedInput
+  }
+
+  export type CafeRecordUncheckedUpdateWithoutBeanInput = {
+    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    appUserId?: BigIntFieldUpdateOperationsInput | bigint | number
+    kakaoPlaceId?: StringFieldUpdateOperationsInput | string
+    recordType?: StringFieldUpdateOperationsInput | string
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: CafeNoteUncheckedUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type MediaAttachmentCreateWithoutMediaAssetInput = {
@@ -12179,6 +13958,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     cafe?: CafeUpdateOneRequiredWithoutCafeRecordsNestedInput
     note?: CafeNoteUpdateOneWithoutCafeRecordNestedInput
+    bean?: BeanRecordUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateWithoutAppUserInput = {
@@ -12189,6 +13969,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     note?: CafeNoteUncheckedUpdateOneWithoutCafeRecordNestedInput
+    bean?: BeanRecordUncheckedUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateManyWithoutAppUserInput = {
@@ -12249,6 +14030,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appUser?: AppUserUpdateOneRequiredWithoutCafeRecordsNestedInput
     note?: CafeNoteUpdateOneWithoutCafeRecordNestedInput
+    bean?: BeanRecordUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateWithoutCafeInput = {
@@ -12259,6 +14041,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     note?: CafeNoteUncheckedUpdateOneWithoutCafeRecordNestedInput
+    bean?: BeanRecordUncheckedUpdateOneWithoutCafeRecordNestedInput
   }
 
   export type CafeRecordUncheckedUpdateManyWithoutCafeInput = {

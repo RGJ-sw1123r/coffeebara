@@ -7,6 +7,10 @@ datasource db {
   provider = "mysql"
 }
 
+// Archive-facing schema source of truth:
+// keep current and future archive-facing structures defined here first,
+// then align db/schema.sql as the manual SQL reference.
+
 model AppUser {
   id              BigInt          @id @default(autoincrement())
   authProvider    String          @map("auth_provider") @db.VarChar(40)
@@ -16,9 +20,9 @@ model AppUser {
   displayName     String?         @map("display_name") @db.VarChar(100)
   profileImageUrl String?         @map("profile_image_url") @db.VarChar(500)
   role            String          @default("ROLE_USER") @db.VarChar(50)
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
-  lastLoginAt     DateTime        @default(now()) @map("last_login_at")
+  createdAt       DateTime        @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  lastLoginAt     DateTime        @default(now()) @map("last_login_at") @db.DateTime(0)
   savedCafes      UserSavedCafe[]
   cafeRecords     CafeRecord[]
 
@@ -36,9 +40,9 @@ model Cafe {
   latitude        Decimal?        @db.Decimal(10, 7)
   longitude       Decimal?        @db.Decimal(10, 7)
   placeUrl        String?         @map("place_url") @db.VarChar(500)
-  lastFetchedAt   DateTime        @map("last_fetched_at")
-  nextRefreshAt   DateTime?       @map("next_refresh_at")
-  createdAt       DateTime        @default(now()) @map("created_at")
+  lastFetchedAt   DateTime        @map("last_fetched_at") @db.DateTime(0)
+  nextRefreshAt   DateTime?       @map("next_refresh_at") @db.DateTime(0)
+  createdAt       DateTime        @default(now()) @map("created_at") @db.DateTime(0)
   savedCafes      UserSavedCafe[]
   cafeRecords     CafeRecord[]
 
@@ -50,10 +54,10 @@ model UserSavedCafe {
   appUserId    BigInt   @map("app_user_id")
   kakaoPlaceId String   @map("kakao_place_id") @db.VarChar(64)
   savedType    String   @default("GENERAL") @map("saved_type") @db.VarChar(40)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  appUser      AppUser  @relation(fields: [appUserId], references: [id])
-  cafe         Cafe     @relation(fields: [kakaoPlaceId], references: [kakaoPlaceId])
+  createdAt    DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  appUser      AppUser  @relation(fields: [appUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_user_saved_cafe_app_user")
+  cafe         Cafe     @relation(fields: [kakaoPlaceId], references: [kakaoPlaceId], onDelete: Restrict, onUpdate: Restrict, map: "fk_user_saved_cafe_cafe")
 
   @@unique([appUserId, kakaoPlaceId], map: "uk_user_saved_cafe_user_place")
   @@index([appUserId, createdAt], map: "idx_user_saved_cafe_user_created")
@@ -62,16 +66,17 @@ model UserSavedCafe {
 }
 
 model CafeRecord {
-  id           BigInt    @id @default(autoincrement())
-  appUserId    BigInt    @map("app_user_id")
-  kakaoPlaceId String    @map("kakao_place_id") @db.VarChar(64)
-  recordType   String    @map("record_type") @db.VarChar(40)
-  displayOrder Int       @default(0) @map("display_order")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  appUser      AppUser   @relation(fields: [appUserId], references: [id])
-  cafe         Cafe      @relation(fields: [kakaoPlaceId], references: [kakaoPlaceId])
+  id           BigInt      @id @default(autoincrement())
+  appUserId    BigInt      @map("app_user_id")
+  kakaoPlaceId String      @map("kakao_place_id") @db.VarChar(64)
+  recordType   String      @map("record_type") @db.VarChar(40)
+  displayOrder Int         @default(0) @map("display_order")
+  createdAt    DateTime    @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  appUser      AppUser     @relation(fields: [appUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_cafe_record_app_user")
+  cafe         Cafe        @relation(fields: [kakaoPlaceId], references: [kakaoPlaceId], onDelete: Restrict, onUpdate: Restrict, map: "fk_cafe_record_cafe")
   note         CafeNote?
+  bean         BeanRecord?
 
   @@index([appUserId, kakaoPlaceId, displayOrder, id], map: "idx_cafe_record_user_place_order")
   @@index([kakaoPlaceId], map: "idx_cafe_record_place")
@@ -82,11 +87,34 @@ model CafeNote {
   cafeRecordId BigInt     @id @map("cafe_record_id")
   title        String?    @db.VarChar(255)
   noteText     String     @map("note_text") @db.VarChar(1000)
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  cafeRecord   CafeRecord @relation(fields: [cafeRecordId], references: [id])
+  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  cafeRecord   CafeRecord @relation(fields: [cafeRecordId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_cafe_note_cafe_record")
 
   @@map("cafe_note")
+}
+
+model BeanRecord {
+  cafeRecordId   BigInt     @id @map("cafe_record_id")
+  beanName       String     @map("bean_name") @db.VarChar(255)
+  originCountry  String?    @map("origin_country") @db.VarChar(100)
+  originRegion   String?    @map("origin_region") @db.VarChar(100)
+  beanVariety    String?    @map("bean_variety") @db.VarChar(100)
+  processType    String?    @map("process_type") @db.VarChar(100)
+  roastLevel     String?    @map("roast_level") @db.VarChar(50)
+  roastDate      DateTime?  @map("roast_date") @db.Date
+  altitudeMeters Int?       @map("altitude_meters")
+  tastingNotes   String?    @map("tasting_notes") @db.VarChar(500)
+  purchaseDate   DateTime   @map("purchase_date") @db.Date
+  purchasePrice  Int?       @map("purchase_price")
+  quantityGrams  Int?       @map("quantity_grams")
+  memo           String?    @db.VarChar(1000)
+  createdAt      DateTime   @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt      DateTime   @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  cafeRecord     CafeRecord @relation(fields: [cafeRecordId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_bean_record_cafe_record")
+
+  @@index([purchaseDate], map: "idx_bean_record_purchase_date")
+  @@map("bean_record")
 }
 
 model MediaAsset {
@@ -98,7 +126,7 @@ model MediaAsset {
   width            Int?
   height           Int?
   checksum         String            @db.VarChar(128)
-  createdAt        DateTime          @default(now()) @map("created_at")
+  createdAt        DateTime          @default(now()) @map("created_at") @db.DateTime(0)
   attachments      MediaAttachment[]
 
   @@index([checksum], map: "idx_media_asset_checksum")
@@ -113,9 +141,9 @@ model MediaAttachment {
   attachmentRole String     @map("attachment_role") @db.VarChar(40)
   sortOrder      Int        @default(0) @map("sort_order")
   isCover        Boolean    @default(false) @map("is_cover")
-  createdAt      DateTime   @default(now()) @map("created_at")
-  deletedAt      DateTime?  @map("deleted_at")
-  mediaAsset     MediaAsset @relation(fields: [mediaAssetId], references: [id])
+  createdAt      DateTime   @default(now()) @map("created_at") @db.DateTime(0)
+  deletedAt      DateTime?  @map("deleted_at") @db.DateTime(0)
+  mediaAsset     MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_media_attachment_media_asset")
 
   @@index([ownerType, ownerId, deletedAt, sortOrder, id], map: "idx_media_attachment_owner_lookup")
   @@index([mediaAssetId], map: "idx_media_attachment_asset")

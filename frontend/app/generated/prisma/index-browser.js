@@ -176,6 +176,25 @@ exports.Prisma.CafeNoteScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.BeanRecordScalarFieldEnum = {
+  cafeRecordId: 'cafeRecordId',
+  beanName: 'beanName',
+  originCountry: 'originCountry',
+  originRegion: 'originRegion',
+  beanVariety: 'beanVariety',
+  processType: 'processType',
+  roastLevel: 'roastLevel',
+  roastDate: 'roastDate',
+  altitudeMeters: 'altitudeMeters',
+  tastingNotes: 'tastingNotes',
+  purchaseDate: 'purchaseDate',
+  purchasePrice: 'purchasePrice',
+  quantityGrams: 'quantityGrams',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.MediaAssetScalarFieldEnum = {
   id: 'id',
   storageKey: 'storageKey',
@@ -245,6 +264,17 @@ exports.Prisma.CafeNoteOrderByRelevanceFieldEnum = {
   noteText: 'noteText'
 };
 
+exports.Prisma.BeanRecordOrderByRelevanceFieldEnum = {
+  beanName: 'beanName',
+  originCountry: 'originCountry',
+  originRegion: 'originRegion',
+  beanVariety: 'beanVariety',
+  processType: 'processType',
+  roastLevel: 'roastLevel',
+  tastingNotes: 'tastingNotes',
+  memo: 'memo'
+};
+
 exports.Prisma.MediaAssetOrderByRelevanceFieldEnum = {
   storageKey: 'storageKey',
   originalFileName: 'originalFileName',
@@ -264,6 +294,7 @@ exports.Prisma.ModelName = {
   UserSavedCafe: 'UserSavedCafe',
   CafeRecord: 'CafeRecord',
   CafeNote: 'CafeNote',
+  BeanRecord: 'BeanRecord',
   MediaAsset: 'MediaAsset',
   MediaAttachment: 'MediaAttachment'
 };

@@ -1,3 +1,7 @@
+-- Manual/reference SQL for archive-facing schema.
+-- Source of truth for archive-facing structures lives in frontend/prisma/schema.prisma.
+-- Keep this file aligned with Prisma while preserving readable hand-managed SQL.
+
 CREATE TABLE IF NOT EXISTS cafe (
     kakao_place_id VARCHAR(64) NOT NULL COMMENT 'Kakao place primary key',
     place_name VARCHAR(255) NOT NULL COMMENT 'Cafe name',
@@ -75,6 +79,30 @@ CREATE TABLE IF NOT EXISTS cafe_note (
         FOREIGN KEY (cafe_record_id) REFERENCES cafe_record (id)
         ON DELETE CASCADE
 ) COMMENT='Text record payload linked to cafe_record';
+
+CREATE TABLE IF NOT EXISTS bean_record (
+    cafe_record_id BIGINT NOT NULL COMMENT 'Parent cafe_record id for BEAN record',
+    bean_name VARCHAR(255) NOT NULL COMMENT 'Bean name shown in the archive',
+    origin_country VARCHAR(100) NULL COMMENT 'Bean origin country',
+    origin_region VARCHAR(100) NULL COMMENT 'Bean origin region or sub-origin',
+    bean_variety VARCHAR(100) NULL COMMENT 'Bean varietal if known',
+    process_type VARCHAR(100) NULL COMMENT 'Processing method such as washed or natural',
+    roast_level VARCHAR(50) NULL COMMENT 'Roast level such as light, medium, or medium dark',
+    roast_date DATE NULL COMMENT 'Roast date printed on the package if known',
+    altitude_meters INT NULL COMMENT 'Altitude in meters if known',
+    tasting_notes VARCHAR(500) NULL COMMENT 'Cafe- or package-provided tasting notes',
+    purchase_date DATE NOT NULL COMMENT 'Actual bean purchase date',
+    purchase_price INT NULL COMMENT 'Purchase price in KRW',
+    quantity_grams INT NULL COMMENT 'Purchased bean quantity in grams',
+    memo VARCHAR(1000) NULL COMMENT 'Optional personal memo about the bean purchase',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created timestamp',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated timestamp',
+    PRIMARY KEY (cafe_record_id),
+    KEY idx_bean_record_purchase_date (purchase_date),
+    CONSTRAINT fk_bean_record_cafe_record
+        FOREIGN KEY (cafe_record_id) REFERENCES cafe_record (id)
+        ON DELETE CASCADE
+) COMMENT='Bean record payload linked to cafe_record';
 
 CREATE TABLE IF NOT EXISTS media_asset (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Media asset primary key',

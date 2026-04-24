@@ -186,9 +186,10 @@ const ko = {
     recordListDescription:
       "드래그 앤 드롭으로 순서를 변경할 수 있습니다.",
     recordUntitledPlaceholder: "기록 제목",
+    recordTextUntitledPlaceholder: "텍스트 기록",
     recordEmptyPreview:
       "내용을 아직 입력하지 않았습니다.",
-    recordTypeTextLabel: "Text",
+    recordTypeTextLabel: "텍스트",
     recordMenuAriaLabel:
       "기록 메뉴 열기",
     recordDeleteActionLabel: "삭제",
@@ -198,16 +199,24 @@ const ko = {
     recordNewModalTitle:
       "어떤 기록을 만들까요?",
     recordNewModalBody:
-      "지금은 텍스트 기록만 선택할 수 있습니다.",
+      "이 카페 아카이브에 추가할 기록 유형을 선택해 주세요.",
     recordNewModalCloseAriaLabel:
       "팝업 닫기",
     recordNewTextOptionTitle: "텍스트",
     recordNewTextOptionBody:
       "간단한 메모 형태로 기록을 시작합니다.",
+    recordNewBeanOptionTitle: "원두",
+    recordNewBeanOptionBody: "원두 기록을 시작합니다.",
     recordLoadFailed:
       "기록을 불러오지 못했습니다.",
+    recordTitleRequired:
+      "기록 이름을 입력한 뒤 등록해 주세요.",
     recordContentRequired:
       "기록 내용을 입력한 뒤 등록해 주세요.",
+    recordBeanIdentityRequired:
+      "원두 이름을 입력한 뒤 저장해 주세요.",
+    recordBeanPurchaseDateRequired:
+      "구매 날짜를 선택한 뒤 저장해 주세요.",
     recordSaveFailed:
       "기록을 저장하지 못했습니다.",
     recordReloadFailed:
@@ -216,12 +225,18 @@ const ko = {
       "기록을 등록했습니다.",
     recordUpdatedToast:
       "기록을 수정했습니다.",
+    recordBeanSavedToast:
+      "원두 기록 UI 셸을 로컬 상태에 저장했습니다.",
     recordOrderSaveFailed:
       "기록 순서를 저장하지 못했습니다.",
     recordDeletedToast:
       "기록을 삭제했습니다.",
     recordDeleteFailed:
       "기록을 삭제하지 못했습니다.",
+    recordDeleteModalEyebrow: "기록 삭제",
+    recordDeleteModalTitle: "이 기록을 삭제할까요?",
+    recordDeleteModalBody:
+      "현재 카드를 삭제합니다. 아직 저장하지 않은 초안은 바로 사라집니다.",
     recordAddActionLabel: "+ 새 기록",
     recordAddActionCompactLabel: "+ 기록",
     recordEditorTitle: "Record Editor",
@@ -238,6 +253,44 @@ const ko = {
     recordContentFieldLabel: "기록 내용",
     recordContentPlaceholder:
       "이 카페에서 남기고 싶은 메모를 입력해 주세요",
+    recordTypeBeanLabel: "원두",
+    recordBeanUntitledPlaceholder: "원두 기록",
+    recordBeanEmptyPreview:
+      "아직 원두 상세 정보가 입력되지 않았습니다.",
+    recordBeanSectionIdentity: "원두 정보",
+    recordBeanSectionPurchase: "구매 정보",
+    recordBeanSectionTasting: "패키지 테이스팅 노트",
+    recordBeanSectionMemo: "메모",
+    recordBeanSectionImages: "이미지",
+    recordBeanFieldName: "원두 이름",
+    recordBeanFieldOriginCountry: "원산지 국가",
+    recordBeanFieldOriginRegion: "원산지 지역",
+    recordBeanFieldVariety: "품종",
+    recordBeanFieldProcessType: "가공 방식",
+    recordBeanFieldRoastLevel: "로스팅 정도",
+    recordBeanFieldRoastDate: "로스팅 날짜",
+    recordBeanFieldAltitudeMeters: "고도(m)",
+    recordBeanFieldTastingNotes: "테이스팅 노트",
+    recordBeanFieldPurchaseDate: "구매 날짜",
+    recordBeanFieldPurchasePrice: "구매 가격",
+    recordBeanFieldQuantityGrams: "용량(g)",
+    recordBeanFieldMemo: "메모",
+    recordBeanPlaceholderName: "원두 이름을 입력해 주세요",
+    recordBeanPlaceholderOriginCountry: "예: 에티오피아",
+    recordBeanPlaceholderOriginRegion: "예: 예가체프",
+    recordBeanPlaceholderVariety: "예: Heirloom",
+    recordBeanPlaceholderProcessType: "예: Washed",
+    recordBeanPlaceholderRoastLevel: "예: Light",
+    recordBeanPlaceholderAltitudeMeters: "예: 1900",
+    recordBeanPlaceholderTastingNotes:
+      "카페나 패키지에 적힌 노트를 입력해 주세요",
+    recordBeanPlaceholderPurchasePrice: "예: 18000",
+    recordBeanPlaceholderQuantityGrams: "예: 200",
+    recordBeanPlaceholderMemo:
+      "왜 이 원두를 샀는지 메모를 남겨 보세요",
+    recordBeanAttachmentPlaceholderTitle: "이미지 첨부 영역",
+    recordBeanAttachmentPlaceholderBody:
+      "업로드 연동은 아직 연결되지 않았습니다. 이 영역은 이후 이미지 흐름을 위한 자리입니다.",
     recordLoadingLabel:
       "기록을 불러오는 중입니다.",
     recordEmptyEditorTitle:

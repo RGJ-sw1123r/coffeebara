@@ -11,6 +11,13 @@ import {
   SavedPlaceDeleteConfirmModal,
   Sidebar,
 } from "../home/Sidebar";
+import {
+  ACTIVE_RECORD_TYPE_CODES,
+  createDraftRecord,
+  getRecordTypeConfig,
+  RECORD_TYPE_BEAN,
+  RECORD_TYPE_TEXT,
+} from "@/app/lib/record-types";
 
 const RECORD_API_BASE_URL = "";
 const WARNING_HEADER_NAME = "X-Coffeebara-Warning";
@@ -38,18 +45,6 @@ function normalizeSavedPlace(place) {
   };
 }
 
-function createDraftRecord(index) {
-  const timestamp = Date.now();
-
-  return {
-    id: `draft-${timestamp}-${index}`,
-    persistedId: null,
-    title: "",
-    noteText: "",
-    displayOrder: index - 1,
-  };
-}
-
 function normalizeRecord(record, index = 0) {
   if (!record || typeof record !== "object") {
     return null;
@@ -67,6 +62,8 @@ function normalizeRecord(record, index = 0) {
   return {
     id: `note-${persistedId}`,
     persistedId,
+    localPersisted: false,
+    recordType: RECORD_TYPE_TEXT,
     title: typeof record.title === "string" ? record.title : "",
     noteText: typeof record.noteText === "string" ? record.noteText : "",
     displayOrder:
@@ -114,19 +111,70 @@ function readWarningMessage(response) {
     .filter(Boolean);
 
   if (warningCodes.includes(MEDIA_TABLES_MISSING_WARNING)) {
-    return "이미지 첨부 테이블이 아직 준비되지 않아 이미지 정보는 불러오지 못했습니다.";
+    return "Image attachment tables are not ready yet, so image information could not be loaded.";
   }
 
   return "";
 }
 
+function isRecordSaved(record) {
+  return Boolean(record?.persistedId || record?.localPersisted);
+}
+
+function getBeanRecordTitle(record, copy) {
+  return record?.beanName?.trim() || copy.beanUntitled;
+}
+
+function getBeanRecordPreview(record, copy) {
+  const previewParts = [
+    record?.purchaseDate?.trim(),
+    record?.originCountry?.trim(),
+    record?.originRegion?.trim(),
+    record?.tastingNotes?.trim(),
+    record?.memo?.trim(),
+  ].filter(Boolean);
+
+  return previewParts[0] || copy.beanEmptyPreview;
+}
+
+function getRecordListTitle(record, copy) {
+  if (record?.recordType === RECORD_TYPE_BEAN) {
+    return getBeanRecordTitle(record, copy);
+  }
+
+  return record?.title?.trim() || copy.untitled;
+}
+
+function getRecordListPreview(record, copy) {
+  if (record?.recordType === RECORD_TYPE_BEAN) {
+    return getBeanRecordPreview(record, copy);
+  }
+
+  return record?.noteText?.trim() || copy.emptyPreview;
+}
+
+function getRecordTypeLabel(record, copy) {
+  const config = getRecordTypeConfig(record?.recordType);
+  return copy.recordTypeLabels[config.code] ?? config.code;
+}
+
 function getRecordPageCopy(messages) {
+  const recordTypeLabels = Object.fromEntries(
+    ACTIVE_RECORD_TYPE_CODES.map((recordType) => {
+      const config = getRecordTypeConfig(recordType);
+      return [recordType, messages[config.listLabelMessageKey] ?? config.code];
+    }),
+  );
+
   return {
     listTitle: messages.recordListTitle,
     listDescription: messages.recordListDescription,
     untitled: messages.recordUntitledPlaceholder,
+    textUntitled: messages.recordTextUntitledPlaceholder ?? "Text record",
     emptyPreview: messages.recordEmptyPreview,
-    typeText: messages.recordTypeTextLabel,
+    beanUntitled: messages.recordBeanUntitledPlaceholder ?? "Bean record",
+    beanEmptyPreview: messages.recordBeanEmptyPreview ?? "No bean details have been entered yet.",
+    recordTypeLabels,
     menuAria: messages.recordMenuAriaLabel,
     deleteAction: messages.recordDeleteActionLabel,
     listEmpty: messages.recordEmptyState,
@@ -134,17 +182,35 @@ function getRecordPageCopy(messages) {
     modalTitle: messages.recordNewModalTitle,
     modalBody: messages.recordNewModalBody,
     modalCloseAria: messages.recordNewModalCloseAriaLabel,
-    modalTextTitle: messages.recordNewTextOptionTitle,
-    modalTextBody: messages.recordNewTextOptionBody,
+    modalOptions: ACTIVE_RECORD_TYPE_CODES.map((recordType) => {
+      const config = getRecordTypeConfig(recordType);
+
+      return {
+        recordType,
+        title: messages[config.modalTitleMessageKey] ?? recordType,
+        body: messages[config.modalBodyMessageKey] ?? "",
+      };
+    }),
     loadFailed: messages.recordLoadFailed,
+    titleRequired: messages.recordTitleRequired ?? "Enter a record title before saving.",
     contentRequired: messages.recordContentRequired,
+    beanIdentityRequired:
+      messages.recordBeanIdentityRequired ?? "Enter the bean name before saving.",
+    beanPurchaseDateRequired:
+      messages.recordBeanPurchaseDateRequired ?? "Select the purchase date before saving.",
     saveFailed: messages.recordSaveFailed,
     reloadFailed: messages.recordReloadFailed,
     createdToast: messages.recordCreatedToast,
     updatedToast: messages.recordUpdatedToast,
+    beanSavedToast: messages.recordBeanSavedToast ?? "Bean record shell saved locally.",
     orderSaveFailed: messages.recordOrderSaveFailed,
     deletedToast: messages.recordDeletedToast,
     deleteFailed: messages.recordDeleteFailed,
+    deleteModalEyebrow: messages.recordDeleteModalEyebrow ?? "Delete Record",
+    deleteModalTitle: messages.recordDeleteModalTitle ?? "Delete this record?",
+    deleteModalBody:
+      messages.recordDeleteModalBody ??
+      "This action removes the current card. Unsaved drafts will be discarded immediately.",
     addAction: messages.recordAddActionLabel,
     addActionCompact: messages.recordAddActionCompactLabel,
     editorTitle: messages.recordEditorTitle,
@@ -157,6 +223,49 @@ function getRecordPageCopy(messages) {
     titlePlaceholder: messages.recordTitlePlaceholder,
     contentField: messages.recordContentFieldLabel,
     contentPlaceholder: messages.recordContentPlaceholder,
+    beanSectionIdentity: messages.recordBeanSectionIdentity ?? "Bean identity",
+    beanSectionPurchase: messages.recordBeanSectionPurchase ?? "Purchase context",
+    beanSectionTasting: messages.recordBeanSectionTasting ?? "Package tasting notes",
+    beanSectionMemo: messages.recordBeanSectionMemo ?? "Memo",
+    beanSectionImages: messages.recordBeanSectionImages ?? "Images",
+    beanFieldName: messages.recordBeanFieldName ?? "Bean name",
+    beanFieldOriginCountry: messages.recordBeanFieldOriginCountry ?? "Origin country",
+    beanFieldOriginRegion: messages.recordBeanFieldOriginRegion ?? "Origin region",
+    beanFieldVariety: messages.recordBeanFieldVariety ?? "Bean variety",
+    beanFieldProcessType: messages.recordBeanFieldProcessType ?? "Process type",
+    beanFieldRoastLevel: messages.recordBeanFieldRoastLevel ?? "Roast level",
+    beanFieldRoastDate: messages.recordBeanFieldRoastDate ?? "Roast date",
+    beanFieldAltitudeMeters: messages.recordBeanFieldAltitudeMeters ?? "Altitude (m)",
+    beanFieldTastingNotes: messages.recordBeanFieldTastingNotes ?? "Tasting notes",
+    beanFieldPurchaseDate: messages.recordBeanFieldPurchaseDate ?? "Purchase date",
+    beanFieldPurchasePrice: messages.recordBeanFieldPurchasePrice ?? "Purchase price",
+    beanFieldQuantityGrams: messages.recordBeanFieldQuantityGrams ?? "Quantity (g)",
+    beanFieldMemo: messages.recordBeanFieldMemo ?? "Memo",
+    beanPlaceholderName: messages.recordBeanPlaceholderName ?? "Enter the bean name",
+    beanPlaceholderOriginCountry:
+      messages.recordBeanPlaceholderOriginCountry ?? "e.g. Ethiopia",
+    beanPlaceholderOriginRegion:
+      messages.recordBeanPlaceholderOriginRegion ?? "e.g. Yirgacheffe",
+    beanPlaceholderVariety: messages.recordBeanPlaceholderVariety ?? "e.g. Heirloom",
+    beanPlaceholderProcessType: messages.recordBeanPlaceholderProcessType ?? "e.g. Washed",
+    beanPlaceholderRoastLevel: messages.recordBeanPlaceholderRoastLevel ?? "e.g. Light",
+    beanPlaceholderAltitudeMeters:
+      messages.recordBeanPlaceholderAltitudeMeters ?? "e.g. 1900",
+    beanPlaceholderTastingNotes:
+      messages.recordBeanPlaceholderTastingNotes ??
+      "Notes shown by the cafe or on the package",
+    beanPlaceholderPurchasePrice:
+      messages.recordBeanPlaceholderPurchasePrice ?? "e.g. 18000",
+    beanPlaceholderQuantityGrams:
+      messages.recordBeanPlaceholderQuantityGrams ?? "e.g. 200",
+    beanPlaceholderMemo:
+      messages.recordBeanPlaceholderMemo ??
+      "Leave a memo about why you bought this bean",
+    beanAttachmentPlaceholderTitle:
+      messages.recordBeanAttachmentPlaceholderTitle ?? "Image attachment area",
+    beanAttachmentPlaceholderBody:
+      messages.recordBeanAttachmentPlaceholderBody ??
+      "Upload integration is not connected yet. This section reserves the future image flow.",
     loading: messages.recordLoadingLabel,
     emptyEditorTitle: messages.recordEmptyEditorTitle,
     emptyEditorBody: messages.recordEmptyEditorBody,
@@ -201,9 +310,7 @@ function RecordListPanel({
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8f725d]">
             {copy.listTitle}
           </p>
-          <p className="mt-2 text-sm text-[#6d584b]">
-            {copy.listDescription}
-          </p>
+          <p className="mt-2 text-sm text-[#6d584b]">{copy.listDescription}</p>
         </div>
 
         <div
@@ -218,8 +325,10 @@ function RecordListPanel({
           {records.length > 0 ? (
             records.map((record) => {
               const isActive = selectedRecordId === record.id;
-              const title = record.title.trim() || copy.untitled;
-              const notePreview = record.noteText.trim() || copy.emptyPreview;
+              const title = getRecordListTitle(record, copy);
+              const notePreview = getRecordListPreview(record, copy);
+              const isPlaceholderTitle =
+                title === copy.untitled || title === copy.beanUntitled;
 
               return (
                 <div
@@ -249,70 +358,67 @@ function RecordListPanel({
                         : "border-[#eadfd3] bg-[#fcfaf7] hover:border-[#cdb8a6] hover:bg-[#fffdf9]"
                     }`}
                   >
-                  <button
-                    type="button"
-                    onClick={() => onSelectRecord(record.id)}
-                    className="block w-full text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <p
-                        className={`min-w-0 flex-1 truncate text-sm font-semibold ${
-                          record.title.trim() ? "text-[#241813]" : "text-[#9b8575]"
-                        }`}
-                      >
-                        {title}
-                      </p>
-                      <span className="inline-flex shrink-0 items-center rounded-full border border-[#dccfbe] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8f725d]">
-                        {copy.typeText}
-                      </span>
-                    </div>
-
-                    <div className="mt-3 flex items-start gap-3">
-                      <p className="min-w-0 flex-1 line-clamp-1 text-sm leading-6 text-[#5f4b3f]">
-                        {notePreview}
-                      </p>
-                    </div>
-                  </button>
-
-                  <div
-                    data-record-menu-root="true"
-                    className="absolute bottom-4 right-4"
-                  >
                     <button
                       type="button"
-                      aria-label={copy.menuAria}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setOpenMenuRecordId((current) =>
-                          current === record.id ? "" : record.id,
-                        );
-                      }}
-                      className={`inline-flex h-7 w-7 items-center justify-center text-[#6d584b] transition ${
-                        openMenuRecordId === record.id
-                          ? "opacity-100"
-                          : "opacity-0 group-hover:opacity-100"
-                      } cursor-pointer`}
+                      onClick={() => onSelectRecord(record.id)}
+                      className="block w-full text-left"
                     >
-                      {"\u22EE"}
+                      <div className="flex items-center gap-3">
+                        <p
+                          className={`min-w-0 flex-1 truncate text-sm font-semibold ${
+                            isPlaceholderTitle ? "text-[#9b8575]" : "text-[#241813]"
+                          }`}
+                        >
+                          {title}
+                        </p>
+                        <span className="inline-flex shrink-0 items-center rounded-full border border-[#dccfbe] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8f725d]">
+                          {getRecordTypeLabel(record, copy)}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 flex items-start gap-3">
+                        <p className="min-w-0 flex-1 line-clamp-1 text-sm leading-6 text-[#5f4b3f]">
+                          {notePreview}
+                        </p>
+                      </div>
                     </button>
 
-                    {openMenuRecordId === record.id ? (
-                      <div className="absolute bottom-[calc(100%+8px)] right-0 z-20 min-w-[112px] overflow-hidden rounded-2xl border border-[#dccfbe] bg-white shadow-[0_18px_40px_rgba(84,52,27,0.12)]">
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setOpenMenuRecordId("");
-                            onDeleteRecord(record);
-                          }}
-                          className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-[#6f3126] transition hover:bg-[#fff1ed]"
-                        >
-                          <span>{copy.deleteAction}</span>
-                          <span>{">"}</span>
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
+                    <div data-record-menu-root="true" className="absolute bottom-4 right-4">
+                      <button
+                        type="button"
+                        aria-label={copy.menuAria}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setOpenMenuRecordId((current) =>
+                            current === record.id ? "" : record.id,
+                          );
+                        }}
+                        className={`inline-flex h-7 w-7 items-center justify-center text-[#6d584b] transition ${
+                          openMenuRecordId === record.id
+                            ? "opacity-100"
+                            : "opacity-0 group-hover:opacity-100"
+                        } cursor-pointer`}
+                      >
+                        {"\u22EE"}
+                      </button>
+
+                      {openMenuRecordId === record.id ? (
+                        <div className="absolute bottom-[calc(100%+8px)] right-0 z-20 min-w-[112px] overflow-hidden rounded-2xl border border-[#dccfbe] bg-white shadow-[0_18px_40px_rgba(84,52,27,0.12)]">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenMenuRecordId("");
+                              onDeleteRecord(record);
+                            }}
+                            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-[#6f3126] transition hover:bg-[#fff1ed]"
+                          >
+                            <span>{copy.deleteAction}</span>
+                            <span>{">"}</span>
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               );
@@ -328,7 +434,7 @@ function RecordListPanel({
   );
 }
 
-function RecordTypeModal({ onClose, onSelectText, copy }) {
+function RecordTypeModal({ onClose, onSelectRecordType, copy }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,24,19,0.45)] px-4">
       <div className="w-full max-w-[420px] rounded-[28px] border border-[#e7dccf] bg-white p-6 shadow-[0_24px_60px_rgba(84,52,27,0.18)]">
@@ -337,12 +443,8 @@ function RecordTypeModal({ onClose, onSelectText, copy }) {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
               {copy.modalEyebrow}
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-[#241813]">
-              {copy.modalTitle}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[#5f4b3f]">
-              {copy.modalBody}
-            </p>
+            <h2 className="mt-2 text-xl font-semibold text-[#241813]">{copy.modalTitle}</h2>
+            <p className="mt-3 text-sm leading-6 text-[#5f4b3f]">{copy.modalBody}</p>
           </div>
           <button
             type="button"
@@ -354,25 +456,452 @@ function RecordTypeModal({ onClose, onSelectText, copy }) {
           </button>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
+          {copy.modalOptions.map((option) => (
+            <button
+              key={option.recordType}
+              type="button"
+              onClick={() => onSelectRecordType(option.recordType)}
+              className="flex w-full items-center justify-between rounded-[22px] border border-[#dccfbe] bg-[#fcfaf7] px-5 py-4 text-left transition hover:border-[#cdb8a6] hover:bg-[#fffdf9]"
+            >
+              <span>
+                <span className="block text-base font-semibold text-[#241813]">
+                  {option.title}
+                </span>
+                <span className="mt-1 block text-sm text-[#6d584b]">{option.body}</span>
+              </span>
+              <span className="text-[#8f725d]">{">"}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RecordDeleteConfirmModal({ pendingDeleteRecord, onCancel, onConfirm, copy }) {
+  if (!pendingDeleteRecord?.id) {
+    return null;
+  }
+
+  return (
+    <div
+      onClick={onCancel}
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(36,24,19,0.45)] px-4"
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-[460px] rounded-[30px] border border-[#e7dccf] bg-[linear-gradient(180deg,#fffdfa_0%,#fbf5ee_100%)] p-6 shadow-[0_28px_70px_rgba(84,52,27,0.2)] sm:p-7"
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
+          {copy.deleteModalEyebrow}
+        </p>
+        <h2 className="mt-3 text-[22px] font-semibold leading-8 text-[#241813]">
+          {copy.deleteModalTitle}
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-[#5f4b3f]">{copy.deleteModalBody}</p>
+
+        <div className="mt-6 flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={onSelectText}
-            className="flex w-full items-center justify-between rounded-[22px] border border-[#dccfbe] bg-[#fcfaf7] px-5 py-4 text-left transition hover:border-[#cdb8a6] hover:bg-[#fffdf9]"
+            onClick={onConfirm}
+            className="rounded-full bg-[#6f3126] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#5d281f]"
           >
-            <span>
-              <span className="block text-base font-semibold text-[#241813]">
-                {copy.modalTextTitle}
-              </span>
-              <span className="mt-1 block text-sm text-[#6d584b]">
-                {copy.modalTextBody}
-              </span>
-            </span>
-            <span className="text-[#8f725d]">{">"}</span>
+            {copy.deleteAction}
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-full border border-[#dccfbe] bg-white px-5 py-2.5 text-sm font-medium text-[#5f4b3f] transition hover:bg-[#fcfaf7]"
+          >
+            {copy.cancelLabel}
           </button>
         </div>
       </div>
     </div>
+  );
+}
+
+function BeanField({ label, children }) {
+  return (
+    <label className="space-y-2 text-sm text-[#5f4b3f]">
+      <span className="font-medium text-[#352720]">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function RequiredMark() {
+  return (
+    <>
+      <span aria-hidden="true" className="ml-1 text-[#c84c3a]">
+        *
+      </span>
+      <span className="sr-only">required</span>
+    </>
+  );
+}
+
+function BeanRecordEditor({ selectedRecord, updateSelectedRecord, copy }) {
+  return (
+    <div className="mt-4 space-y-6">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="md:col-span-2">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
+            {copy.beanSectionIdentity}
+          </p>
+        </div>
+
+        <BeanField
+          label={
+            <>
+              {copy.beanFieldName}
+              <RequiredMark />
+            </>
+          }
+        >
+          <input
+            type="text"
+            value={selectedRecord.beanName}
+            onChange={(event) => updateSelectedRecord("beanName", event.target.value)}
+            placeholder={copy.beanPlaceholderName}
+            required
+            aria-required="true"
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+          />
+        </BeanField>
+
+        <BeanField label={copy.beanFieldOriginCountry}>
+          <input
+            type="text"
+            value={selectedRecord.originCountry}
+            onChange={(event) => updateSelectedRecord("originCountry", event.target.value)}
+            placeholder={copy.beanPlaceholderOriginCountry}
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+          />
+        </BeanField>
+
+        <BeanField label={copy.beanFieldOriginRegion}>
+          <input
+            type="text"
+            value={selectedRecord.originRegion}
+            onChange={(event) => updateSelectedRecord("originRegion", event.target.value)}
+            placeholder={copy.beanPlaceholderOriginRegion}
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+          />
+        </BeanField>
+
+        <BeanField label={copy.beanFieldVariety}>
+          <input
+            type="text"
+            value={selectedRecord.beanVariety}
+            onChange={(event) => updateSelectedRecord("beanVariety", event.target.value)}
+            placeholder={copy.beanPlaceholderVariety}
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+          />
+        </BeanField>
+
+        <BeanField label={copy.beanFieldProcessType}>
+          <input
+            type="text"
+            value={selectedRecord.processType}
+            onChange={(event) => updateSelectedRecord("processType", event.target.value)}
+            placeholder={copy.beanPlaceholderProcessType}
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+          />
+        </BeanField>
+
+        <BeanField label={copy.beanFieldRoastLevel}>
+          <input
+            type="text"
+            value={selectedRecord.roastLevel}
+            onChange={(event) => updateSelectedRecord("roastLevel", event.target.value)}
+            placeholder={copy.beanPlaceholderRoastLevel}
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+          />
+        </BeanField>
+
+        <BeanField label={copy.beanFieldRoastDate}>
+          <input
+            type="date"
+            value={selectedRecord.roastDate}
+            onChange={(event) => updateSelectedRecord("roastDate", event.target.value)}
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none"
+          />
+        </BeanField>
+
+        <BeanField label={copy.beanFieldAltitudeMeters}>
+          <input
+            type="number"
+            min="0"
+            value={selectedRecord.altitudeMeters}
+            onChange={(event) => updateSelectedRecord("altitudeMeters", event.target.value)}
+            placeholder={copy.beanPlaceholderAltitudeMeters}
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+          />
+        </BeanField>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="md:col-span-2">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
+            {copy.beanSectionPurchase}
+          </p>
+        </div>
+
+        <BeanField
+          label={
+            <>
+              {copy.beanFieldPurchaseDate}
+              <RequiredMark />
+            </>
+          }
+        >
+          <input
+            type="date"
+            value={selectedRecord.purchaseDate}
+            onChange={(event) => updateSelectedRecord("purchaseDate", event.target.value)}
+            required
+            aria-required="true"
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none"
+          />
+        </BeanField>
+
+        <BeanField label={copy.beanFieldPurchasePrice}>
+          <input
+            type="number"
+            min="0"
+            value={selectedRecord.purchasePrice}
+            onChange={(event) => updateSelectedRecord("purchasePrice", event.target.value)}
+            placeholder={copy.beanPlaceholderPurchasePrice}
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+          />
+        </BeanField>
+
+        <BeanField label={copy.beanFieldQuantityGrams}>
+          <input
+            type="number"
+            min="0"
+            value={selectedRecord.quantityGrams}
+            onChange={(event) => updateSelectedRecord("quantityGrams", event.target.value)}
+            placeholder={copy.beanPlaceholderQuantityGrams}
+            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+          />
+        </BeanField>
+      </div>
+
+      <div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
+          {copy.beanSectionTasting}
+        </p>
+        <input
+          type="text"
+          value={selectedRecord.tastingNotes}
+          onChange={(event) => updateSelectedRecord("tastingNotes", event.target.value)}
+          placeholder={copy.beanPlaceholderTastingNotes}
+          className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+        />
+      </div>
+
+      <div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
+          {copy.beanSectionMemo}
+        </p>
+        <textarea
+          value={selectedRecord.memo}
+          onChange={(event) => updateSelectedRecord("memo", event.target.value)}
+          rows={5}
+          placeholder={copy.beanPlaceholderMemo}
+          className="w-full rounded-[22px] border border-[#dccfbe] bg-[#fcfaf7] px-4 py-3 text-[#352720] outline-none placeholder:text-[#a38b79]"
+        />
+      </div>
+
+      <div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
+          {copy.beanSectionImages}
+        </p>
+        <div className="rounded-[24px] border border-dashed border-[#d8c8b7] bg-[#fcfaf7] px-5 py-6">
+          <p className="text-sm font-semibold text-[#352720]">
+            {copy.beanAttachmentPlaceholderTitle}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[#7a6456]">
+            {copy.beanAttachmentPlaceholderBody}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TextRecordEditor({ selectedRecord, updateSelectedRecord, copy }) {
+  return (
+    <div className="mt-4 grid gap-4">
+      <label className="space-y-2 text-sm text-[#5f4b3f]">
+        <span className="font-medium text-[#352720]">
+          {copy.titleField}
+          <RequiredMark />
+        </span>
+        <input
+          type="text"
+          value={selectedRecord.title}
+          onChange={(event) => updateSelectedRecord("title", event.target.value)}
+          placeholder={copy.titlePlaceholder}
+          required
+          aria-required="true"
+          className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
+        />
+      </label>
+      <label className="space-y-2 text-sm text-[#5f4b3f]">
+        <span className="font-medium text-[#352720]">
+          {copy.contentField}
+          <RequiredMark />
+        </span>
+        <textarea
+          value={selectedRecord.noteText}
+          onChange={(event) => updateSelectedRecord("noteText", event.target.value)}
+          rows={7}
+          placeholder={copy.contentPlaceholder}
+          required
+          aria-required="true"
+          className="w-full rounded-[22px] border border-[#dccfbe] bg-[#fcfaf7] px-4 py-3 text-[#352720] outline-none placeholder:text-[#a38b79]"
+        />
+      </label>
+    </div>
+  );
+}
+
+function RecordEditorCard({
+  record,
+  isActive,
+  isSavingRecord,
+  copy,
+  onActivate,
+  onSaveRecord,
+  onCancelDraft,
+  onDeleteRecord,
+  updateSelectedRecord,
+  cardRef,
+}) {
+  const isEditingPersistedRecord = isRecordSaved(record);
+  const title = getRecordListTitle(record, copy);
+  const preview = getRecordListPreview(record, copy);
+  const isPlaceholderTitle = title === copy.untitled || title === copy.beanUntitled;
+  const isBeanRecord = record.recordType === RECORD_TYPE_BEAN;
+  const shouldShowBeanPreview = isBeanRecord && preview !== copy.beanEmptyPreview;
+  const shouldShowActions = isActive;
+  const shouldShowSaveAction = shouldShowActions;
+  const shouldShowCancelAction = shouldShowActions && !isEditingPersistedRecord;
+  const shouldShowDeleteAction = shouldShowActions && isEditingPersistedRecord;
+
+  return (
+    <section
+      ref={cardRef}
+      className={`rounded-[28px] border bg-white p-5 shadow-[0_12px_30px_rgba(84,52,27,0.05)] transition sm:p-6 ${
+        isActive
+          ? "border-[#2f221b] ring-1 ring-[#2f221b]/10"
+          : "border-[#eadfd3]"
+      }`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        {isBeanRecord ? (
+          <button type="button" onClick={onActivate} className="min-w-0 flex-1 text-left">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex shrink-0 items-center rounded-full border border-[#dccfbe] bg-[#fcfaf7] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8f725d]">
+                {getRecordTypeLabel(record, copy)}
+              </span>
+              <p
+                className={`min-w-0 flex-1 text-base font-semibold ${
+                  isPlaceholderTitle ? "text-[#9b8575]" : "text-[#241813]"
+                }`}
+              >
+                {title}
+              </p>
+            </div>
+            {shouldShowBeanPreview ? (
+              <p className="mt-2 text-sm leading-6 text-[#6d584b]">{preview}</p>
+            ) : null}
+          </button>
+        ) : (
+          <button type="button" onClick={onActivate} className="min-w-0 flex-1 text-left">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex shrink-0 items-center rounded-full border border-[#dccfbe] bg-[#fcfaf7] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8f725d]">
+                {getRecordTypeLabel(record, copy)}
+              </span>
+              <p className="min-w-0 flex-1 text-base font-semibold text-[#241813]">
+                {copy.textUntitled}
+              </p>
+            </div>
+          </button>
+        )}
+
+        {shouldShowActions ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {shouldShowSaveAction ? (
+              <button
+                type="button"
+                onClick={onSaveRecord}
+                disabled={isSavingRecord}
+                className={`rounded-full px-4 py-2 text-sm font-medium ${
+                  isSavingRecord
+                    ? "cursor-not-allowed bg-[#b8a79b] text-white/80"
+                    : "bg-[#2f221b] text-white"
+                }`}
+              >
+                {isSavingRecord
+                  ? isEditingPersistedRecord
+                    ? copy.updatePending
+                    : copy.createPending
+                  : isEditingPersistedRecord
+                    ? copy.updateLabel
+                    : copy.createLabel}
+              </button>
+            ) : null}
+            {shouldShowCancelAction ? (
+              <button
+                type="button"
+                onClick={onCancelDraft}
+                disabled={isSavingRecord}
+                className={`rounded-full border px-4 py-2 text-sm font-medium ${
+                  isSavingRecord
+                    ? "cursor-not-allowed border-[#ddd1c5] bg-white text-[#b8a79b]"
+                    : "border-[#dccfbe] bg-white text-[#5f4b3f] hover:bg-[#fcfaf7]"
+                }`}
+              >
+                {copy.cancelLabel}
+              </button>
+            ) : null}
+            {shouldShowDeleteAction ? (
+              <button
+                type="button"
+                onClick={onDeleteRecord}
+                disabled={isSavingRecord}
+                className={`rounded-full border px-4 py-2 text-sm font-medium ${
+                  isSavingRecord
+                    ? "cursor-not-allowed border-[#ead6d0] bg-white text-[#caa79f]"
+                    : "border-[#ead6d0] bg-white text-[#8b3f32] hover:bg-[#fff4f1]"
+                }`}
+              >
+                {copy.deleteAction}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      {isBeanRecord ? (
+        <BeanRecordEditor
+          selectedRecord={record}
+          updateSelectedRecord={updateSelectedRecord}
+          copy={copy}
+        />
+      ) : (
+        <TextRecordEditor
+          selectedRecord={record}
+          updateSelectedRecord={updateSelectedRecord}
+          copy={copy}
+        />
+      )}
+    </section>
   );
 }
 
@@ -399,6 +928,8 @@ export default function PlaceRecordPrototypePage() {
     refreshAccountSummary,
   } = useAppShell();
   const recordCopy = useMemo(() => getRecordPageCopy(messages), [messages]);
+  const recordLoadFailedMessageRef = useRef(recordCopy.loadFailed);
+  const recordCardRefs = useRef(new Map());
   const [searchInput, setSearchInput] = useState("");
   const [records, setRecords] = useState([]);
   const [selectedRecordId, setSelectedRecordId] = useState("");
@@ -406,6 +937,7 @@ export default function PlaceRecordPrototypePage() {
   const [isNotesLoading, setIsNotesLoading] = useState(false);
   const [recordLoadError, setRecordLoadError] = useState("");
   const [isSavingRecord, setIsSavingRecord] = useState(false);
+  const [pendingDeleteRecord, setPendingDeleteRecord] = useState(null);
   const [draggedRecordId, setDraggedRecordId] = useState("");
   const [toast, setToast] = useState(null);
   const placeId = Array.isArray(params?.placeId) ? params.placeId[0] : params?.placeId;
@@ -421,11 +953,10 @@ export default function PlaceRecordPrototypePage() {
     records.some((record) => record.id === selectedRecordId)
       ? selectedRecordId
       : records[0]?.id ?? "";
-  const selectedRecord = useMemo(
-    () => records.find((record) => record.id === effectiveSelectedRecordId) ?? null,
-    [effectiveSelectedRecordId, records],
-  );
-  const isEditingPersistedRecord = Boolean(selectedRecord?.persistedId);
+
+  useEffect(() => {
+    recordLoadFailedMessageRef.current = recordCopy.loadFailed;
+  }, [recordCopy.loadFailed]);
 
   useEffect(() => {
     if (!toast?.message) {
@@ -465,11 +996,12 @@ export default function PlaceRecordPrototypePage() {
         );
 
         if (!response.ok) {
-          throw new Error(await readErrorMessage(response, recordCopy.loadFailed));
+          throw new Error(
+            await readErrorMessage(response, recordLoadFailedMessageRef.current),
+          );
         }
 
         const warningMessage = readWarningMessage(response);
-
         const payload = await response.json().catch(() => []);
         const nextRecords = Array.isArray(payload)
           ? payload.map(normalizeRecord).filter(Boolean)
@@ -494,7 +1026,9 @@ export default function PlaceRecordPrototypePage() {
         }
 
         const nextMessage =
-          error instanceof Error ? error.message : recordCopy.loadFailed;
+          error instanceof Error
+            ? error.message
+            : recordLoadFailedMessageRef.current;
         setRecords([]);
         setSelectedRecordId("");
         setRecordLoadError(nextMessage);
@@ -514,7 +1048,7 @@ export default function PlaceRecordPrototypePage() {
     return () => {
       cancelled = true;
     };
-  }, [authUser?.mode, recordCopy.loadFailed, savedPlace?.id]);
+  }, [authUser?.mode, savedPlace?.id]);
 
   const handleGoHome = (event) => {
     event?.preventDefault?.();
@@ -529,12 +1063,16 @@ export default function PlaceRecordPrototypePage() {
     setIsRecordTypeModalOpen(true);
   };
 
-  const handleCreateTextRecord = () => {
-    const nextRecord = createDraftRecord(records.length + 1);
+  const handleCreateRecord = (recordType) => {
+    const nextRecord = createDraftRecord(recordType, records.length + 1);
 
     setIsRecordTypeModalOpen(false);
     setRecords((current) => [...current, nextRecord]);
     setSelectedRecordId(nextRecord.id);
+    window.requestAnimationFrame(() => {
+      const nextCard = recordCardRefs.current.get(nextRecord.id);
+      nextCard?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   const getPlaceHref = (place) => {
@@ -550,14 +1088,20 @@ export default function PlaceRecordPrototypePage() {
     return `/places/${encodeURIComponent(targetId)}`;
   };
 
-  const updateSelectedRecord = (field, value) => {
-    if (!effectiveSelectedRecordId) {
+  const handleSelectRecord = (recordId) => {
+    setSelectedRecordId(recordId);
+    const nextCard = recordCardRefs.current.get(recordId);
+    nextCard?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const updateRecord = (recordId, field, value) => {
+    if (!recordId) {
       return;
     }
 
     setRecords((current) =>
       current.map((record) =>
-        record.id === effectiveSelectedRecordId
+        record.id === recordId
           ? {
               ...record,
               [field]: value,
@@ -567,12 +1111,62 @@ export default function PlaceRecordPrototypePage() {
     );
   };
 
-  const handleSaveRecord = async () => {
-    if (!savedPlace?.id || !selectedRecord || authUser?.mode === "guest") {
+  const handleSaveRecord = async (recordId) => {
+    const targetRecord = records.find((record) => record.id === recordId);
+    if (!savedPlace?.id || !targetRecord || authUser?.mode === "guest") {
       return;
     }
 
-    const trimmedNoteText = selectedRecord.noteText.trim();
+    if (targetRecord.recordType === RECORD_TYPE_BEAN) {
+      const trimmedBeanName = targetRecord.beanName.trim();
+      const trimmedPurchaseDate = targetRecord.purchaseDate.trim();
+
+      if (!trimmedBeanName) {
+        setToast({
+          type: "error",
+          message: recordCopy.beanIdentityRequired,
+        });
+        return;
+      }
+
+      if (!trimmedPurchaseDate) {
+        setToast({
+          type: "error",
+          message: recordCopy.beanPurchaseDateRequired,
+        });
+        return;
+      }
+
+      setRecords((current) =>
+        current.map((record) =>
+          record.id === targetRecord.id
+            ? {
+                ...record,
+                beanName: trimmedBeanName,
+                purchaseDate: trimmedPurchaseDate,
+                localPersisted: true,
+              }
+            : record,
+        ),
+      );
+      setToast({
+        type: "success",
+        message: recordCopy.beanSavedToast,
+      });
+      return;
+    }
+
+    const isEditingPersistedRecord = isRecordSaved(targetRecord);
+    const trimmedTitle = targetRecord.title.trim();
+    const trimmedNoteText = targetRecord.noteText.trim();
+    if (!trimmedTitle) {
+      setToast({
+        type: "error",
+        message: recordCopy.titleRequired,
+      });
+      return;
+    }
+
     if (!trimmedNoteText) {
       setToast({
         type: "error",
@@ -593,10 +1187,10 @@ export default function PlaceRecordPrototypePage() {
           },
           credentials: "include",
           body: JSON.stringify({
-            id: selectedRecord.persistedId,
-            title: selectedRecord.title.trim(),
+            id: targetRecord.persistedId,
+            title: trimmedTitle,
             noteText: trimmedNoteText,
-            displayOrder: selectedRecord.displayOrder,
+            displayOrder: targetRecord.displayOrder,
           }),
         },
       );
@@ -606,7 +1200,7 @@ export default function PlaceRecordPrototypePage() {
       }
 
       const payload = await response.json().catch(() => null);
-      const savedRecord = normalizeRecord(payload, selectedRecord.displayOrder);
+      const savedRecord = normalizeRecord(payload, targetRecord.displayOrder);
 
       if (!savedRecord) {
         throw new Error(recordCopy.reloadFailed);
@@ -614,7 +1208,7 @@ export default function PlaceRecordPrototypePage() {
 
       setRecords((current) =>
         current.map((record) =>
-          record.id === selectedRecord.id || record.persistedId === savedRecord.persistedId
+          record.id === targetRecord.id || record.persistedId === savedRecord.persistedId
             ? savedRecord
             : record,
         ),
@@ -628,8 +1222,7 @@ export default function PlaceRecordPrototypePage() {
     } catch (error) {
       setToast({
         type: "error",
-        message:
-          error instanceof Error ? error.message : recordCopy.saveFailed,
+        message: error instanceof Error ? error.message : recordCopy.saveFailed,
       });
     } finally {
       setIsSavingRecord(false);
@@ -641,7 +1234,9 @@ export default function PlaceRecordPrototypePage() {
       return;
     }
 
-    const persistedRecords = nextRecords.filter((record) => record.persistedId);
+    const persistedRecords = nextRecords.filter(
+      (record) => record.recordType === RECORD_TYPE_TEXT && record.persistedId,
+    );
 
     try {
       const responses = await Promise.all(
@@ -669,20 +1264,23 @@ export default function PlaceRecordPrototypePage() {
     } catch (error) {
       setToast({
         type: "error",
-        message:
-          error instanceof Error ? error.message : recordCopy.orderSaveFailed,
+        message: error instanceof Error ? error.message : recordCopy.orderSaveFailed,
       });
     }
   };
 
-  const handleCancelDraft = () => {
-    if (!selectedRecord || selectedRecord.persistedId) {
+  const handleCancelDraft = (recordId) => {
+    const targetRecord = records.find((record) => record.id === recordId);
+    if (!targetRecord || isRecordSaved(targetRecord)) {
       return;
     }
 
     setRecords((current) =>
-      reindexRecords(current.filter((record) => record.id !== selectedRecord.id)),
+      reindexRecords(current.filter((record) => record.id !== targetRecord.id)),
     );
+    if (selectedRecordId === targetRecord.id) {
+      setSelectedRecordId("");
+    }
   };
 
   const handleDeleteRecord = async (record) => {
@@ -732,10 +1330,17 @@ export default function PlaceRecordPrototypePage() {
     } catch (error) {
       setToast({
         type: "error",
-        message:
-          error instanceof Error ? error.message : recordCopy.deleteFailed,
+        message: error instanceof Error ? error.message : recordCopy.deleteFailed,
       });
     }
+  };
+
+  const handleRequestDeleteRecord = (record) => {
+    if (!record) {
+      return;
+    }
+
+    setPendingDeleteRecord(record);
   };
 
   const handleRecordDragStart = (recordId) => {
@@ -765,7 +1370,7 @@ export default function PlaceRecordPrototypePage() {
       {isRecordTypeModalOpen ? (
         <RecordTypeModal
           onClose={() => setIsRecordTypeModalOpen(false)}
-          onSelectText={handleCreateTextRecord}
+          onSelectRecordType={handleCreateRecord}
           copy={recordCopy}
         />
       ) : null}
@@ -775,6 +1380,20 @@ export default function PlaceRecordPrototypePage() {
         onCancel={cancelRemoveSavedPlace}
         onConfirm={confirmRemoveSavedPlace}
         messages={messages}
+      />
+
+      <RecordDeleteConfirmModal
+        pendingDeleteRecord={pendingDeleteRecord}
+        onCancel={() => setPendingDeleteRecord(null)}
+        onConfirm={() => {
+          if (!pendingDeleteRecord) {
+            return;
+          }
+
+          void handleDeleteRecord(pendingDeleteRecord);
+          setPendingDeleteRecord(null);
+        }}
+        copy={recordCopy}
       />
 
       <HeaderBar
@@ -854,75 +1473,33 @@ export default function PlaceRecordPrototypePage() {
                     <section className="rounded-[28px] border border-[#eadfd3] bg-[#fcfaf7] p-5 text-sm text-[#6d584b]">
                       {recordCopy.loading}
                     </section>
-                  ) : selectedRecord ? (
-                    <section className="rounded-[28px] border border-[#eadfd3] bg-white p-5 shadow-[0_12px_30px_rgba(84,52,27,0.05)]">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
-                          {recordCopy.editorTitle}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={handleSaveRecord}
-                            disabled={isSavingRecord}
-                            className={`rounded-full px-4 py-2 text-sm font-medium ${
-                              isSavingRecord
-                                ? "cursor-not-allowed bg-[#b8a79b] text-white/80"
-                                : "bg-[#2f221b] text-white"
-                            }`}
-                          >
-                            {isSavingRecord
-                              ? isEditingPersistedRecord
-                                ? recordCopy.updatePending
-                                : recordCopy.createPending
-                              : isEditingPersistedRecord
-                                ? recordCopy.updateLabel
-                                : recordCopy.createLabel}
-                          </button>
-                          {!isEditingPersistedRecord ? (
-                            <button
-                              type="button"
-                              onClick={handleCancelDraft}
-                              disabled={isSavingRecord}
-                              className={`rounded-full border px-4 py-2 text-sm font-medium ${
-                                isSavingRecord
-                                  ? "cursor-not-allowed border-[#ddd1c5] bg-white text-[#b8a79b]"
-                                  : "border-[#dccfbe] bg-white text-[#5f4b3f] hover:bg-[#fcfaf7]"
-                              }`}
-                            >
-                              {recordCopy.cancelLabel}
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
+                  ) : records.length > 0 ? (
+                    <div className="space-y-5">
+                      {records.map((record) => (
+                        <RecordEditorCard
+                          key={record.id}
+                          record={record}
+                          isActive={effectiveSelectedRecordId === record.id}
+                          isSavingRecord={isSavingRecord && effectiveSelectedRecordId === record.id}
+                          copy={recordCopy}
+                          onActivate={() => handleSelectRecord(record.id)}
+                          onSaveRecord={() => handleSaveRecord(record.id)}
+                          onCancelDraft={() => handleCancelDraft(record.id)}
+                          onDeleteRecord={() => handleRequestDeleteRecord(record)}
+                          updateSelectedRecord={(field, value) =>
+                            updateRecord(record.id, field, value)
+                          }
+                          cardRef={(node) => {
+                            if (node) {
+                              recordCardRefs.current.set(record.id, node);
+                              return;
+                            }
 
-                      <div className="mt-4 grid gap-4">
-                        <label className="space-y-2 text-sm text-[#5f4b3f]">
-                          <span className="font-medium text-[#352720]">{recordCopy.titleField}</span>
-                          <input
-                            type="text"
-                            value={selectedRecord.title}
-                            onChange={(event) =>
-                              updateSelectedRecord("title", event.target.value)
-                            }
-                            placeholder={recordCopy.titlePlaceholder}
-                            className="h-11 w-full rounded-2xl border border-[#dccfbe] bg-[#fcfaf7] px-4 text-[#352720] outline-none placeholder:text-[#a38b79]"
-                          />
-                        </label>
-                        <label className="space-y-2 text-sm text-[#5f4b3f]">
-                          <span className="font-medium text-[#352720]">{recordCopy.contentField}</span>
-                          <textarea
-                            value={selectedRecord.noteText}
-                            onChange={(event) =>
-                              updateSelectedRecord("noteText", event.target.value)
-                            }
-                            rows={7}
-                            placeholder={recordCopy.contentPlaceholder}
-                            className="w-full rounded-[22px] border border-[#dccfbe] bg-[#fcfaf7] px-4 py-3 text-[#352720] outline-none placeholder:text-[#a38b79]"
-                          />
-                        </label>
-                      </div>
-                    </section>
+                            recordCardRefs.current.delete(record.id);
+                          }}
+                        />
+                      ))}
+                    </div>
                   ) : (
                     <section className="rounded-[28px] border border-dashed border-[#d8c8b7] bg-[#fcfaf7] p-5">
                       <p className="text-base font-semibold text-[#352720]">
@@ -947,11 +1524,11 @@ export default function PlaceRecordPrototypePage() {
                 records={records}
                 selectedRecordId={effectiveSelectedRecordId}
                 draggedRecordId={draggedRecordId}
-                onSelectRecord={setSelectedRecordId}
+                onSelectRecord={handleSelectRecord}
                 onDragStart={handleRecordDragStart}
                 onDrop={handleRecordDrop}
                 onDragEnd={handleRecordDragEnd}
-                onDeleteRecord={handleDeleteRecord}
+                onDeleteRecord={handleRequestDeleteRecord}
                 copy={recordCopy}
               />
             ) : null}

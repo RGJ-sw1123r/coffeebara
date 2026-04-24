@@ -189,9 +189,10 @@ const ja = {
       "ドラッグアンドドロップで順序を変更できます。",
     recordUntitledPlaceholder:
       "記録タイトル",
+    recordTextUntitledPlaceholder: "テキスト記録",
     recordEmptyPreview:
       "内容はまだ入力されていません。",
-    recordTypeTextLabel: "Text",
+    recordTypeTextLabel: "テキスト",
     recordMenuAriaLabel:
       "記録メニューを開く",
     recordDeleteActionLabel: "削除",
@@ -201,16 +202,24 @@ const ja = {
     recordNewModalTitle:
       "どの記録を作成しますか？",
     recordNewModalBody:
-      "今はテキスト記録のみ選択できます。",
+      "このカフェアーカイブに追加する記録タイプを選んでください。",
     recordNewModalCloseAriaLabel:
       "ダイアログを閉じる",
     recordNewTextOptionTitle: "テキスト",
     recordNewTextOptionBody:
       "シンプルなメモ形式で記録を始めます。",
+    recordNewBeanOptionTitle: "豆",
+    recordNewBeanOptionBody: "豆の記録を始めます。",
     recordLoadFailed:
       "記録を読み込めませんでした。",
+    recordTitleRequired:
+      "記録名を入力してから保存してください。",
     recordContentRequired:
       "記録内容を入力してから保存してください。",
+    recordBeanIdentityRequired:
+      "豆の名前を入力してから保存してください。",
+    recordBeanPurchaseDateRequired:
+      "購入日を選択してから保存してください。",
     recordSaveFailed:
       "記録を保存できませんでした。",
     recordReloadFailed:
@@ -219,12 +228,18 @@ const ja = {
       "記録を登録しました。",
     recordUpdatedToast:
       "記録を修正しました。",
+    recordBeanSavedToast:
+      "豆の記録シェルをローカル状態に保存しました。",
     recordOrderSaveFailed:
       "記録の順序を保存できませんでした。",
     recordDeletedToast:
       "記録を削除しました。",
     recordDeleteFailed:
       "記録を削除できませんでした。",
+    recordDeleteModalEyebrow: "記録削除",
+    recordDeleteModalTitle: "この記録を削除しますか？",
+    recordDeleteModalBody:
+      "現在のカードを削除します。まだ保存していない下書きはすぐに消えます。",
     recordAddActionLabel:
       "+ 新しい記録",
     recordAddActionCompactLabel: "+ 記録",
@@ -242,6 +257,44 @@ const ja = {
     recordContentFieldLabel: "記録内容",
     recordContentPlaceholder:
       "このカフェで残したいメモを入力してください",
+    recordTypeBeanLabel: "豆",
+    recordBeanUntitledPlaceholder: "豆の記録",
+    recordBeanEmptyPreview:
+      "まだ豆の詳細情報が入力されていません。",
+    recordBeanSectionIdentity: "豆の情報",
+    recordBeanSectionPurchase: "購入情報",
+    recordBeanSectionTasting: "パッケージのテイスティングノート",
+    recordBeanSectionMemo: "メモ",
+    recordBeanSectionImages: "画像",
+    recordBeanFieldName: "豆の名前",
+    recordBeanFieldOriginCountry: "原産国",
+    recordBeanFieldOriginRegion: "原産地域",
+    recordBeanFieldVariety: "品種",
+    recordBeanFieldProcessType: "精製方法",
+    recordBeanFieldRoastLevel: "焙煎度",
+    recordBeanFieldRoastDate: "焙煎日",
+    recordBeanFieldAltitudeMeters: "標高(m)",
+    recordBeanFieldTastingNotes: "テイスティングノート",
+    recordBeanFieldPurchaseDate: "購入日",
+    recordBeanFieldPurchasePrice: "購入価格",
+    recordBeanFieldQuantityGrams: "容量(g)",
+    recordBeanFieldMemo: "メモ",
+    recordBeanPlaceholderName: "豆の名前を入力してください",
+    recordBeanPlaceholderOriginCountry: "例: エチオピア",
+    recordBeanPlaceholderOriginRegion: "例: イルガチェフェ",
+    recordBeanPlaceholderVariety: "例: Heirloom",
+    recordBeanPlaceholderProcessType: "例: Washed",
+    recordBeanPlaceholderRoastLevel: "例: Light",
+    recordBeanPlaceholderAltitudeMeters: "例: 1900",
+    recordBeanPlaceholderTastingNotes:
+      "カフェやパッケージに書かれたノートを入力してください",
+    recordBeanPlaceholderPurchasePrice: "例: 18000",
+    recordBeanPlaceholderQuantityGrams: "例: 200",
+    recordBeanPlaceholderMemo:
+      "なぜこの豆を買ったのかメモを残してみてください",
+    recordBeanAttachmentPlaceholderTitle: "画像添付エリア",
+    recordBeanAttachmentPlaceholderBody:
+      "アップロード連携はまだ接続されていません。この領域は今後の画像フローのための予約枠です。",
     recordLoadingLabel:
       "記録を読み込み中です。",
     recordEmptyEditorTitle:

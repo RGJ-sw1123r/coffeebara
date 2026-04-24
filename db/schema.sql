@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS cafe_record (
 
 CREATE TABLE IF NOT EXISTS cafe_note (
     cafe_record_id BIGINT NOT NULL COMMENT 'Parent cafe_record id',
-    title VARCHAR(255) NULL COMMENT 'Optional note title shown in the record list',
+    title VARCHAR(255) NOT NULL COMMENT 'Required note title shown in the record list',
     note_text VARCHAR(1000) NOT NULL COMMENT 'Text note content',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created timestamp',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated timestamp',

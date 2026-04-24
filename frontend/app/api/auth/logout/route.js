@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { fetchBackend, readJsonResponse } from "@/app/lib/server/backend-api";
+import { copySetCookieHeaders, fetchBackend, readJsonResponse } from "@/app/lib/server/backend-api";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,10 +11,13 @@ export async function POST(request) {
       method: "POST",
     });
     const payload = await readJsonResponse(response);
-
-    return NextResponse.json(payload ?? {}, {
+    const nextResponse = NextResponse.json(payload ?? {}, {
       status: response.status,
     });
+
+    copySetCookieHeaders(response, nextResponse.headers);
+
+    return nextResponse;
   } catch {
     return NextResponse.json(
       {

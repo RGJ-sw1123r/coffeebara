@@ -33,3 +33,25 @@ export async function readJsonResponse(response) {
     return null;
   }
 }
+
+export function copySetCookieHeaders(sourceResponse, targetHeaders) {
+  if (!sourceResponse?.headers || !targetHeaders) {
+    return;
+  }
+
+  if (typeof sourceResponse.headers.getSetCookie === "function") {
+    const setCookies = sourceResponse.headers.getSetCookie();
+
+    for (const value of setCookies) {
+      targetHeaders.append("set-cookie", value);
+    }
+
+    return;
+  }
+
+  const setCookie = sourceResponse.headers.get("set-cookie");
+
+  if (setCookie) {
+    targetHeaders.append("set-cookie", setCookie);
+  }
+}

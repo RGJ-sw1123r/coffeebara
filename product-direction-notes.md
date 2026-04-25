@@ -176,11 +176,12 @@ The next meaningful slices are:
 
 - guest sample/demo record page
 - brewing record creation
+- additional record-type expansion after brewing
 - purchase and drinking place selection
-- archive detail views
 - tasting note editing
 - satisfaction input
 - filtering and sorting
+- a Docker-based runtime baseline after the core record types settle
 
 These are small enough to build realistically and meaningful enough to make the product personally useful.
 

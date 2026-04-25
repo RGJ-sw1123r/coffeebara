@@ -402,8 +402,8 @@ The archive must still be useful without AI.
 
 - practical identity flow
 - member saved-cafe persistence linked to `app_user`
-- bean record creation
 - brewing record creation
+- additional record-type expansion after brewing
 - cafe selection for purchase context
 - cafe selection for drinking context
 - brewing history view
@@ -412,6 +412,7 @@ The archive must still be useful without AI.
 - editable tasting notes
 - one color-based mood selection per record
 - basic filtering and sorting
+- a Docker-based runtime baseline after the core record types settle
 
 ### MVP should NOT include
 

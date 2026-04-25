@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/lib/prisma";
-import { toCafeNoteResponse } from "@/app/lib/server/cafe-note-response";
 import { groupMediaAttachmentsByOwnerId } from "@/app/lib/server/media-attachment-response";
 import { requireMemberSession } from "@/app/lib/server/member-session";
+import { toPlaceRecordResponse } from "@/app/lib/server/place-record-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,6 +38,7 @@ export async function GET(request, context) {
       },
       include: {
         note: true,
+        bean: true,
       },
     });
 
@@ -65,7 +66,7 @@ export async function GET(request, context) {
 
     const attachmentsByRecordId = groupMediaAttachmentsByOwnerId(attachments);
     return NextResponse.json(
-      toCafeNoteResponse(record, attachmentsByRecordId.get(Number(record.id)) || []),
+      toPlaceRecordResponse(record, attachmentsByRecordId.get(Number(record.id)) || []),
     );
   } catch {
     return NextResponse.json(

@@ -283,11 +283,11 @@ const ko = {
     recordBeanPlaceholderRoastLevel: "예: Light",
     recordBeanPlaceholderAltitudeMeters: "예: 1900",
     recordBeanPlaceholderTastingNotes:
-      "카페나 패키지에 적힌 노트를 입력해 주세요",
+      "카페나 패키지에 적힌 노트를 기록해 주세요",
     recordBeanPlaceholderPurchasePrice: "예: 18000",
     recordBeanPlaceholderQuantityGrams: "예: 200",
     recordBeanPlaceholderMemo:
-      "왜 이 원두를 샀는지 메모를 남겨 보세요",
+      "기타 남기고 싶은 기록을 작성해 주세요",
     recordBeanAttachmentPlaceholderTitle: "이미지 첨부 영역",
     recordBeanAttachmentPlaceholderBody:
       "업로드 연동은 아직 연결되지 않았습니다. 이 영역은 이후 이미지 흐름을 위한 자리입니다.",

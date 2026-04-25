@@ -60,16 +60,39 @@ function normalizeRecord(record, index = 0) {
   }
 
   return {
-    id: `note-${persistedId}`,
+    id: `record-${persistedId}`,
     persistedId,
     localPersisted: false,
-    recordType: RECORD_TYPE_TEXT,
-    title: typeof record.title === "string" ? record.title : "",
-    noteText: typeof record.noteText === "string" ? record.noteText : "",
+    recordType:
+      record.recordType === RECORD_TYPE_BEAN ? RECORD_TYPE_BEAN : RECORD_TYPE_TEXT,
     displayOrder:
       typeof record.displayOrder === "number" && Number.isFinite(record.displayOrder)
         ? record.displayOrder
         : Number(record.displayOrder ?? index) || index,
+    title: typeof record.title === "string" ? record.title : "",
+    noteText: typeof record.noteText === "string" ? record.noteText : "",
+    beanName: typeof record.beanName === "string" ? record.beanName : "",
+    originCountry: typeof record.originCountry === "string" ? record.originCountry : "",
+    originRegion: typeof record.originRegion === "string" ? record.originRegion : "",
+    beanVariety: typeof record.beanVariety === "string" ? record.beanVariety : "",
+    processType: typeof record.processType === "string" ? record.processType : "",
+    roastLevel: typeof record.roastLevel === "string" ? record.roastLevel : "",
+    roastDate: typeof record.roastDate === "string" ? record.roastDate : "",
+    altitudeMeters:
+      typeof record.altitudeMeters === "number" && Number.isFinite(record.altitudeMeters)
+        ? String(record.altitudeMeters)
+        : "",
+    tastingNotes: typeof record.tastingNotes === "string" ? record.tastingNotes : "",
+    purchaseDate: typeof record.purchaseDate === "string" ? record.purchaseDate : "",
+    purchasePrice:
+      typeof record.purchasePrice === "number" && Number.isFinite(record.purchasePrice)
+        ? String(record.purchasePrice)
+        : "",
+    quantityGrams:
+      typeof record.quantityGrams === "number" && Number.isFinite(record.quantityGrams)
+        ? String(record.quantityGrams)
+        : "",
+    memo: typeof record.memo === "string" ? record.memo : "",
   };
 }
 
@@ -115,6 +138,39 @@ function readWarningMessage(response) {
   }
 
   return "";
+}
+
+function buildRecordPayload(record) {
+  const basePayload = {
+    id: record.persistedId,
+    recordType: record.recordType,
+    displayOrder: record.displayOrder,
+  };
+
+  if (record.recordType === RECORD_TYPE_BEAN) {
+    return {
+      ...basePayload,
+      beanName: record.beanName.trim(),
+      originCountry: record.originCountry.trim(),
+      originRegion: record.originRegion.trim(),
+      beanVariety: record.beanVariety.trim(),
+      processType: record.processType.trim(),
+      roastLevel: record.roastLevel.trim(),
+      roastDate: record.roastDate.trim(),
+      altitudeMeters: record.altitudeMeters.trim(),
+      tastingNotes: record.tastingNotes.trim(),
+      purchaseDate: record.purchaseDate.trim(),
+      purchasePrice: record.purchasePrice.trim(),
+      quantityGrams: record.quantityGrams.trim(),
+      memo: record.memo.trim(),
+    };
+  }
+
+  return {
+    ...basePayload,
+    title: record.title.trim(),
+    noteText: record.noteText.trim(),
+  };
 }
 
 function isRecordSaved(record) {
@@ -988,7 +1044,7 @@ export default function PlaceRecordPrototypePage() {
 
       try {
         const response = await fetch(
-          `${RECORD_API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}`,
+          `${RECORD_API_BASE_URL}/api/place-records/${encodeURIComponent(savedPlace.id)}`,
           {
             method: "GET",
             credentials: "include",
@@ -1117,11 +1173,9 @@ export default function PlaceRecordPrototypePage() {
       return;
     }
 
+    const isEditingPersistedRecord = isRecordSaved(targetRecord);
     if (targetRecord.recordType === RECORD_TYPE_BEAN) {
-      const trimmedBeanName = targetRecord.beanName.trim();
-      const trimmedPurchaseDate = targetRecord.purchaseDate.trim();
-
-      if (!trimmedBeanName) {
+      if (!targetRecord.beanName.trim()) {
         setToast({
           type: "error",
           message: recordCopy.beanIdentityRequired,
@@ -1129,69 +1183,43 @@ export default function PlaceRecordPrototypePage() {
         return;
       }
 
-      if (!trimmedPurchaseDate) {
+      if (!targetRecord.purchaseDate.trim()) {
         setToast({
           type: "error",
           message: recordCopy.beanPurchaseDateRequired,
         });
         return;
       }
+    } else {
+      if (!targetRecord.title.trim()) {
+        setToast({
+          type: "error",
+          message: recordCopy.titleRequired,
+        });
+        return;
+      }
 
-      setRecords((current) =>
-        current.map((record) =>
-          record.id === targetRecord.id
-            ? {
-                ...record,
-                beanName: trimmedBeanName,
-                purchaseDate: trimmedPurchaseDate,
-                localPersisted: true,
-              }
-            : record,
-        ),
-      );
-      setToast({
-        type: "success",
-        message: recordCopy.beanSavedToast,
-      });
-      return;
-    }
-
-    const isEditingPersistedRecord = isRecordSaved(targetRecord);
-    const trimmedTitle = targetRecord.title.trim();
-    const trimmedNoteText = targetRecord.noteText.trim();
-    if (!trimmedTitle) {
-      setToast({
-        type: "error",
-        message: recordCopy.titleRequired,
-      });
-      return;
-    }
-
-    if (!trimmedNoteText) {
-      setToast({
-        type: "error",
-        message: recordCopy.contentRequired,
-      });
-      return;
+      if (!targetRecord.noteText.trim()) {
+        setToast({
+          type: "error",
+          message: recordCopy.contentRequired,
+        });
+        return;
+      }
     }
 
     setIsSavingRecord(true);
 
     try {
       const response = await fetch(
-        `${RECORD_API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}`,
+        `${RECORD_API_BASE_URL}/api/place-records/${encodeURIComponent(savedPlace.id)}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({
-            id: targetRecord.persistedId,
-            title: trimmedTitle,
-            noteText: trimmedNoteText,
-            displayOrder: targetRecord.displayOrder,
-          }),
+          body: JSON.stringify(buildRecordPayload(targetRecord)),
         },
       );
 
@@ -1234,26 +1262,22 @@ export default function PlaceRecordPrototypePage() {
       return;
     }
 
-    const persistedRecords = nextRecords.filter(
-      (record) => record.recordType === RECORD_TYPE_TEXT && record.persistedId,
-    );
+    const persistedRecords = nextRecords.filter((record) => record.persistedId);
 
     try {
       const responses = await Promise.all(
         persistedRecords.map((record) =>
-          fetch(`${RECORD_API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}`, {
+          fetch(
+            `${RECORD_API_BASE_URL}/api/place-records/${encodeURIComponent(savedPlace.id)}`,
+            {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             credentials: "include",
-            body: JSON.stringify({
-              id: record.persistedId,
-              title: record.title.trim(),
-              noteText: record.noteText.trim(),
-              displayOrder: record.displayOrder,
-            }),
-          }),
+              body: JSON.stringify(buildRecordPayload(record)),
+            },
+          ),
         ),
       );
 
@@ -1305,7 +1329,7 @@ export default function PlaceRecordPrototypePage() {
 
     try {
       const response = await fetch(
-        `${RECORD_API_BASE_URL}/api/cafe-notes/${encodeURIComponent(savedPlace.id)}/${record.persistedId}`,
+        `${RECORD_API_BASE_URL}/api/place-records/${encodeURIComponent(savedPlace.id)}/${record.persistedId}`,
         {
           method: "DELETE",
           credentials: "include",

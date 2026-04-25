@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/lib/prisma";
-import { toCafeNoteResponse } from "@/app/lib/server/cafe-note-response";
 import { groupMediaAttachmentsByOwnerId } from "@/app/lib/server/media-attachment-response";
 import {
   cleanupStoredFiles,
@@ -11,6 +10,7 @@ import {
   persistUploadFile,
 } from "@/app/lib/server/media-storage";
 import { requireMemberSession } from "@/app/lib/server/member-session";
+import { toPlaceRecordResponse } from "@/app/lib/server/place-record-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -81,6 +81,7 @@ async function findRecordWithAttachments(userId, recordId) {
     },
     include: {
       note: true,
+      bean: true,
     },
   });
 }
@@ -198,7 +199,7 @@ export async function POST(request, context) {
 
     const attachmentsByRecordId = groupMediaAttachmentsByOwnerId(attachments);
     return NextResponse.json(
-      toCafeNoteResponse(refreshedRecord, attachmentsByRecordId.get(recordId) || []),
+      toPlaceRecordResponse(refreshedRecord, attachmentsByRecordId.get(recordId) || []),
     );
   } catch {
     await cleanupStoredFiles(storedPaths);

@@ -287,11 +287,11 @@ const ja = {
     recordBeanPlaceholderRoastLevel: "例: Light",
     recordBeanPlaceholderAltitudeMeters: "例: 1900",
     recordBeanPlaceholderTastingNotes:
-      "カフェやパッケージに書かれたノートを入力してください",
+      "カフェやパッケージに書かれたノートを記録してください",
     recordBeanPlaceholderPurchasePrice: "例: 18000",
     recordBeanPlaceholderQuantityGrams: "例: 200",
     recordBeanPlaceholderMemo:
-      "なぜこの豆を買ったのかメモを残してみてください",
+      "その他に残しておきたい記録を書いてください",
     recordBeanAttachmentPlaceholderTitle: "画像添付エリア",
     recordBeanAttachmentPlaceholderBody:
       "アップロード連携はまだ接続されていません。この領域は今後の画像フローのための予約枠です。",

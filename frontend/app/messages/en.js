@@ -218,6 +218,10 @@ const en = {
     recordTitlePlaceholder: "Enter a record title",
     recordContentFieldLabel: "Record content",
     recordContentPlaceholder: "Enter the memo you want to keep for this cafe",
+    recordBeanPlaceholderTastingNotes:
+      "Record notes written on the cafe card or package",
+    recordBeanPlaceholderMemo:
+      "Write any other notes you want to keep",
     recordLoadingLabel: "Loading records.",
     recordEmptyEditorTitle: "No records have been added yet.",
     recordEmptyEditorBody:

@@ -294,7 +294,17 @@ const ja = {
       "その他に残しておきたい記録を書いてください",
     recordBeanAttachmentPlaceholderTitle: "画像添付エリア",
     recordBeanAttachmentPlaceholderBody:
-      "アップロード連携はまだ接続されていません。この領域は今後の画像フローのための予約枠です。",
+      "アップロードはまだ接続されていません。代わりにここで画像を追加してUIを確認できます。",
+    recordBeanImageDropzoneHint:
+      "ここに画像をドラッグするか、クリックして端末からファイルを選択してください。",
+    recordBeanImageBrowseLabel: "画像を選択",
+    recordBeanImagePendingLabel: "選択した画像",
+    recordBeanImageAttachedLabel: "添付済みの画像",
+    recordBeanImageRemoveLabel: "削除",
+    recordBeanImageLimitHint: "最大{count}枚まで先に追加して確認できます。",
+    recordBeanImageSaveHint: "この豆の記録を先に保存すると画像をアップロードできます。",
+    recordAttachmentUploadSucceeded: "記録の保存と画像アップロードが完了しました。",
+    recordAttachmentUploadFailed: "記録は保存されましたが、画像アップロードは失敗しました。",
     recordLoadingLabel:
       "記録を読み込み中です。",
     recordEmptyEditorTitle:

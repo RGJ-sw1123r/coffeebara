@@ -9,12 +9,14 @@ export const RECORD_TYPE_REGISTRY = {
     listLabelMessageKey: "recordTypeTextLabel",
     modalTitleMessageKey: "recordNewTextOptionTitle",
     modalBodyMessageKey: "recordNewTextOptionBody",
+    maxLocalImageCount: 0,
   },
   [RECORD_TYPE_BEAN]: {
     code: RECORD_TYPE_BEAN,
     listLabelMessageKey: "recordTypeBeanLabel",
     modalTitleMessageKey: "recordNewBeanOptionTitle",
     modalBodyMessageKey: "recordNewBeanOptionBody",
+    maxLocalImageCount: 3,
   },
 };
 
@@ -33,7 +35,8 @@ function createEmptyBeanFields() {
     purchasePrice: "",
     quantityGrams: "",
     memo: "",
-    attachmentPlaceholder: [],
+    attachments: [],
+    pendingLocalImages: [],
   };
 }
 
@@ -56,6 +59,8 @@ export function createDraftRecord(recordType, index) {
 
   return {
     ...baseRecord,
+    attachments: [],
+    pendingLocalImages: [],
     title: "",
     noteText: "",
   };

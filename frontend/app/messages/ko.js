@@ -290,7 +290,17 @@ const ko = {
       "기타 남기고 싶은 기록을 작성해 주세요",
     recordBeanAttachmentPlaceholderTitle: "이미지 첨부 영역",
     recordBeanAttachmentPlaceholderBody:
-      "업로드 연동은 아직 연결되지 않았습니다. 이 영역은 이후 이미지 흐름을 위한 자리입니다.",
+      "업로드는 아직 연결되지 않았습니다. 대신 여기서 이미지를 올려 보고 UI를 확인할 수 있습니다.",
+    recordBeanImageDropzoneHint:
+      "이미지를 여기로 끌어오거나, 클릭해서 기기에서 파일을 선택해 주세요.",
+    recordBeanImageBrowseLabel: "이미지 선택",
+    recordBeanImagePendingLabel: "선택한 이미지",
+    recordBeanImageAttachedLabel: "첨부된 이미지",
+    recordBeanImageRemoveLabel: "제거",
+    recordBeanImageLimitHint: "최대 {count}장까지 미리 올려 볼 수 있습니다.",
+    recordBeanImageSaveHint: "이 원두 기록을 먼저 저장하면 이미지를 업로드할 수 있습니다.",
+    recordAttachmentUploadSucceeded: "기록 저장과 이미지 업로드가 완료되었습니다.",
+    recordAttachmentUploadFailed: "기록은 저장되었지만 이미지 업로드는 실패했습니다.",
     recordLoadingLabel:
       "기록을 불러오는 중입니다.",
     recordEmptyEditorTitle:

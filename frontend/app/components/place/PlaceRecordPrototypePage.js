@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
+import { useDropzone } from "react-dropzone";
 
 import { useAppShell } from "../app/AppShellContext";
 import HeaderBar from "../home/HeaderBar";
@@ -93,6 +95,8 @@ function normalizeRecord(record, index = 0) {
         ? String(record.quantityGrams)
         : "",
     memo: typeof record.memo === "string" ? record.memo : "",
+    attachments: Array.isArray(record.attachments) ? record.attachments : [],
+    pendingLocalImages: [],
   };
 }
 
@@ -171,6 +175,56 @@ function buildRecordPayload(record) {
     title: record.title.trim(),
     noteText: record.noteText.trim(),
   };
+}
+
+function createPendingLocalImage(file, index) {
+  return {
+    id: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+    file,
+    previewUrl: URL.createObjectURL(file),
+    name: file.name || "image",
+    size: Number(file.size) || 0,
+  };
+}
+
+function revokePendingLocalImages(images) {
+  for (const image of images || []) {
+    if (image?.previewUrl) {
+      URL.revokeObjectURL(image.previewUrl);
+    }
+  }
+}
+
+function formatFileSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "";
+  }
+
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  return `${Math.round(bytes / 1024)} KB`;
+}
+
+function isInteractiveCardElement(target) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      "button, input, textarea, select, label, a, [role='button'], [data-card-interactive='true']",
+    ),
+  );
+}
+
+function buildAttachmentImageUrl(recordId, attachmentId) {
+  if (!recordId || !attachmentId) {
+    return "";
+  }
+
+  return `/api/records/${encodeURIComponent(recordId)}/attachments/${encodeURIComponent(attachmentId)}`;
 }
 
 function isRecordSaved(record) {
@@ -322,6 +376,24 @@ function getRecordPageCopy(messages) {
     beanAttachmentPlaceholderBody:
       messages.recordBeanAttachmentPlaceholderBody ??
       "Upload integration is not connected yet. This section reserves the future image flow.",
+    beanImageDropzoneHint:
+      messages.recordBeanImageDropzoneHint ??
+      "Drag images here, or click to choose files from your device.",
+    beanImageBrowseLabel:
+      messages.recordBeanImageBrowseLabel ?? "Choose images",
+    beanImagePendingLabel:
+      messages.recordBeanImagePendingLabel ?? "Selected images",
+    beanImageAttachedLabel:
+      messages.recordBeanImageAttachedLabel ?? "Attached images",
+    beanImageRemoveLabel:
+      messages.recordBeanImageRemoveLabel ?? "Remove",
+    beanImageLimitHint: messages.recordBeanImageLimitHint ?? "Up to {count} images can be staged.",
+    beanImageSaveHint:
+      messages.recordBeanImageSaveHint ?? "Save this bean record before uploading staged images.",
+    attachmentUploadSucceeded:
+      messages.recordAttachmentUploadSucceeded ?? "Record saved and images uploaded.",
+    attachmentUploadFailed:
+      messages.recordAttachmentUploadFailed ?? "The record was saved, but image upload failed.",
     loading: messages.recordLoadingLabel,
     emptyEditorTitle: messages.recordEmptyEditorTitle,
     emptyEditorBody: messages.recordEmptyEditorBody,
@@ -598,6 +670,171 @@ function RequiredMark() {
   );
 }
 
+function BeanImageDropzone({ selectedRecord, updateSelectedRecord, copy }) {
+  const beanConfig = getRecordTypeConfig(RECORD_TYPE_BEAN);
+  const maxLocalImageCount = beanConfig.maxLocalImageCount ?? 0;
+  const pendingLocalImages = selectedRecord.pendingLocalImages || [];
+  const persistedAttachments = selectedRecord.attachments || [];
+  const remainingCount = Math.max(
+    maxLocalImageCount - persistedAttachments.length - pendingLocalImages.length,
+    0,
+  );
+  const imageLimitHint = copy.beanImageLimitHint.replace(
+    "{count}",
+    String(maxLocalImageCount),
+  );
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      "image/jpeg": [".jpg", ".jpeg"],
+      "image/png": [".png"],
+      "image/webp": [".webp"],
+    },
+    multiple: true,
+    disabled: remainingCount === 0,
+    onDrop: (acceptedFiles) => {
+      if (!acceptedFiles.length) {
+        return;
+      }
+
+      const nextImages = acceptedFiles
+        .slice(0, remainingCount)
+        .map((file, index) => createPendingLocalImage(file, index));
+
+      if (!nextImages.length) {
+        return;
+      }
+
+      updateSelectedRecord("pendingLocalImages", [
+        ...pendingLocalImages,
+        ...nextImages,
+      ]);
+    },
+  });
+
+  const handleRemoveImage = (imageId) => {
+    const targetImage = pendingLocalImages.find((image) => image.id === imageId);
+    if (targetImage) {
+      revokePendingLocalImages([targetImage]);
+    }
+
+    updateSelectedRecord(
+      "pendingLocalImages",
+      pendingLocalImages.filter((image) => image.id !== imageId),
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <div
+        {...getRootProps()}
+        className={`rounded-[24px] border border-dashed px-5 py-6 transition ${
+          isDragActive
+            ? "border-[#8f725d] bg-[#f8f1e8]"
+            : "border-[#d8c8b7] bg-[#fcfaf7]"
+        } ${remainingCount === 0 ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
+      >
+        <input {...getInputProps()} />
+        <p className="text-sm font-semibold text-[#352720]">
+          {copy.beanAttachmentPlaceholderTitle}
+        </p>
+        <p className="mt-2 text-sm leading-6 text-[#7a6456]">{copy.beanImageDropzoneHint}</p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <span className="rounded-full border border-[#dccfbe] bg-white px-4 py-2 text-sm font-medium text-[#5f4b3f]">
+            {copy.beanImageBrowseLabel}
+          </span>
+          <span className="text-xs text-[#8b7464]">{imageLimitHint}</span>
+        </div>
+      </div>
+
+      {pendingLocalImages.length > 0 ? (
+        <div>
+          <p className="mb-3 text-sm font-semibold text-[#352720]">
+            {copy.beanImagePendingLabel}
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {pendingLocalImages.map((image) => (
+              <div
+                key={image.id}
+                className="overflow-hidden rounded-[22px] border border-[#eadfd3] bg-white"
+              >
+                <div className="relative aspect-[4/3] bg-[#f4ece3]">
+                  <Image
+                    src={image.previewUrl}
+                    alt={image.name}
+                    fill
+                    unoptimized
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="space-y-2 px-4 py-3">
+                  <p className="truncate text-sm font-medium text-[#352720]">{image.name}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs text-[#8b7464]">{formatFileSize(image.size)}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(image.id)}
+                      className="text-xs font-medium text-[#8b3f32] hover:text-[#6f3126]"
+                    >
+                      {copy.beanImageRemoveLabel}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {!selectedRecord.persistedId && pendingLocalImages.length > 0 ? (
+        <p className="text-xs text-[#8b7464]">{copy.beanImageSaveHint}</p>
+      ) : null}
+
+      {persistedAttachments.length > 0 ? (
+        <div>
+          <p className="mb-3 text-sm font-semibold text-[#352720]">
+            {copy.beanImageAttachedLabel}
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {persistedAttachments.map((attachment) => {
+              const imageUrl = buildAttachmentImageUrl(
+                selectedRecord.persistedId,
+                attachment.attachmentId,
+              );
+
+              return (
+                <div
+                  key={attachment.attachmentId}
+                  className="overflow-hidden rounded-[22px] border border-[#eadfd3] bg-white"
+                >
+                  <div className="relative aspect-[4/3] bg-[#f4ece3]">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt={attachment.originalFileName || "bean image"}
+                        fill
+                        unoptimized
+                        className="h-full w-full object-cover"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="space-y-2 px-4 py-3">
+                    <p className="truncate text-sm font-medium text-[#352720]">
+                      {attachment.originalFileName}
+                    </p>
+                    <span className="text-xs text-[#8b7464]">
+                      {formatFileSize(attachment.fileSize)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function BeanRecordEditor({ selectedRecord, updateSelectedRecord, copy }) {
   return (
     <div className="mt-4 space-y-6">
@@ -776,14 +1013,11 @@ function BeanRecordEditor({ selectedRecord, updateSelectedRecord, copy }) {
         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#8f725d]">
           {copy.beanSectionImages}
         </p>
-        <div className="rounded-[24px] border border-dashed border-[#d8c8b7] bg-[#fcfaf7] px-5 py-6">
-          <p className="text-sm font-semibold text-[#352720]">
-            {copy.beanAttachmentPlaceholderTitle}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-[#7a6456]">
-            {copy.beanAttachmentPlaceholderBody}
-          </p>
-        </div>
+        <BeanImageDropzone
+          selectedRecord={selectedRecord}
+          updateSelectedRecord={updateSelectedRecord}
+          copy={copy}
+        />
       </div>
     </div>
   );
@@ -852,10 +1086,17 @@ function RecordEditorCard({
   return (
     <section
       ref={cardRef}
+      onClick={(event) => {
+        if (isInteractiveCardElement(event.target)) {
+          return;
+        }
+
+        onActivate();
+      }}
       className={`rounded-[28px] border bg-white p-5 shadow-[0_12px_30px_rgba(84,52,27,0.05)] transition sm:p-6 ${
         isActive
           ? "border-[#2f221b] ring-1 ring-[#2f221b]/10"
-          : "border-[#eadfd3]"
+          : "cursor-pointer border-[#eadfd3]"
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -986,6 +1227,7 @@ export default function PlaceRecordPrototypePage() {
   const recordCopy = useMemo(() => getRecordPageCopy(messages), [messages]);
   const recordLoadFailedMessageRef = useRef(recordCopy.loadFailed);
   const recordCardRefs = useRef(new Map());
+  const previousRecordsRef = useRef([]);
   const [searchInput, setSearchInput] = useState("");
   const [records, setRecords] = useState([]);
   const [selectedRecordId, setSelectedRecordId] = useState("");
@@ -1013,6 +1255,36 @@ export default function PlaceRecordPrototypePage() {
   useEffect(() => {
     recordLoadFailedMessageRef.current = recordCopy.loadFailed;
   }, [recordCopy.loadFailed]);
+
+  useEffect(() => {
+    const previousImageMap = new Map();
+    for (const record of previousRecordsRef.current) {
+      previousImageMap.set(record.id, record.pendingLocalImages || []);
+    }
+
+    const nextImageIds = new Set();
+    for (const record of records) {
+      for (const image of record.pendingLocalImages || []) {
+        nextImageIds.add(image.id);
+      }
+    }
+
+    for (const images of previousImageMap.values()) {
+      const removedImages = images.filter((image) => !nextImageIds.has(image.id));
+      revokePendingLocalImages(removedImages);
+    }
+
+    previousRecordsRef.current = records;
+  }, [records]);
+
+  useEffect(
+    () => () => {
+      for (const record of previousRecordsRef.current) {
+        revokePendingLocalImages(record.pendingLocalImages || []);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!toast?.message) {
@@ -1234,19 +1506,77 @@ export default function PlaceRecordPrototypePage() {
         throw new Error(recordCopy.reloadFailed);
       }
 
+      let finalRecord = savedRecord;
+      let nextToast = {
+        type: "success",
+        message: isEditingPersistedRecord ? recordCopy.updatedToast : recordCopy.createdToast,
+      };
+
+      if (
+        savedRecord.recordType === RECORD_TYPE_BEAN &&
+        savedRecord.persistedId &&
+        targetRecord.pendingLocalImages?.length
+      ) {
+        const uploadFormData = new FormData();
+        for (const image of targetRecord.pendingLocalImages) {
+          if (image?.file) {
+            uploadFormData.append("files", image.file);
+          }
+        }
+
+        if (uploadFormData.getAll("files").length > 0) {
+          try {
+            const uploadResponse = await fetch(
+              `${RECORD_API_BASE_URL}/api/records/${encodeURIComponent(savedRecord.persistedId)}/attachments`,
+              {
+                method: "POST",
+                credentials: "include",
+                body: uploadFormData,
+              },
+            );
+
+            if (!uploadResponse.ok) {
+              throw new Error(
+                await readErrorMessage(uploadResponse, recordCopy.attachmentUploadFailed),
+              );
+            }
+
+            const uploadPayload = await uploadResponse.json().catch(() => null);
+            const uploadedRecord = normalizeRecord(uploadPayload, savedRecord.displayOrder);
+            if (!uploadedRecord) {
+              throw new Error(recordCopy.attachmentUploadFailed);
+            }
+
+            finalRecord = uploadedRecord;
+            nextToast = {
+              type: "success",
+              message: recordCopy.attachmentUploadSucceeded,
+            };
+          } catch (error) {
+            nextToast = {
+              type: "error",
+              message:
+                error instanceof Error
+                  ? error.message
+                  : recordCopy.attachmentUploadFailed,
+            };
+          }
+        }
+      }
+
       setRecords((current) =>
         current.map((record) =>
-          record.id === targetRecord.id || record.persistedId === savedRecord.persistedId
-            ? savedRecord
+          record.id === targetRecord.id || record.persistedId === finalRecord.persistedId
+            ? {
+                ...finalRecord,
+                pendingLocalImages: nextToast.type === "error" ? record.pendingLocalImages || [] : [],
+              }
             : record,
         ),
       );
-      setSelectedRecordId(savedRecord.id);
+      setSelectedRecordId(finalRecord.id);
       await refreshAccountSummary();
-      setToast({
-        type: "success",
-        message: isEditingPersistedRecord ? recordCopy.updatedToast : recordCopy.createdToast,
-      });
+      setToast(nextToast);
     } catch (error) {
       setToast({
         type: "error",

@@ -222,6 +222,19 @@ const en = {
       "Record notes written on the cafe card or package",
     recordBeanPlaceholderMemo:
       "Write any other notes you want to keep",
+    recordBeanAttachmentPlaceholderTitle: "Image attachment area",
+    recordBeanAttachmentPlaceholderBody:
+      "Upload is not connected yet. You can still stage images here and review the UI.",
+    recordBeanImageDropzoneHint:
+      "Drag images here, or click to choose files from your device.",
+    recordBeanImageBrowseLabel: "Choose images",
+    recordBeanImagePendingLabel: "Selected images",
+    recordBeanImageAttachedLabel: "Attached images",
+    recordBeanImageRemoveLabel: "Remove",
+    recordBeanImageLimitHint: "Up to {count} images can be staged.",
+    recordBeanImageSaveHint: "Save this bean record before uploading staged images.",
+    recordAttachmentUploadSucceeded: "Record saved and images uploaded.",
+    recordAttachmentUploadFailed: "The record was saved, but image upload failed.",
     recordLoadingLabel: "Loading records.",
     recordEmptyEditorTitle: "No records have been added yet.",
     recordEmptyEditorBody:

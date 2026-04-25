@@ -5942,7 +5942,7 @@ export namespace Prisma {
 
   export type CafeNoteGroupByOutputType = {
     cafeRecordId: bigint
-    title: string | null
+    title: string
     noteText: string
     createdAt: Date
     updatedAt: Date
@@ -5998,7 +5998,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       cafeRecordId: bigint
-      title: string | null
+      title: string
       noteText: string
       createdAt: Date
       updatedAt: Date
@@ -10547,7 +10547,7 @@ export namespace Prisma {
     OR?: CafeNoteWhereInput[]
     NOT?: CafeNoteWhereInput | CafeNoteWhereInput[]
     cafeRecordId?: BigIntFilter<"CafeNote"> | bigint | number
-    title?: StringNullableFilter<"CafeNote"> | string | null
+    title?: StringFilter<"CafeNote"> | string
     noteText?: StringFilter<"CafeNote"> | string
     createdAt?: DateTimeFilter<"CafeNote"> | Date | string
     updatedAt?: DateTimeFilter<"CafeNote"> | Date | string
@@ -10556,7 +10556,7 @@ export namespace Prisma {
 
   export type CafeNoteOrderByWithRelationInput = {
     cafeRecordId?: SortOrder
-    title?: SortOrderInput | SortOrder
+    title?: SortOrder
     noteText?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10569,7 +10569,7 @@ export namespace Prisma {
     AND?: CafeNoteWhereInput | CafeNoteWhereInput[]
     OR?: CafeNoteWhereInput[]
     NOT?: CafeNoteWhereInput | CafeNoteWhereInput[]
-    title?: StringNullableFilter<"CafeNote"> | string | null
+    title?: StringFilter<"CafeNote"> | string
     noteText?: StringFilter<"CafeNote"> | string
     createdAt?: DateTimeFilter<"CafeNote"> | Date | string
     updatedAt?: DateTimeFilter<"CafeNote"> | Date | string
@@ -10578,7 +10578,7 @@ export namespace Prisma {
 
   export type CafeNoteOrderByWithAggregationInput = {
     cafeRecordId?: SortOrder
-    title?: SortOrderInput | SortOrder
+    title?: SortOrder
     noteText?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10594,7 +10594,7 @@ export namespace Prisma {
     OR?: CafeNoteScalarWhereWithAggregatesInput[]
     NOT?: CafeNoteScalarWhereWithAggregatesInput | CafeNoteScalarWhereWithAggregatesInput[]
     cafeRecordId?: BigIntWithAggregatesFilter<"CafeNote"> | bigint | number
-    title?: StringNullableWithAggregatesFilter<"CafeNote"> | string | null
+    title?: StringWithAggregatesFilter<"CafeNote"> | string
     noteText?: StringWithAggregatesFilter<"CafeNote"> | string
     createdAt?: DateTimeWithAggregatesFilter<"CafeNote"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"CafeNote"> | Date | string
@@ -11226,7 +11226,7 @@ export namespace Prisma {
   }
 
   export type CafeNoteCreateInput = {
-    title?: string | null
+    title: string
     noteText: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11235,14 +11235,14 @@ export namespace Prisma {
 
   export type CafeNoteUncheckedCreateInput = {
     cafeRecordId: bigint | number
-    title?: string | null
+    title: string
     noteText: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type CafeNoteUpdateInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
     noteText?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11251,7 +11251,7 @@ export namespace Prisma {
 
   export type CafeNoteUncheckedUpdateInput = {
     cafeRecordId?: BigIntFieldUpdateOperationsInput | bigint | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
     noteText?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11259,14 +11259,14 @@ export namespace Prisma {
 
   export type CafeNoteCreateManyInput = {
     cafeRecordId: bigint | number
-    title?: string | null
+    title: string
     noteText: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type CafeNoteUpdateManyMutationInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
     noteText?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11274,7 +11274,7 @@ export namespace Prisma {
 
   export type CafeNoteUncheckedUpdateManyInput = {
     cafeRecordId?: BigIntFieldUpdateOperationsInput | bigint | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
     noteText?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13447,14 +13447,14 @@ export namespace Prisma {
   }
 
   export type CafeNoteCreateWithoutCafeRecordInput = {
-    title?: string | null
+    title: string
     noteText: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type CafeNoteUncheckedCreateWithoutCafeRecordInput = {
-    title?: string | null
+    title: string
     noteText: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13602,14 +13602,14 @@ export namespace Prisma {
   }
 
   export type CafeNoteUpdateWithoutCafeRecordInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
     noteText?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CafeNoteUncheckedUpdateWithoutCafeRecordInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
     noteText?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

@@ -85,7 +85,7 @@ model CafeRecord {
 
 model CafeNote {
   cafeRecordId BigInt     @id @map("cafe_record_id")
-  title        String?    @db.VarChar(255)
+  title        String     @db.VarChar(255)
   noteText     String     @map("note_text") @db.VarChar(1000)
   createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)

@@ -43,6 +43,11 @@ function validatePayload(body) {
     return "Record payload is required.";
   }
 
+  const title = typeof body.title === "string" ? body.title.trim() : "";
+  if (!title) {
+    return "Record title is required.";
+  }
+
   const noteText = typeof body.noteText === "string" ? body.noteText.trim() : "";
   if (!noteText) {
     return "Record content is required.";
@@ -147,7 +152,12 @@ export async function POST(request, context) {
   const body = await request.json().catch(() => null);
   const validationMessage = validatePayload(body);
   if (validationMessage) {
-    return invalidRequest(validationMessage, "NOTE_TEXT_REQUIRED");
+    return invalidRequest(
+      validationMessage,
+      validationMessage === "Record title is required."
+        ? "NOTE_TITLE_REQUIRED"
+        : "NOTE_TEXT_REQUIRED",
+    );
   }
 
   const recordId = Number(body?.id);

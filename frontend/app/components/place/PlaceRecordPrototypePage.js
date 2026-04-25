@@ -1416,8 +1416,13 @@ export default function PlaceRecordPrototypePage() {
     return `/places/${encodeURIComponent(targetId)}`;
   };
 
-  const handleSelectRecord = (recordId) => {
+  const handleSelectRecord = (recordId, options = {}) => {
+    const shouldScroll = options.scroll !== false;
     setSelectedRecordId(recordId);
+    if (!shouldScroll) {
+      return;
+    }
+
     const nextCard = recordCardRefs.current.get(recordId);
     nextCard?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -1836,7 +1841,11 @@ export default function PlaceRecordPrototypePage() {
                           isActive={effectiveSelectedRecordId === record.id}
                           isSavingRecord={isSavingRecord && effectiveSelectedRecordId === record.id}
                           copy={recordCopy}
-                          onActivate={() => handleSelectRecord(record.id)}
+                          onActivate={() =>
+                            handleSelectRecord(record.id, {
+                              scroll: false,
+                            })
+                          }
                           onSaveRecord={() => handleSaveRecord(record.id)}
                           onCancelDraft={() => handleCancelDraft(record.id)}
                           onDeleteRecord={() => handleRequestDeleteRecord(record)}

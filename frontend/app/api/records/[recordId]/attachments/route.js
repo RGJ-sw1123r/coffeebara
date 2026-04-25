@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/lib/prisma";
+import { RECORD_TYPE_BEAN } from "@/app/lib/record-types";
 import { groupMediaAttachmentsByOwnerId } from "@/app/lib/server/media-attachment-response";
-import {
-  cleanupStoredFiles,
-  isAllowedImageContentType,
-  MEDIA_UPLOAD_POLICY,
-  normalizeContentType,
-  persistUploadFile,
-} from "@/app/lib/server/media-storage";
+import { MEDIA_UPLOAD_POLICY } from "@/app/lib/server/media-storage";
+import { fetchBackend, readJsonResponse } from "@/app/lib/server/backend-api";
 import { requireMemberSession } from "@/app/lib/server/member-session";
 import { toPlaceRecordResponse } from "@/app/lib/server/place-record-response";
 
@@ -60,14 +56,6 @@ function validateFiles(files) {
     if (file.size > MEDIA_UPLOAD_POLICY.maxFileSizeBytes) {
       return errorResponse(400, "FILE_SIZE_LIMIT_EXCEEDED", "Each file must be 15MB or smaller.");
     }
-
-    if (!isAllowedImageContentType(file.type)) {
-      return errorResponse(
-        400,
-        "UNSUPPORTED_IMAGE_CONTENT_TYPE",
-        "Only JPEG, PNG, and WEBP images are supported.",
-      );
-    }
   }
 
   return null;
@@ -84,6 +72,56 @@ async function findRecordWithAttachments(userId, recordId) {
       bean: true,
     },
   });
+}
+
+async function cleanupBackendStoredFiles(request, storageKeys) {
+  if (!storageKeys?.length) {
+    return;
+  }
+
+  try {
+    await fetchBackend(request, "/api/media/images/preprocess", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        storageKeys,
+      }),
+    });
+  } catch {
+    // Best-effort cleanup.
+  }
+}
+
+function toUploadedItems(payload) {
+  const items = Array.isArray(payload?.files) ? payload.files : [];
+
+  return items
+    .map((item) => ({
+      storageKey: typeof item?.storageKey === "string" ? item.storageKey : "",
+      originalFileName:
+        typeof item?.originalFileName === "string" ? item.originalFileName : "upload.bin",
+      contentType: typeof item?.contentType === "string" ? item.contentType : "",
+      fileSize:
+        typeof item?.fileSize === "number" && Number.isFinite(item.fileSize)
+          ? item.fileSize
+          : Number(item?.fileSize ?? 0) || 0,
+      width:
+        typeof item?.width === "number" && Number.isFinite(item.width)
+          ? item.width
+          : item?.width == null
+            ? null
+            : Number(item.width) || null,
+      height:
+        typeof item?.height === "number" && Number.isFinite(item.height)
+          ? item.height
+          : item?.height == null
+            ? null
+            : Number(item.height) || null,
+      checksum: typeof item?.checksum === "string" ? item.checksum : "",
+    }))
+    .filter((item) => item.storageKey && item.contentType && item.fileSize > 0 && item.checksum);
 }
 
 export async function POST(request, context) {
@@ -112,7 +150,7 @@ export async function POST(request, context) {
     return fileValidationError;
   }
 
-  const storedPaths = [];
+  let uploadedItems = [];
 
   try {
     const ownedRecord = await findRecordWithAttachments(session.userId, recordId);
@@ -129,15 +167,49 @@ export async function POST(request, context) {
     });
 
     const maxAttachments =
-      ownedRecord.recordType === VIEW_SPOT_RECORD_TYPE
-        ? MEDIA_UPLOAD_POLICY.maxAttachmentsPerViewSpotRecord
-        : MEDIA_UPLOAD_POLICY.maxAttachmentsPerRecord;
+      ownedRecord.recordType === RECORD_TYPE_BEAN
+        ? MEDIA_UPLOAD_POLICY.maxAttachmentsPerBeanRecord
+        : ownedRecord.recordType === VIEW_SPOT_RECORD_TYPE
+          ? MEDIA_UPLOAD_POLICY.maxAttachmentsPerViewSpotRecord
+          : MEDIA_UPLOAD_POLICY.maxAttachmentsPerRecord;
 
     if (existingAttachmentCount + files.length > maxAttachments) {
       return errorResponse(
         400,
         "RECORD_ATTACHMENT_LIMIT_EXCEEDED",
         "This record cannot store that many images.",
+      );
+    }
+
+    const preprocessFormData = new FormData();
+    for (const file of files) {
+      preprocessFormData.append("files", file);
+    }
+
+    const backendResponse = await fetchBackend(request, "/api/media/images/preprocess", {
+      method: "POST",
+      body: preprocessFormData,
+    });
+    const backendPayload = await readJsonResponse(backendResponse);
+
+    if (!backendResponse.ok) {
+      return errorResponse(
+        backendResponse.status,
+        backendPayload?.code || "IMAGE_PREPROCESS_FAILED",
+        backendPayload?.message || "Failed to preprocess uploaded images.",
+      );
+    }
+
+    uploadedItems = toUploadedItems(backendPayload);
+    if (uploadedItems.length !== files.length) {
+      await cleanupBackendStoredFiles(
+        request,
+        uploadedItems.map((item) => item.storageKey),
+      );
+      return errorResponse(
+        502,
+        "IMAGE_PREPROCESS_RESPONSE_INVALID",
+        "The upload service returned an invalid image response.",
       );
     }
 
@@ -152,39 +224,48 @@ export async function POST(request, context) {
       },
     });
 
-    let nextSortOrder = (currentMaxSortOrder._max.sortOrder ?? -1) + 1;
-    const shouldMarkFirstAsCover = existingAttachmentCount === 0;
+    const createdRecord = await prisma.$transaction(async (tx) => {
+      let nextSortOrder = (currentMaxSortOrder._max.sortOrder ?? -1) + 1;
+      const shouldMarkFirstAsCover = existingAttachmentCount === 0;
 
-    for (let index = 0; index < files.length; index += 1) {
-      const file = files[index];
-      const stored = await persistUploadFile(file, OWNER_TYPE);
-      storedPaths.push(stored.storagePath);
+      for (let index = 0; index < uploadedItems.length; index += 1) {
+        const uploadedItem = uploadedItems[index];
 
-      await prisma.mediaAttachment.create({
-        data: {
-          ownerType: OWNER_TYPE,
-          ownerId: BigInt(recordId),
-          attachmentRole: ATTACHMENT_ROLE,
-          sortOrder: nextSortOrder,
-          isCover: shouldMarkFirstAsCover && index === 0,
-          mediaAsset: {
-            create: {
-              storageKey: stored.storageKey,
-              originalFileName: file.name || "upload.bin",
-              contentType: normalizeContentType(file.type),
-              fileSize: BigInt(stored.fileSize),
-              width: null,
-              height: null,
-              checksum: stored.checksum,
+        await tx.mediaAttachment.create({
+          data: {
+            ownerType: OWNER_TYPE,
+            ownerId: BigInt(recordId),
+            attachmentRole: ATTACHMENT_ROLE,
+            sortOrder: nextSortOrder,
+            isCover: shouldMarkFirstAsCover && index === 0,
+            mediaAsset: {
+              create: {
+                storageKey: uploadedItem.storageKey,
+                originalFileName: uploadedItem.originalFileName,
+                contentType: uploadedItem.contentType,
+                fileSize: BigInt(uploadedItem.fileSize),
+                width: uploadedItem.width,
+                height: uploadedItem.height,
+                checksum: uploadedItem.checksum,
+              },
             },
           },
+        });
+
+        nextSortOrder += 1;
+      }
+
+      return tx.cafeRecord.findUnique({
+        where: {
+          id: BigInt(recordId),
+        },
+        include: {
+          note: true,
+          bean: true,
         },
       });
+    });
 
-      nextSortOrder += 1;
-    }
-
-    const refreshedRecord = await findRecordWithAttachments(session.userId, recordId);
     const attachments = await prisma.mediaAttachment.findMany({
       where: {
         ownerType: OWNER_TYPE,
@@ -199,10 +280,13 @@ export async function POST(request, context) {
 
     const attachmentsByRecordId = groupMediaAttachmentsByOwnerId(attachments);
     return NextResponse.json(
-      toPlaceRecordResponse(refreshedRecord, attachmentsByRecordId.get(recordId) || []),
+      toPlaceRecordResponse(createdRecord, attachmentsByRecordId.get(recordId) || []),
     );
   } catch {
-    await cleanupStoredFiles(storedPaths);
+    await cleanupBackendStoredFiles(
+      request,
+      uploadedItems.map((item) => item.storageKey),
+    );
     return errorResponse(500, "RECORD_ATTACHMENT_SAVE_FAILED", "Failed to upload images.");
   }
 }

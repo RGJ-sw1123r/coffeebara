@@ -85,7 +85,8 @@ The current active product scope should be understood as follows:
 - member saved cafes
 - guest saved cafes in local browser state
 - member cafe-linked text records
-- record image attachment metadata and linking
+- member cafe-linked bean records
+- record image attachment upload, metadata, and linking
 - place-aware archive flow
 - archive-oriented account and profile structure
 
@@ -174,7 +175,6 @@ The archive must stand on its own without AI.
 The next meaningful slices are:
 
 - guest sample/demo record page
-- bean record creation
 - brewing record creation
 - purchase and drinking place selection
 - archive detail views

@@ -139,7 +139,10 @@ The currently active frontend scope is centered on:
 - member saved-cafe UI flow backed by frontend local routes and Prisma
 - guest saved-cafe UI flow backed by local state / local storage
 - member place detail page text-note flow backed by frontend local routes and Prisma
+- member place detail page bean-record flow backed by frontend local routes and Prisma
 - text-note create / edit / delete / reorder interactions in the place detail page
+- bean-record create / edit / delete interactions in the place detail page
+- bean-record image upload / preview / delete interactions backed by local routes, Prisma, and Spring media preprocessing
 - member cafe-linked record detail / delete flow backed by frontend local routes and Prisma
 - save-cafe delete-confirm modal instead of native browser confirm
 - UI copy for the active shell / note flow should be interpreted through the locale message layer in `frontend/app/messages.js`
@@ -150,7 +153,7 @@ Important interpretation:
 
 - active CRUD migration is effectively complete for the current archive-facing UI
 - new UI and new archive features should attach to Prisma by default
-- image attachment persistence is prepared in the Prisma/local-route layer, but the full upload UI is not yet an active product-complete flow
+- bean-record image attachment upload and deletion are active in the current runtime
 
 - the current Zustand usage is intentionally narrow
 - Zustand is currently for home search/map shared state, not for every frontend domain
@@ -267,7 +270,6 @@ Do **not** present these as active product-complete features:
 - guest-to-member saved-cafe migration as a completed product feature
 - guest sample/demo page as a completed feature
 - recommendation engine behavior
-- bean record CRUD
 - brew record CRUD
 - complete multi-record coffee archive domain
 - completed personal archive flows

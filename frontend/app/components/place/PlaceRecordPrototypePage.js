@@ -713,9 +713,10 @@ function BeanImageDropzone({
       "image/webp": [".webp"],
     },
     multiple: true,
-    disabled: remainingCount === 0,
+    noClick: remainingCount === 0,
+    noKeyboard: remainingCount === 0,
     onDrop: (acceptedFiles) => {
-      if (!acceptedFiles.length) {
+      if (!acceptedFiles.length || remainingCount === 0) {
         return;
       }
 

@@ -300,11 +300,16 @@ const ja = {
     recordBeanImageBrowseLabel: "画像を選択",
     recordBeanImagePendingLabel: "選択した画像",
     recordBeanImageAttachedLabel: "添付済みの画像",
+    recordBeanImagePendingDeleteLabel: "削除予定の画像",
     recordBeanImageRemoveLabel: "削除",
+    recordBeanImageRestoreLabel: "復元",
     recordBeanImageLimitHint: "最大{count}枚まで先に追加して確認できます。",
     recordBeanImageSaveHint: "この豆の記録を先に保存すると画像をアップロードできます。",
+    recordBeanImageDeleteSaveHint: "画像の削除はこの記録を保存すると反映されます。",
     recordAttachmentUploadSucceeded: "記録の保存と画像アップロードが完了しました。",
     recordAttachmentUploadFailed: "記録は保存されましたが、画像アップロードは失敗しました。",
+    recordAttachmentDeleteSucceeded: "画像を削除しました。",
+    recordAttachmentDeleteFailed: "画像の削除に失敗しました。",
     recordLoadingLabel:
       "記録を読み込み中です。",
     recordEmptyEditorTitle:

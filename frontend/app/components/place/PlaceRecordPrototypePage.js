@@ -97,6 +97,7 @@ function normalizeRecord(record, index = 0) {
     memo: typeof record.memo === "string" ? record.memo : "",
     attachments: Array.isArray(record.attachments) ? record.attachments : [],
     pendingLocalImages: [],
+    pendingDeletedAttachmentIds: [],
   };
 }
 
@@ -385,15 +386,25 @@ function getRecordPageCopy(messages) {
       messages.recordBeanImagePendingLabel ?? "Selected images",
     beanImageAttachedLabel:
       messages.recordBeanImageAttachedLabel ?? "Attached images",
+    beanImagePendingDeleteLabel:
+      messages.recordBeanImagePendingDeleteLabel ?? "Marked for deletion",
     beanImageRemoveLabel:
       messages.recordBeanImageRemoveLabel ?? "Remove",
+    beanImageRestoreLabel:
+      messages.recordBeanImageRestoreLabel ?? "Restore",
     beanImageLimitHint: messages.recordBeanImageLimitHint ?? "Up to {count} images can be staged.",
     beanImageSaveHint:
       messages.recordBeanImageSaveHint ?? "Save this bean record before uploading staged images.",
+    beanImageDeleteSaveHint:
+      messages.recordBeanImageDeleteSaveHint ?? "Image deletions are applied when you save this record.",
     attachmentUploadSucceeded:
       messages.recordAttachmentUploadSucceeded ?? "Record saved and images uploaded.",
     attachmentUploadFailed:
       messages.recordAttachmentUploadFailed ?? "The record was saved, but image upload failed.",
+    attachmentDeleteSucceeded:
+      messages.recordAttachmentDeleteSucceeded ?? "Image deleted.",
+    attachmentDeleteFailed:
+      messages.recordAttachmentDeleteFailed ?? "Failed to delete the image.",
     loading: messages.recordLoadingLabel,
     emptyEditorTitle: messages.recordEmptyEditorTitle,
     emptyEditorBody: messages.recordEmptyEditorBody,
@@ -670,13 +681,25 @@ function RequiredMark() {
   );
 }
 
-function BeanImageDropzone({ selectedRecord, updateSelectedRecord, copy }) {
+function BeanImageDropzone({
+  selectedRecord,
+  updateSelectedRecord,
+  onToggleAttachmentDeletion,
+  copy,
+}) {
   const beanConfig = getRecordTypeConfig(RECORD_TYPE_BEAN);
   const maxLocalImageCount = beanConfig.maxLocalImageCount ?? 0;
   const pendingLocalImages = selectedRecord.pendingLocalImages || [];
   const persistedAttachments = selectedRecord.attachments || [];
+  const pendingDeletedAttachmentIds = selectedRecord.pendingDeletedAttachmentIds || [];
+  const visiblePersistedAttachments = persistedAttachments.filter(
+    (attachment) => !pendingDeletedAttachmentIds.includes(attachment.attachmentId),
+  );
+  const pendingDeletedAttachments = persistedAttachments.filter((attachment) =>
+    pendingDeletedAttachmentIds.includes(attachment.attachmentId),
+  );
   const remainingCount = Math.max(
-    maxLocalImageCount - persistedAttachments.length - pendingLocalImages.length,
+    maxLocalImageCount - visiblePersistedAttachments.length - pendingLocalImages.length,
     0,
   );
   const imageLimitHint = copy.beanImageLimitHint.replace(
@@ -734,10 +757,7 @@ function BeanImageDropzone({ selectedRecord, updateSelectedRecord, copy }) {
         } ${remainingCount === 0 ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
       >
         <input {...getInputProps()} />
-        <p className="text-sm font-semibold text-[#352720]">
-          {copy.beanAttachmentPlaceholderTitle}
-        </p>
-        <p className="mt-2 text-sm leading-6 text-[#7a6456]">{copy.beanImageDropzoneHint}</p>
+        <p className="text-sm leading-6 text-[#7a6456]">{copy.beanImageDropzoneHint}</p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <span className="rounded-full border border-[#dccfbe] bg-white px-4 py-2 text-sm font-medium text-[#5f4b3f]">
             {copy.beanImageBrowseLabel}
@@ -789,13 +809,13 @@ function BeanImageDropzone({ selectedRecord, updateSelectedRecord, copy }) {
         <p className="text-xs text-[#8b7464]">{copy.beanImageSaveHint}</p>
       ) : null}
 
-      {persistedAttachments.length > 0 ? (
+      {visiblePersistedAttachments.length > 0 ? (
         <div>
           <p className="mb-3 text-sm font-semibold text-[#352720]">
             {copy.beanImageAttachedLabel}
           </p>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {persistedAttachments.map((attachment) => {
+            {visiblePersistedAttachments.map((attachment) => {
               const imageUrl = buildAttachmentImageUrl(
                 selectedRecord.persistedId,
                 attachment.attachmentId,
@@ -821,9 +841,18 @@ function BeanImageDropzone({ selectedRecord, updateSelectedRecord, copy }) {
                     <p className="truncate text-sm font-medium text-[#352720]">
                       {attachment.originalFileName}
                     </p>
-                    <span className="text-xs text-[#8b7464]">
-                      {formatFileSize(attachment.fileSize)}
-                    </span>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs text-[#8b7464]">
+                        {formatFileSize(attachment.fileSize)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onToggleAttachmentDeletion?.(attachment.attachmentId)}
+                        className="rounded-full border border-[#ead6d0] bg-[#fff4f1] px-3 py-1.5 text-xs font-medium text-[#8b3f32] transition hover:bg-[#ffeae5] hover:text-[#6f3126]"
+                      >
+                        {copy.beanImageRemoveLabel}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -831,11 +860,69 @@ function BeanImageDropzone({ selectedRecord, updateSelectedRecord, copy }) {
           </div>
         </div>
       ) : null}
+
+      {pendingDeletedAttachments.length > 0 ? (
+        <div>
+          <p className="mb-3 text-sm font-semibold text-[#352720]">
+            {copy.beanImagePendingDeleteLabel}
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {pendingDeletedAttachments.map((attachment) => {
+              const imageUrl = buildAttachmentImageUrl(
+                selectedRecord.persistedId,
+                attachment.attachmentId,
+              );
+
+              return (
+                <div
+                  key={attachment.attachmentId}
+                  className="overflow-hidden rounded-[22px] border border-[#eadfd3] bg-white opacity-60"
+                >
+                  <div className="relative aspect-[4/3] bg-[#f4ece3]">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt={attachment.originalFileName || "bean image"}
+                        fill
+                        unoptimized
+                        className="h-full w-full object-cover"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="space-y-2 px-4 py-3">
+                    <p className="truncate text-sm font-medium text-[#352720]">
+                      {attachment.originalFileName}
+                    </p>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs text-[#8b7464]">
+                        {formatFileSize(attachment.fileSize)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onToggleAttachmentDeletion?.(attachment.attachmentId)}
+                        className="rounded-full border border-[#dccfbe] bg-white px-3 py-1.5 text-xs font-medium text-[#5f4b3f] transition hover:bg-[#fcfaf7] hover:text-[#352720]"
+                      >
+                        {copy.beanImageRestoreLabel}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-xs text-[#8b7464]">{copy.beanImageDeleteSaveHint}</p>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function BeanRecordEditor({ selectedRecord, updateSelectedRecord, copy }) {
+function BeanRecordEditor({
+  selectedRecord,
+  updateSelectedRecord,
+  onToggleAttachmentDeletion,
+  copy,
+}) {
   return (
     <div className="mt-4 space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
@@ -1016,6 +1103,7 @@ function BeanRecordEditor({ selectedRecord, updateSelectedRecord, copy }) {
         <BeanImageDropzone
           selectedRecord={selectedRecord}
           updateSelectedRecord={updateSelectedRecord}
+          onToggleAttachmentDeletion={onToggleAttachmentDeletion}
           copy={copy}
         />
       </div>
@@ -1069,6 +1157,7 @@ function RecordEditorCard({
   onSaveRecord,
   onCancelDraft,
   onDeleteRecord,
+  onToggleAttachmentDeletion,
   updateSelectedRecord,
   cardRef,
 }) {
@@ -1189,6 +1278,7 @@ function RecordEditorCard({
         <BeanRecordEditor
           selectedRecord={record}
           updateSelectedRecord={updateSelectedRecord}
+          onToggleAttachmentDeletion={onToggleAttachmentDeletion}
           copy={copy}
         />
       ) : (
@@ -1444,6 +1534,32 @@ export default function PlaceRecordPrototypePage() {
     );
   };
 
+  const handleToggleAttachmentDeletion = (recordId, attachmentId) => {
+    if (!recordId || !attachmentId) {
+      return;
+    }
+
+    setRecords((current) =>
+      current.map((record) => {
+        if (record.id !== recordId) {
+          return record;
+        }
+
+        const pendingDeletedAttachmentIds = record.pendingDeletedAttachmentIds || [];
+        const nextPendingDeletedAttachmentIds = pendingDeletedAttachmentIds.includes(attachmentId)
+          ? pendingDeletedAttachmentIds.filter(
+              (currentAttachmentId) => currentAttachmentId !== attachmentId,
+            )
+          : [...pendingDeletedAttachmentIds, attachmentId];
+
+        return {
+          ...record,
+          pendingDeletedAttachmentIds: nextPendingDeletedAttachmentIds,
+        };
+      }),
+    );
+  };
+
   const handleSaveRecord = async (recordId) => {
     const targetRecord = records.find((record) => record.id === recordId);
     if (!savedPlace?.id || !targetRecord || authUser?.mode === "guest") {
@@ -1516,14 +1632,60 @@ export default function PlaceRecordPrototypePage() {
         type: "success",
         message: isEditingPersistedRecord ? recordCopy.updatedToast : recordCopy.createdToast,
       };
+      let pendingDeletedAttachmentIdsToKeep = [...(targetRecord.pendingDeletedAttachmentIds || [])];
+      let pendingLocalImagesToKeep = [...(targetRecord.pendingLocalImages || [])];
 
       if (
         savedRecord.recordType === RECORD_TYPE_BEAN &&
         savedRecord.persistedId &&
-        targetRecord.pendingLocalImages?.length
+        pendingDeletedAttachmentIdsToKeep.length > 0
+      ) {
+        try {
+          for (const attachmentId of [...pendingDeletedAttachmentIdsToKeep]) {
+            const deleteResponse = await fetch(
+              `${RECORD_API_BASE_URL}/api/records/${encodeURIComponent(savedRecord.persistedId)}/attachments/${encodeURIComponent(attachmentId)}`,
+              {
+                method: "DELETE",
+                credentials: "include",
+              },
+            );
+
+            if (!deleteResponse.ok) {
+              throw new Error(
+                await readErrorMessage(deleteResponse, recordCopy.attachmentDeleteFailed),
+              );
+            }
+
+            const deletePayload = await deleteResponse.json().catch(() => null);
+            const deletedRecord = normalizeRecord(deletePayload, finalRecord.displayOrder);
+            if (!deletedRecord) {
+              throw new Error(recordCopy.attachmentDeleteFailed);
+            }
+
+            finalRecord = deletedRecord;
+            pendingDeletedAttachmentIdsToKeep = pendingDeletedAttachmentIdsToKeep.filter(
+              (currentAttachmentId) => currentAttachmentId !== attachmentId,
+            );
+          }
+        } catch (error) {
+          nextToast = {
+            type: "error",
+            message:
+              error instanceof Error
+                ? error.message
+                : recordCopy.attachmentDeleteFailed,
+          };
+        }
+      }
+
+      if (
+        nextToast.type !== "error" &&
+        savedRecord.recordType === RECORD_TYPE_BEAN &&
+        savedRecord.persistedId &&
+        pendingLocalImagesToKeep.length
       ) {
         const uploadFormData = new FormData();
-        for (const image of targetRecord.pendingLocalImages) {
+        for (const image of pendingLocalImagesToKeep) {
           if (image?.file) {
             uploadFormData.append("files", image.file);
           }
@@ -1553,6 +1715,7 @@ export default function PlaceRecordPrototypePage() {
             }
 
             finalRecord = uploadedRecord;
+            pendingLocalImagesToKeep = [];
             nextToast = {
               type: "success",
               message: recordCopy.attachmentUploadSucceeded,
@@ -1574,7 +1737,8 @@ export default function PlaceRecordPrototypePage() {
           record.id === targetRecord.id || record.persistedId === finalRecord.persistedId
             ? {
                 ...finalRecord,
-                pendingLocalImages: nextToast.type === "error" ? record.pendingLocalImages || [] : [],
+                pendingLocalImages: pendingLocalImagesToKeep,
+                pendingDeletedAttachmentIds: pendingDeletedAttachmentIdsToKeep,
               }
             : record,
         ),
@@ -1849,6 +2013,9 @@ export default function PlaceRecordPrototypePage() {
                           onSaveRecord={() => handleSaveRecord(record.id)}
                           onCancelDraft={() => handleCancelDraft(record.id)}
                           onDeleteRecord={() => handleRequestDeleteRecord(record)}
+                          onToggleAttachmentDeletion={(attachmentId) =>
+                            handleToggleAttachmentDeletion(record.id, attachmentId)
+                          }
                           updateSelectedRecord={(field, value) =>
                             updateRecord(record.id, field, value)
                           }

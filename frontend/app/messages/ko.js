@@ -296,11 +296,16 @@ const ko = {
     recordBeanImageBrowseLabel: "이미지 선택",
     recordBeanImagePendingLabel: "선택한 이미지",
     recordBeanImageAttachedLabel: "첨부된 이미지",
+    recordBeanImagePendingDeleteLabel: "삭제 예정 이미지",
     recordBeanImageRemoveLabel: "제거",
+    recordBeanImageRestoreLabel: "복원",
     recordBeanImageLimitHint: "최대 {count}장까지 미리 올려 볼 수 있습니다.",
     recordBeanImageSaveHint: "이 원두 기록을 먼저 저장하면 이미지를 업로드할 수 있습니다.",
+    recordBeanImageDeleteSaveHint: "이미지 삭제는 이 기록을 수정할 때 함께 반영됩니다.",
     recordAttachmentUploadSucceeded: "기록 저장과 이미지 업로드가 완료되었습니다.",
     recordAttachmentUploadFailed: "기록은 저장되었지만 이미지 업로드는 실패했습니다.",
+    recordAttachmentDeleteSucceeded: "이미지를 삭제했습니다.",
+    recordAttachmentDeleteFailed: "이미지 삭제에 실패했습니다.",
     recordLoadingLabel:
       "기록을 불러오는 중입니다.",
     recordEmptyEditorTitle:

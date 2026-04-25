@@ -8,6 +8,12 @@ import useSavedPlacesState from "./useSavedPlacesState";
 
 const LOCALE_STORAGE_KEY = "coffeebara.locale.v1";
 
+function createStatusError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
+
 function getInitialLocale() {
   if (typeof window === "undefined") {
     return "ko";
@@ -79,11 +85,14 @@ export default function useAppShellState() {
       credentials: "include",
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to verify auth status.");
-    }
+    const payload = await response.json().catch(() => null);
 
-    const payload = await response.json();
+    if (!response.ok) {
+      throw createStatusError(
+        payload?.code || "AUTH_STATUS_LOOKUP_FAILED",
+        payload?.message || "Failed to verify auth status.",
+      );
+    }
     return applyAuthSummary(payload);
   }, [applyAuthSummary]);
   const handleMemberDataChanged = useCallback(() => {
@@ -167,8 +176,14 @@ export default function useAppShellState() {
         setAuthUser(null);
         setAuthStatus("redirecting");
         router.replace("/login");
-      } catch {
+      } catch (error) {
         if (cancelled) {
+          return;
+        }
+
+        if (error?.code === "BACKEND_UNAVAILABLE") {
+          setAuthUser(null);
+          setAuthStatus("backend-unavailable");
           return;
         }
 
